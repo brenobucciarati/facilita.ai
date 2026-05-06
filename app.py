@@ -68,11 +68,10 @@ def dashboard():
 
 # ============ CADASTRO PERMANENTE DE FUNCIONÁRIOS ============
 
+# Upload de funcionários - sem Pandas
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
 @login_required
 def cadastrar_funcionarios():
-    total_cadastrados = MatriculaCadastrada.query.filter_by(evento_id=0).count()
-    
     if request.method == 'POST':
         if 'arquivo' not in request.files:
             flash('❌ Nenhum arquivo enviado', 'danger')
@@ -89,28 +88,45 @@ def cadastrar_funcionarios():
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
                 
-                if filename.endswith('.csv'):
-                    df = pd.read_csv(filepath, header=None, names=['matricula', 'nome', 'funcao'])
-                else:
-                    df = pd.read_excel(filepath, header=None, names=['matricula', 'nome', 'funcao'])
+                # ✅ Usando openpyxl em vez de Pandas
+                import openpyxl
                 
-                df = df.dropna(subset=['matricula', 'nome'])
-                df['matricula'] = df['matricula'].apply(lambda x: str(int(x)).zfill(6))
+                if filename.endswith('.csv'):
+                    # CSV manual
+                    rows = []
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            parts = line.strip().split('\t') if '\t' in line else line.strip().split(',')
+                            if len(parts) >= 2:
+                                rows.append(parts)
+                else:
+                    # Excel com openpyxl
+                    wb = openpyxl.load_workbook(filepath)
+                    ws = wb.active
+                    rows = list(ws.iter_rows(values_only=True))
                 
                 sistema = ['000010', '000063', '000099', '000777', '000888', '000999', '888888']
-                df = df[~df['matricula'].isin(sistema)]
-                df = df.drop_duplicates(subset='matricula', keep='first')
-                
                 contador_novos = 0
                 contador_atualizados = 0
                 
-                for _, row in df.iterrows():
-                    funcao = str(row['funcao']).strip().upper() if pd.notna(row['funcao']) else 'NÃO INFORMADO'
-                    nome = str(row['nome']).strip().upper()
+                for row in rows:
+                    if not row[0] or not row[1]:
+                        continue
+                    
+                    try:
+                        matricula = str(int(row[0])).zfill(6)
+                    except:
+                        continue
+                    
+                    if matricula in sistema:
+                        continue
+                    
+                    nome = str(row[1]).strip().upper()
+                    funcao = str(row[2]).strip().upper() if len(row) > 2 and row[2] else 'NÃO INFORMADO'
                     
                     existente = MatriculaCadastrada.query.filter_by(
                         evento_id=0,
-                        matricula=row['matricula']
+                        matricula=matricula
                     ).first()
                     
                     if existente:
@@ -120,7 +136,7 @@ def cadastrar_funcionarios():
                     else:
                         novo = MatriculaCadastrada(
                             evento_id=0,
-                            matricula=row['matricula'],
+                            matricula=matricula,
                             nome=nome,
                             funcao=funcao,
                             ativo=True
@@ -129,24 +145,16 @@ def cadastrar_funcionarios():
                         contador_novos += 1
                 
                 db.session.commit()
+                os.remove(filepath)
                 
-                try:
-                    os.remove(filepath)
-                except Exception:
-                    pass
-                
-                flash(f'✅ {contador_novos} novos cadastros | {contador_atualizados} atualizados', 'success')
+                flash(f'✅ {contador_novos} novos | {contador_atualizados} atualizados', 'success')
                 return redirect(url_for('dashboard'))
                 
             except Exception as e:
-                db.session.rollback()
                 flash(f'❌ Erro: {str(e)}', 'danger')
                 return redirect(request.url)
-        else:
-            flash('❌ Formato inválido. Use .xlsx, .xls ou .csv', 'danger')
     
-    return render_template('admin/cadastrar_funcionarios.html', 
-                         total_cadastrados=total_cadastrados)   
+    return render_template('admin/cadastrar_funcionarios.html') 
 
 @app.route('/admin/evento/<int:evento_id>/atualizar-vagas', methods=['POST'])
 @login_required
