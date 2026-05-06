@@ -735,8 +735,8 @@ def desbloquear_matricula(evento_id, bloqueio_id):
     return redirect(url_for('gerenciar_evento', evento_id=evento_id))
 # ============ INICIAR ============
 
+# No final do arquivo
 if __name__ == '__main__':
-    # Render usa a variável de ambiente PORT
     import os
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
