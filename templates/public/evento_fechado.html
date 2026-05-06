@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0e14">
+    <title>Evento Encerrado - {{ evento.nome }}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0e14;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(245, 158, 11, 0.06);
+            border-radius: 50%;
+            animation: floatUp 10s linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+        }
+
+        /* Main card */
+        .card-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 440px;
+            animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardEntry {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .card-encerrado {
+            background: #1a2332;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 48px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-encerrado::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+        }
+
+        /* Icon */
+        .icon-wrapper {
+            width: 100px;
+            height: 100px;
+            background: rgba(245, 158, 11, 0.08);
+            border: 2px solid rgba(245, 158, 11, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); }
+        }
+
+        .icon-wrapper .emoji {
+            font-size: 3em;
+        }
+
+        /* Content */
+        .titulo-encerrado {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: #f59e0b;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitulo-encerrado {
+            color: #94a3b8;
+            font-size: 1em;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .evento-nome {
+            color: #e2e8f0;
+            font-weight: 700;
+            background: rgba(245, 158, 11, 0.08);
+            padding: 4px 12px;
+            border-radius: 6px;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #f59e0b;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Info card */
+        .info-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 0.9em;
+        }
+
+        .info-row i {
+            color: #f59e0b;
+        }
+
+        .info-row strong {
+            color: #94a3b8;
+        }
+
+        /* Alert */
+        .alert-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: rgba(59, 130, 246, 0.06);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .alert-info i {
+            color: #3b82f6;
+            font-size: 1.1em;
+            margin-top: 1px;
+        }
+
+        .alert-info .alert-text {
+            color: #94a3b8;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        .card-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 20px;
+        }
+
+        .footer-text {
+            color: #64748b;
+            font-size: 0.8em;
+            opacity: 0.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .card-encerrado { padding: 32px 20px; }
+            .icon-wrapper { width: 80px; height: 80px; }
+            .icon-wrapper .emoji { font-size: 2.5em; }
+            .titulo-encerrado { font-size: 1.4em; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background particles -->
+    <div class="bg-particles" id="particles"></div>
+    
+    <!-- Main card -->
+    <div class="card-container">
+        <div class="card-encerrado">
+            <!-- Icon -->
+            <div class="icon-wrapper">
+                <span class="emoji">🔒</span>
+            </div>
+            
+            <!-- Title -->
+            <h1 class="titulo-encerrado">EVENTO ENCERRADO</h1>
+            <p class="subtitulo-encerrado">
+                O evento <span class="evento-nome">{{ evento.nome }}</span> não está mais aceitando novas inscrições.
+            </p>
+            
+            <!-- Status -->
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                Inscrições Fechadas
+            </div>
+            
+            <!-- Info -->
+            <div class="info-card">
+                <div class="info-row">
+                    <i class="far fa-calendar-alt"></i>
+                    <span>Data: <strong>{{ evento.data_evento.strftime('%d/%m/%Y às %H:%M') }}</strong></span>
+                </div>
+            </div>
+            
+            <!-- Alert -->
+            <div class="alert-info">
+                <i class="fas fa-info-circle"></i>
+                <div class="alert-text">
+                    <strong>O que aconteceu?</strong><br>
+                    O administrador encerrou as inscrições para este evento. Entre em contato com o organizador para mais informações.
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="card-footer">
+                <span class="footer-text">
+                    <i class="fas fa-shield-alt"></i>
+                    Sistema Pelada FC
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Create particles
+        function createParticles() {
+            var container = document.getElementById('particles');
+            var colors = [
+                'rgba(245, 158, 11, 0.08)',
+                'rgba(251, 191, 36, 0.06)',
+                'rgba(252, 211, 77, 0.04)'
+            ];
+            
+            for (var i = 0; i < 25; i++) {
+                var particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                var size = Math.random() * 4 + 2;
+                var left = Math.random() * 100;
+                var delay = Math.random() * 10;
+                var duration = Math.random() * 8 + 6;
+                
+                particle.style.cssText = 
+                    'width: ' + size + 'px; ' +
+                    'height: ' + size + 'px; ' +
+                    'left: ' + left + '%; ' +
+                    'background: ' + colors[Math.floor(Math.random() * colors.length)] + '; ' +
+                    'animation-delay: ' + delay + 's; ' +
+                    'animation-duration: ' + duration + 's;';
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        createParticles();
+        
+        console.log('%c🔒 Evento Encerrado %c- Inscrições fechadas',
+            'color: #f59e0b; font-weight: bold;',
+            'color: #94a3b8;');
+    </script>
+</body>
+</html>

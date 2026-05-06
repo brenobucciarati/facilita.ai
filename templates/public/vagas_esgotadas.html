@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0e14">
+    <title>Vagas Esgotadas - {{ evento.nome }}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-card: #1a2332;
+            --accent-red: #ef4444;
+            --accent-red-light: #f87171;
+            --accent-yellow: #f59e0b;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background Particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 50%;
+            animation: floatUp 8s linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Main Card */
+        .card-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 440px;
+            animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardEntry {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .card-esgotado {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 48px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-esgotado::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ef4444, #f87171, #ef4444);
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Icon */
+        .icon-wrapper {
+            width: 100px;
+            height: 100px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 2px solid rgba(239, 68, 68, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% { 
+                box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .icon-wrapper .emoji {
+            font-size: 3em;
+            animation: shake 0.5s ease-in-out;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Content */
+        .titulo-esgotado {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: var(--accent-red);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitulo-esgotado {
+            color: var(--text-secondary);
+            font-size: 1em;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .evento-nome {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        /* Info Cards */
+        .info-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .info-card .info-icon {
+            font-size: 1.3em;
+            margin-bottom: 6px;
+        }
+
+        .info-card .info-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .info-card .info-label {
+            font-size: 0.75em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 24px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f87171);
+            border-radius: 10px;
+            width: 100%;
+            animation: fillBar 1.5s ease forwards;
+        }
+
+        @keyframes fillBar {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        /* Alert Message */
+        .alert-message {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .alert-message i {
+            color: var(--accent-red);
+            font-size: 1.2em;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .alert-message .alert-text {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        .alert-message .alert-text strong {
+            color: var(--accent-red-light);
+        }
+
+        /* Footer */
+        .card-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            margin-top: 4px;
+        }
+
+        .evento-data {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.85em;
+        }
+
+        .evento-data i {
+            color: var(--accent-yellow);
+        }
+
+        /* Back Button */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .card-esgotado {
+                padding: 32px 20px;
+            }
+            
+            .icon-wrapper {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .icon-wrapper .emoji {
+                font-size: 2.5em;
+            }
+            
+            .titulo-esgotado {
+                font-size: 1.4em;
+            }
+            
+            .info-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles" id="particles"></div>
+    
+    <!-- Main Card -->
+    <div class="card-container">
+        <div class="card-esgotado">
+            <!-- Icon -->
+            <div class="icon-wrapper">
+                <span class="emoji">😔</span>
+            </div>
+            
+            <!-- Title -->
+            <h1 class="titulo-esgotado">VAGAS ESGOTADAS!</h1>
+            <p class="subtitulo-esgotado">
+                Infelizmente todas as vagas do evento<br>
+                <span class="evento-nome">{{ evento.nome }}</span><br>
+                já foram preenchidas.
+            </p>
+            
+            <!-- Info Cards -->
+            <div class="info-cards">
+                <div class="info-card">
+                    <div class="info-icon">👥</div>
+                    <div class="info-value">{{ evento.total_vagas }}</div>
+                    <div class="info-label">Total de Vagas</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">✅</div>
+                    <div class="info-value" style="color: var(--accent-red);">{{ evento.total_vagas }}</div>
+                    <div class="info-label">Preenchidas</div>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Ocupação</span>
+                    <span style="color: var(--accent-red); font-weight: 700;">100%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill"></div>
+                </div>
+            </div>
+            
+            <!-- Alert -->
+            <div class="alert-message">
+                <i class="fas fa-info-circle"></i>
+                <div class="alert-text">
+                    <strong>Fique atento!</strong> Caso alguém cancele a inscrição, as vagas serão liberadas automaticamente. Recarregue a página para verificar.
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="card-footer">
+                <div class="evento-data">
+                    <i class="far fa-calendar-alt"></i>
+                    {{ evento.data_evento.strftime('%d/%m/%Y às %H:%M') }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Back Button -->
+        <div style="text-align: center;">
+            <button onclick="window.location.reload()" class="btn-back">
+                <i class="fas fa-sync-alt"></i>
+                Verificar Vagas Novamente
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // ==================== PARTICLES ====================
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const colors = [
+                'rgba(239, 68, 68, 0.15)',
+                'rgba(248, 113, 113, 0.1)',
+                'rgba(252, 165, 165, 0.08)'
+            ];
+            
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 4 + 2;
+                const left = Math.random() * 100;
+                const delay = Math.random() * 8;
+                const duration = Math.random() * 6 + 6;
+                
+                particle.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${left}%;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    animation-delay: ${delay}s;
+                    animation-duration: ${duration}s;
+                `;
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // ==================== AUTO REFRESH ====================
+        let segundos = 0;
+        const refreshMessage = document.createElement('div');
+        refreshMessage.style.cssText = `
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.75em;
+            margin-top: 12px;
+            opacity: 0.7;
+        `;
+        document.querySelector('.card-container').appendChild(refreshMessage);
+        
+        setInterval(() => {
+            segundos++;
+            if (segundos <= 30) {
+                refreshMessage.textContent = `Verificação automática em ${30 - segundos}s...`;
+            } else {
+                window.location.reload();
+            }
+        }, 1000);
+        
+        // ==================== INIT ====================
+        createParticles();
+        
+        // ==================== KEYBOARD ====================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'r' || e.key === 'R') {
+                window.location.reload();
+            }
+        });
+        
+        console.log('%c😔 Vagas Esgotadas %c- Recarregue para tentar novamente',
+            'color: #ef4444; font-weight: bold;',
+            'color: #94a3b8;');
+    </script>
+</body>
+</html>

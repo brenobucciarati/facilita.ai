@@ -1,0 +1,6 @@
+{
+    "html.validate.styles": false,
+    "html.validate.scripts": false,
+    "css.validate": false,
+    "javascript.validate.enable": false
+}

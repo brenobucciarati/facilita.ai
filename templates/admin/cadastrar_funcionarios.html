@@ -1,0 +1,650 @@
+{% extends "base.html" %}
+{% block title %}Upload Planilha - Pelada FC{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-primary: #0a0e14;
+        --bg-secondary: #141b22;
+        --bg-card: #1a2332;
+        --bg-input: #1e293b;
+        --text-primary: #e2e8f0;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+        --accent-green: #10b981;
+        --accent-green-dark: #059669;
+        --accent-blue: #3b82f6;
+        --accent-purple: #8b5cf6;
+        --accent-red: #ef4444;
+        --accent-yellow: #f59e0b;
+        --border-color: rgba(255, 255, 255, 0.06);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+    }
+
+    body {
+        background: var(--bg-primary) !important;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    /* ==================== NAVBAR ==================== */
+    .navbar-upload {
+        background: rgba(20, 27, 34, 0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-color);
+        padding: 16px 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .page-title-upload {
+        color: var(--text-primary);
+        font-size: 1.2em;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-title-upload .icon-circle {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, var(--accent-blue), #2563eb);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 0.9em;
+    }
+
+    .btn-back-upload {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+        padding: 8px 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-back-upload:hover {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ==================== MAIN CONTAINER ==================== */
+    .upload-wrapper {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    /* ==================== UPLOAD CARD ==================== */
+    .upload-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 40px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .upload-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #10b981);
+    }
+
+    .upload-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .upload-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2em;
+        color: #fff;
+        box-shadow: 0 15px 40px rgba(59, 130, 246, 0.3);
+        animation: floatIcon 3s ease-in-out infinite;
+    }
+
+    @keyframes floatIcon {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .upload-header h2 {
+        color: var(--text-primary);
+        font-size: 1.8em;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .upload-header p {
+        color: var(--text-muted);
+        font-size: 0.95em;
+        line-height: 1.5;
+    }
+
+    /* ==================== STATS BADGE ==================== */
+    .stats-badge-upload {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        margin-bottom: 28px;
+    }
+
+    .stats-badge-upload .count-number {
+        font-size: 2em;
+        font-weight: 800;
+        color: var(--accent-green);
+        line-height: 1;
+    }
+
+    .stats-badge-upload .count-label {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .stats-badge-upload .count-icon {
+        font-size: 1.5em;
+    }
+
+    /* ==================== DROP ZONE ==================== */
+    .drop-zone {
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--bg-secondary);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .drop-zone:hover {
+        border-color: var(--accent-blue);
+        background: rgba(59, 130, 246, 0.03);
+    }
+
+    .drop-zone.drag-over {
+        border-color: var(--accent-green);
+        background: rgba(16, 185, 129, 0.05);
+        transform: scale(1.02);
+    }
+
+    .drop-zone-icon {
+        font-size: 3em;
+        margin-bottom: 16px;
+        color: var(--accent-blue);
+        transition: all 0.3s ease;
+    }
+
+    .drop-zone.drag-over .drop-zone-icon {
+        color: var(--accent-green);
+        animation: bounce 0.5s ease;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    .drop-zone-text {
+        color: var(--text-secondary);
+        font-size: 1em;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .drop-zone-hint {
+        color: var(--text-muted);
+        font-size: 0.85em;
+    }
+
+    .drop-zone input[type="file"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    /* ==================== FILE SELECTED ==================== */
+    .file-info {
+        display: none;
+        align-items: center;
+        gap: 16px;
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        margin-top: 16px;
+    }
+
+    .file-info.show {
+        display: flex;
+    }
+
+    .file-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(16, 185, 129, 0.15);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+        color: var(--accent-green);
+        flex-shrink: 0;
+    }
+
+    .file-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .file-name {
+        color: var(--text-primary);
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-size {
+        color: var(--text-muted);
+        font-size: 0.8em;
+    }
+
+    .btn-remove-file {
+        background: transparent;
+        color: var(--accent-red);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        padding: 8px 12px;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .btn-remove-file:hover {
+        background: var(--accent-red);
+        color: #fff;
+        border-color: var(--accent-red);
+    }
+
+    /* ==================== INFO BOX ==================== */
+    .info-box-upload {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+        font-size: 0.8em;
+        color: var(--text-secondary);
+    }
+
+    .info-item i {
+        color: var(--accent-blue);
+        font-size: 1.1em;
+    }
+
+    .info-item strong {
+        color: var(--text-primary);
+    }
+
+    /* ==================== SUBMIT BUTTON ==================== */
+    .btn-upload-submit {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 1.1em;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-top: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-upload-submit:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-upload-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-upload-submit .spinner-upload {
+        display: none;
+    }
+
+    .btn-upload-submit.loading .btn-upload-text {
+        display: none;
+    }
+
+    .btn-upload-submit.loading .spinner-upload {
+        display: inline-block;
+    }
+
+    /* ==================== ALERTS ==================== */
+    .alert-premium {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        border-radius: var(--radius-lg);
+        font-weight: 500;
+        margin-bottom: 24px;
+        animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #10b981;
+    }
+
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+    }
+
+    /* ==================== RESPONSIVE ==================== */
+    @media (max-width: 768px) {
+        .upload-card {
+            padding: 24px;
+        }
+        
+        .upload-header h2 {
+            font-size: 1.4em;
+        }
+        
+        .upload-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 1.5em;
+        }
+        
+        .drop-zone {
+            padding: 24px;
+        }
+        
+        .info-box-upload {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navbar -->
+<nav class="navbar-upload">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="page-title-upload">
+            <span class="icon-circle">📤</span>
+            Upload de Funcionários
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="btn-back-upload">
+            <i class="fas fa-arrow-left"></i>
+            <span>Dashboard</span>
+        </a>
+    </div>
+</nav>
+
+<!-- Conteúdo Principal -->
+<div class="upload-wrapper">
+    <!-- Alertas -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert-premium alert-{{ category }}">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    <span>{{ message|safe }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="upload-card">
+        <div class="upload-header">
+            <div class="upload-icon">📤</div>
+            <h2>Carregar Planilha</h2>
+            <p>Faça upload da base de funcionários para o sistema.<br>Os dados ficarão salvos permanentemente.</p>
+        </div>
+        
+        <!-- Badge de cadastrados -->
+        {% if total_cadastrados > 0 %}
+        <div class="stats-badge-upload">
+            <span class="count-icon">👥</span>
+            <div>
+                <div class="count-number">{{ total_cadastrados }}</div>
+                <div class="count-label">funcionários cadastrados</div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <form method="POST" enctype="multipart/form-data" id="upload-form">
+            <!-- Drop Zone -->
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-zone-icon">📁</div>
+                <div class="drop-zone-text">
+                    <strong>Arraste e solte</strong> o arquivo aqui
+                </div>
+                <div class="drop-zone-hint">ou clique para selecionar</div>
+                <input type="file" 
+                       name="arquivo" 
+                       id="file-input"
+                       accept=".xlsx,.xls,.csv" 
+                       required>
+            </div>
+            
+            <!-- Arquivo selecionado -->
+            <div class="file-info" id="file-info">
+                <div class="file-icon">📄</div>
+                <div class="file-details">
+                    <div class="file-name" id="file-name"></div>
+                    <div class="file-size" id="file-size"></div>
+                </div>
+                <button type="button" class="btn-remove-file" id="btn-remove-file" title="Remover arquivo">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Info Box -->
+            <div class="info-box-upload">
+                <div class="info-item">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Formatos: <strong>.xlsx .xls .csv</strong></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-table"></i>
+                    <span>Colunas: <strong>matrícula | nome | função</strong></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Arquivo <strong>sem cabeçalho</strong></span>
+                </div>
+            </div>
+            
+            <!-- Botão Submit -->
+            <button type="submit" class="btn-upload-submit" id="btn-upload-submit" disabled>
+                <span class="btn-upload-text">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Fazer Upload
+                </span>
+                <span class="spinner-upload">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Processando...
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+// ==================== ELEMENTOS ====================
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const fileInfo = document.getElementById('file-info');
+const fileName = document.getElementById('file-name');
+const fileSize = document.getElementById('file-size');
+const btnRemoveFile = document.getElementById('btn-remove-file');
+const btnSubmit = document.getElementById('btn-upload-submit');
+const uploadForm = document.getElementById('upload-form');
+
+// ==================== DRAG & DROP ====================
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+    document.body.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+});
+
+dropZone.addEventListener('drop', function(e) {
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        fileInput.files = files;
+        mostrarArquivo(files[0]);
+    }
+});
+
+// ==================== FILE INPUT ====================
+fileInput.addEventListener('change', function() {
+    if (this.files.length > 0) {
+        mostrarArquivo(this.files[0]);
+    }
+});
+
+function mostrarArquivo(file) {
+    // Validar extensão
+    const extensoes = ['.xlsx', '.xls', '.csv'];
+    const nomeArquivo = file.name.toLowerCase();
+    const ext = '.' + nomeArquivo.split('.').pop();
+    
+    if (!extensoes.includes(ext)) {
+        alert('❌ Formato inválido! Use .xlsx, .xls ou .csv');
+        fileInput.value = '';
+        return;
+    }
+    
+    // Mostrar info
+    fileName.textContent = file.name;
+    fileSize.textContent = formatarTamanho(file.size);
+    fileInfo.classList.add('show');
+    dropZone.style.display = 'none';
+    btnSubmit.disabled = false;
+}
+
+function formatarTamanho(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// ==================== REMOVER ARQUIVO ====================
+btnRemoveFile.addEventListener('click', function() {
+    fileInput.value = '';
+    fileInfo.classList.remove('show');
+    dropZone.style.display = 'block';
+    btnSubmit.disabled = true;
+});
+
+// ==================== FORM SUBMIT ====================
+uploadForm.addEventListener('submit', function() {
+    btnSubmit.classList.add('loading');
+    btnSubmit.disabled = true;
+});
+
+// ==================== CLIQUE NA DROP ZONE ====================
+dropZone.addEventListener('click', function() {
+    fileInput.click();
+});
+
+// ==================== ATALHO TECLADO ====================
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        window.location.href = '{{ url_for("dashboard") }}';
+    }
+});
+
+// ==================== FEEDBACK VISUAL ====================
+fileInput.addEventListener('dragover', function() {
+    dropZone.classList.add('drag-over');
+});
+
+fileInput.addEventListener('dragleave', function() {
+    dropZone.classList.remove('drag-over');
+});
+</script>
+{% endblock %}

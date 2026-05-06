@@ -1,0 +1,8 @@
+# Criar arquivo .gitignore
+echo "venv/
+__pycache__/
+*.pyc
+instance/
+uploads/
+.env
+*.db" > .gitignore

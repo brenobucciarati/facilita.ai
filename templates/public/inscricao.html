@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0e14">
+    <title>{{ evento.nome }} - Inscrição</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0e14;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: #10b981;
+            top: -100px;
+            right: -100px;
+            animation: orbFloat 8s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: #3b82f6;
+            bottom: -80px;
+            left: -80px;
+            animation: orbFloat 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        .inscricao-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            animation: cardEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardEntry {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .inscricao-card {
+            background: #1a2332;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 32px 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .inscricao-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #10b981, #34d399, #10b981);
+        }
+
+        .inscricao-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .evento-emoji {
+            font-size: 2.5em;
+            margin-bottom: 8px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .evento-titulo {
+            font-size: 1.3em;
+            font-weight: 800;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+        }
+
+        .evento-data {
+            font-size: 0.85em;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .vagas-counter {
+            background: rgba(16, 185, 129, 0.06);
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .vagas-counter.critico {
+            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.06);
+        }
+
+        .vagas-numero {
+            font-size: 3em;
+            font-weight: 800;
+            color: #10b981;
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        .vagas-counter.critico .vagas-numero { color: #ef4444; }
+
+        .vagas-label {
+            color: #34d399;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .vagas-counter.critico .vagas-label { color: #f87171; }
+
+        .vagas-barra {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .vagas-barra-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .vagas-counter.critico .vagas-barra-fill {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+            font-size: 0.75em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .matricula-input-wrapper { position: relative; }
+
+        .matricula-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: #1e293b;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            font-size: 1.8em;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 10px;
+            border-radius: 16px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .matricula-input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        .matricula-input::placeholder { color: #3a4455; letter-spacing: 10px; }
+
+        .matricula-input.error {
+            border-color: #ef4444;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .input-status {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+
+        .status-checking { color: #f59e0b; animation: spin 1s linear infinite; }
+        .status-valid { color: #10b981; }
+        .status-invalid { color: #ef4444; }
+
+        @keyframes spin {
+            from { transform: translateY(-50%) rotate(0deg); }
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .info-box {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin: 16px 0;
+            display: none;
+            text-align: center;
+        }
+
+        .info-nome { font-size: 1.3em; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
+        .info-funcao { font-size: 0.9em; color: #10b981; font-weight: 600; }
+
+        .btn-inscrever {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-inscrever:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-inscrever:disabled {
+            background: #2a3444;
+            color: #4a5568;
+            cursor: not-allowed;
+        }
+
+        .btn-inscrever .spinner { display: none; }
+        .btn-inscrever.loading .btn-text { display: none; }
+        .btn-inscrever.loading .spinner { display: inline-block; }
+
+        .btn-cancelar {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            color: #ef4444;
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .btn-cancelar:hover {
+            background: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+        }
+
+        .mensagem {
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin: 12px 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mensagem-sucesso {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+
+        .mensagem-erro {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        /* Modal de sucesso */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-sucesso {
+            background: #1a2332;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 24px;
+            padding: 48px 32px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+            animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-icone {
+            width: 80px;
+            height: 80px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 3px solid #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 2.5em;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); }
+        }
+
+        .modal-titulo {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: #10b981;
+            margin-bottom: 8px;
+        }
+
+        .modal-texto {
+            color: #94a3b8;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .btn-fechar-modal {
+            padding: 12px 24px;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-fechar-modal:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .esgotado-state { text-align: center; display: none; }
+        .esgotado-emoji { font-size: 5em; margin-bottom: 16px; }
+        .esgotado-titulo { font-size: 1.4em; font-weight: 800; color: #ef4444; margin-bottom: 8px; }
+        .esgotado-texto { color: #64748b; font-size: 0.9em; line-height: 1.5; }
+
+        .inscricao-footer { text-align: center; margin-top: 16px; }
+        .footer-text { color: #64748b; font-size: 0.75em; opacity: 0.6; }
+
+        @media (max-width: 480px) {
+            .inscricao-card { padding: 24px 16px; }
+            .matricula-input { font-size: 1.4em; letter-spacing: 6px; padding: 14px; }
+            .vagas-numero { font-size: 2.2em; }
+            .btn-inscrever { font-size: 1em; padding: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    
+    <div class="inscricao-wrapper">
+        <div class="inscricao-card">
+            <div class="inscricao-header">
+                <div class="evento-emoji">⚽</div>
+                <h1 class="evento-titulo">{{ evento.nome }}</h1>
+                <div class="evento-data">
+                    <i class="far fa-calendar-alt"></i>
+                    {{ evento.data_evento.strftime('%d/%m/%Y às %H:%M') }}
+                </div>
+            </div>
+            
+            <div class="vagas-counter" id="vagas-counter">
+                <div class="vagas-numero" id="vagas-disponiveis">{{ vagas_disponiveis }}</div>
+                <div class="vagas-label">VAGAS DISPONÍVEIS</div>
+                <div class="vagas-barra">
+                    <div class="vagas-barra-fill" id="vagas-barra-fill"></div>
+                </div>
+            </div>
+            
+            <div id="form-area">
+                <label class="input-label">
+                    <i class="fas fa-id-card"></i>
+                    Digite sua Matrícula
+                </label>
+                <div class="matricula-input-wrapper">
+                    <input type="tel" class="matricula-input" id="matricula-input" maxlength="6" placeholder="000000" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autofocus>
+                    <span class="input-status" id="input-status"></span>
+                </div>
+                
+                <div class="info-box" id="info-box">
+                    <div class="info-nome" id="info-nome"></div>
+                    <div class="info-funcao" id="info-funcao"></div>
+                </div>
+                
+                <button class="btn-inscrever" id="btn-inscrever" disabled>
+                    <span class="btn-text"><i class="fas fa-check-circle"></i> CONFIRMAR INSCRIÇÃO</span>
+                    <span class="spinner"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+                
+                <div id="mensagem-area"></div>
+            </div>
+            
+            <div class="esgotado-state" id="esgotado-state">
+                <div class="esgotado-emoji">😔</div>
+                <h2 class="esgotado-titulo">VAGAS ESGOTADAS!</h2>
+                <p class="esgotado-texto">
+                    Todas as <strong>{{ evento.total_vagas }}</strong> vagas foram preenchidas.<br>
+                    Caso alguém cancele, as vagas serão liberadas.
+                </p>
+            </div>
+            
+            <div class="inscricao-footer">
+                <span class="footer-text"><i class="fas fa-shield-alt"></i> Desenvolvido por Breno Vinicius</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Sucesso (oculto por padrão) -->
+    <div class="modal-overlay" id="modal-sucesso" style="display: none;">
+        <div class="modal-sucesso">
+            <div class="modal-icone">🎉</div>
+            <h2 class="modal-titulo" id="modal-titulo">Inscrição Confirmada!</h2>
+            <p class="modal-texto" id="modal-texto"></p>
+            <button class="btn-fechar-modal" onclick="fecharModalSucesso()">
+                <i class="fas fa-check"></i> OK
+            </button>
+        </div>
+    </div>
+    
+    <script>
+    var CODIGO_EVENTO = '{{ evento.codigo_link }}';
+    var TOTAL_VAGAS = parseInt('{{ evento.total_vagas }}');
+    var dadosValidacao = null;
+    var timeoutValidacao = null;
+    
+    var matriculaInput = document.getElementById('matricula-input');
+    var btnInscrever = document.getElementById('btn-inscrever');
+    var infoBox = document.getElementById('info-box');
+    var mensagemArea = document.getElementById('mensagem-area');
+    var inputStatus = document.getElementById('input-status');
+    var vagasCounter = document.getElementById('vagas-counter');
+    var vagasDisponiveis = document.getElementById('vagas-disponiveis');
+    var vagasBarraFill = document.getElementById('vagas-barra-fill');
+    var formArea = document.getElementById('form-area');
+    var esgotadoState = document.getElementById('esgotado-state');
+    var modalSucesso = document.getElementById('modal-sucesso');
+    var modalTitulo = document.getElementById('modal-titulo');
+    var modalTexto = document.getElementById('modal-texto');
+    
+    // Definir largura inicial da barra
+    vagasBarraFill.style.width = '{{ porcentagem }}%';
+    
+    matriculaInput.addEventListener('input', function() {
+        clearTimeout(timeoutValidacao);
+        
+        var digitado = this.value.replace(/\D/g, '');
+        if (digitado.length > 6) digitado = digitado.slice(0, 6);
+        
+        this.value = digitado;
+        
+        if (digitado.length > 0 && digitado.length <= 6) {
+            inputStatus.className = 'input-status status-checking fas fa-spinner';
+            mensagemArea.innerHTML = '';
+            
+            timeoutValidacao = setTimeout(function() {
+                var matricula = digitado.padStart(6, '0');
+                validarMatricula(matricula);
+            }, 800);
+        } else {
+            inputStatus.className = 'input-status';
+            mensagemArea.innerHTML = '';
+            limparFormulario();
+        }
+    });
+    
+    matriculaInput.addEventListener('keypress', function(e) {
+        if (!/[0-9]/.test(e.key)) { e.preventDefault(); }
+    });
+    
+    async function validarMatricula(matricula) {
+        try {
+            var response = await fetch('/api/validar-matricula', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({codigo_evento: CODIGO_EVENTO, matricula: matricula})
+            });
+            
+            var data = await response.json();
+            
+            if (data.valido) {
+                dadosValidacao = data;
+                document.getElementById('info-nome').textContent = '👤 ' + data.nome;
+                document.getElementById('info-funcao').textContent = '💼 ' + data.funcao;
+                infoBox.style.display = 'block';
+                btnInscrever.disabled = false;
+                mensagemArea.innerHTML = '';
+                matriculaInput.classList.remove('error');
+                inputStatus.className = 'input-status status-valid fas fa-check-circle';
+                atualizarVagas(data.vagas_restantes);
+            } else {
+                limparFormulario();
+                matriculaInput.classList.add('error');
+                inputStatus.className = 'input-status status-invalid fas fa-times-circle';
+                
+                var html = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> ' + data.mensagem + '</div>';
+                
+                if (data.pode_cancelar) {
+                    html += '<button class="btn-cancelar" onclick="cancelarInscricao(' + data.inscricao_id + ')"><i class="fas fa-times-circle"></i> CANCELAR MINHA INSCRIÇÃO</button>';
+                }
+                
+                mensagemArea.innerHTML = html;
+                setTimeout(function() { matriculaInput.classList.remove('error'); }, 500);
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            inputStatus.className = 'input-status status-invalid fas fa-exclamation-circle';
+            mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Erro de conexão. Tente novamente.</div>';
+        }
+    }
+    
+    btnInscrever.addEventListener('click', async function() {
+        if (!dadosValidacao) return;
+        this.classList.add('loading');
+        var matricula = matriculaInput.value.replace(/\D/g, '').padStart(6, '0');
+        
+        try {
+            var response = await fetch('/api/inscrever', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({codigo_evento: CODIGO_EVENTO, matricula: matricula})
+            });
+            
+            var data = await response.json();
+            this.classList.remove('loading');
+            
+            if (data.sucesso) {
+                // ✅ Mostrar modal de sucesso
+                mostrarModalSucesso(data.mensagem, data.vagas_restantes);
+                
+                if (data.vagas_restantes <= 0) {
+                    formArea.style.display = 'none';
+                    esgotadoState.style.display = 'block';
+                    vagasCounter.style.display = 'none';
+                } else {
+                    atualizarVagas(data.vagas_restantes);
+                    limparFormulario();
+                    matriculaInput.value = '';
+                    matriculaInput.focus();
+                }
+            } else {
+                // ❌ Erro (vagas esgotadas, etc.)
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> ' + data.mensagem + '</div>';
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            this.classList.remove('loading');
+            mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Erro de conexão. Tente novamente.</div>';
+        }
+    });
+    
+    function mostrarModalSucesso(mensagem, vagasRestantes) {
+        modalTitulo.textContent = '✅ Inscrição Confirmada!';
+        modalTexto.textContent = mensagem + (vagasRestantes > 0 ? ' Ainda há ' + vagasRestantes + ' vaga(s) disponível(is).' : ' Todas as vagas foram preenchidas.');
+        modalSucesso.style.display = 'flex';
+        
+        // Auto-fechar após 5 segundos
+        setTimeout(function() {
+            fecharModalSucesso();
+        }, 6000);
+    }
+    
+    function fecharModalSucesso() {
+        modalSucesso.style.display = 'none';
+    }
+    
+    async function cancelarInscricao(inscricaoId) {
+        if (!confirm('Tem certeza que deseja cancelar sua inscrição?')) return;
+        
+        try {
+            var response = await fetch('/api/cancelar-inscricao', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({inscricao_id: inscricaoId})
+            });
+            
+            var data = await response.json();
+            if (data.sucesso) { location.reload(); }
+        } catch (error) {
+            console.error('Erro:', error);
+        }
+    }
+    
+    function atualizarVagas(restantes) {
+        vagasDisponiveis.textContent = restantes;
+        var porcentagem = (restantes / TOTAL_VAGAS * 100);
+        vagasBarraFill.style.width = porcentagem + '%';
+        
+        if (restantes <= TOTAL_VAGAS * 0.2) {
+            vagasCounter.classList.add('critico');
+        } else {
+            vagasCounter.classList.remove('critico');
+        }
+    }
+    
+    function limparFormulario() {
+        dadosValidacao = null;
+        infoBox.style.display = 'none';
+        btnInscrever.disabled = true;
+        inputStatus.className = 'input-status';
+    }
+    
+    setTimeout(function() { matriculaInput.focus(); }, 600);
+    
+    // Atualizar vagas a cada 30 segundos
+    setInterval(async function() {
+        try {
+            var response = await fetch('/api/validar-matricula', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({codigo_evento: CODIGO_EVENTO, matricula: '000000'})
+            });
+            var data = await response.json();
+            if (data.vagas_restantes !== undefined) { 
+                atualizarVagas(data.vagas_restantes);
+                if (data.vagas_restantes <= 0) {
+                    formArea.style.display = 'none';
+                    esgotadoState.style.display = 'block';
+                    vagasCounter.style.display = 'none';
+                }
+            }
+        } catch (e) {}
+    }, 30000);
+    </script>
+</body>
+</html>
