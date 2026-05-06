@@ -1,16 +1,15 @@
 from flask import Flask, render_template, request, jsonify, redirect, session, url_for, flash, send_file
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from models import db, Admin, Evento, MatriculaCadastrada, MatriculaBloqueada, FuncaoBloqueada, Inscricao, gerar_codigo_unico
+from models import db, Admin, Evento, MatriculaCadastrada, FuncaoBloqueada, Inscricao, MatriculaBloqueada, gerar_codigo_unico
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
-from datetime import timedelta
-import pandas as pd
+import openpyxl  # ✅ Adicione esta
 import os
 
 app = Flask(__name__)
