@@ -445,6 +445,9 @@ def pagina_inscricao(codigo):
     return render_template('public/inscricao.html',
                          evento=evento,
                          vagas_disponiveis=vagas_disponiveis)
+@app.route('/')
+def index():
+    return redirect(url_for('admin_login'))
 
 @app.route('/api/validar-matricula', methods=['POST'])
 def validar_matricula():
