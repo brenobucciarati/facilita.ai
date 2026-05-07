@@ -71,6 +71,9 @@ def dashboard():
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
 @login_required
 def cadastrar_funcionarios():
+    # ✅ Adicione esta linha
+    total_cadastrados = MatriculaCadastrada.query.filter_by(evento_id=0).count()
+    
     if request.method == 'POST':
         if 'arquivo' not in request.files:
             flash('❌ Nenhum arquivo enviado', 'danger')
@@ -87,11 +90,9 @@ def cadastrar_funcionarios():
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
                 
-                # ✅ Usando openpyxl em vez de Pandas
                 import openpyxl
                 
                 if filename.endswith('.csv'):
-                    # CSV manual
                     rows = []
                     with open(filepath, 'r', encoding='utf-8') as f:
                         for line in f:
@@ -99,7 +100,6 @@ def cadastrar_funcionarios():
                             if len(parts) >= 2:
                                 rows.append(parts)
                 else:
-                    # Excel com openpyxl
                     wb = openpyxl.load_workbook(filepath)
                     ws = wb.active
                     rows = list(ws.iter_rows(values_only=True))
@@ -153,7 +153,9 @@ def cadastrar_funcionarios():
                 flash(f'❌ Erro: {str(e)}', 'danger')
                 return redirect(request.url)
     
-    return render_template('admin/cadastrar_funcionarios.html') 
+    # ✅ Passe a variável
+    return render_template('admin/cadastrar_funcionarios.html', 
+                         total_cadastrados=total_cadastrados)
 
 @app.route('/admin/evento/<int:evento_id>/atualizar-vagas', methods=['POST'])
 @login_required
