@@ -160,14 +160,18 @@ def cadastrar_funcionarios():
 @app.route('/admin/reset-db')
 def reset_db():
     import os
+    
+    # Deletar banco antigo
     try:
         os.remove('pelada.db')
     except:
         pass
     
-    from werkzeug.security import generate_password_hash
+    # Recriar tabelas
     db.create_all()
     
+    # Criar admin
+    from werkzeug.security import generate_password_hash
     admin = Admin(
         username='admin',
         password=generate_password_hash('admin123')
