@@ -157,6 +157,26 @@ def cadastrar_funcionarios():
     return render_template('admin/cadastrar_funcionarios.html', 
                          total_cadastrados=total_cadastrados)
 
+@app.route('/admin/reset-db')
+def reset_db():
+    import os
+    try:
+        os.remove('pelada.db')
+    except:
+        pass
+    
+    from werkzeug.security import generate_password_hash
+    db.create_all()
+    
+    admin = Admin(
+        username='admin',
+        password=generate_password_hash('admin123')
+    )
+    db.session.add(admin)
+    db.session.commit()
+    
+    return '✅ Banco SQLite criado!<br>Login: admin / admin123<br><a href="/admin/login">Ir para Login</a>'
+
 @app.route('/admin/evento/<int:evento_id>/atualizar-vagas', methods=['POST'])
 @login_required
 def atualizar_vagas(evento_id):
