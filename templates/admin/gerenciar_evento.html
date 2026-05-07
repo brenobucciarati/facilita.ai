@@ -657,12 +657,18 @@ document.addEventListener('visibilitychange', function() {
 });
 
 // ==================== FUNÇÕES ====================
+var primeiraCarga = true;
+
 function carregarInscricoes() {
     fetch('/api/evento/' + eventoId + '/status')
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            atualizarTabelaInscricoes(data.lista);
             atualizarContadores(data);
+            // Só atualiza a tabela se NÃO for a primeira carga
+            if (!primeiraCarga) {
+                atualizarTabelaInscricoes(data.lista);
+            }
+            primeiraCarga = false;
         })
         .catch(function(e) { console.error('Erro:', e); });
 }
