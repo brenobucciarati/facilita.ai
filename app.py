@@ -542,6 +542,9 @@ def validar_matricula():
 def excluir_evento(evento_id):
     evento = Evento.query.get_or_404(evento_id)
     
+    # ✅ Adicione esta linha PRIMEIRO
+    MatriculaBloqueada.query.filter_by(evento_id=evento.id).delete()
+    
     # Remove inscrições do evento
     Inscricao.query.filter_by(evento_id=evento.id).delete()
     # Remove matrículas do evento
