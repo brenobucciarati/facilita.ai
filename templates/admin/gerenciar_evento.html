@@ -616,10 +616,16 @@
 </div>
 
 <script>
-let inscricaoParaRemover = null;
-let modalInstance = null;
+var eventoId = parseInt('{{ evento.id }}');
+var autoRefreshInterval;
+var inscricaoParaRemover = null;
+var modalInstance = null;
 
+// ==================== INICIALIZAÇÃO ====================
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Auto-refresh iniciado para evento ' + eventoId);
+    
+    // Modal
     modalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
     
     document.getElementById('confirmRemove').addEventListener('click', async function() {
@@ -628,160 +634,18 @@ document.addEventListener('DOMContentLoaded', function() {
             modalInstance.hide();
         }
     });
+    
+    // ✅ CARREGA DADOS NA HORA
+    carregarInscricoes();
+    
+    // ✅ INICIA REFRESH
+    autoRefreshInterval = setInterval(carregarInscricoes, 5000);
+    
+    // Vincula botões
+    setTimeout(vincularBotoesExcluir, 1000);
 });
 
-function cancelarInscricao(inscricaoId, nome) {
-    inscricaoParaRemover = inscricaoId;
-    document.getElementById('modalNome').textContent = nome;
-    modalInstance.show();
-}
-
-async function executarCancelamento(inscricaoId) {
-    try {
-        const response = await fetch('/api/cancelar-inscricao', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                inscricao_id: parseInt(inscricaoId),
-                admin: true
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.sucesso) {
-            // Animação de saída antes de recarregar
-            const row = document.querySelector(`button[onclick*="${inscricaoId}"]`).closest('tr');
-            if (row) {
-                row.style.transition = 'all 0.5s ease';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(50px)';
-                setTimeout(() => location.reload(), 500);
-            } else {
-                location.reload();
-            }
-        } else {
-            alert('Erro ao cancelar inscrição. Tente novamente.');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro de conexão. Verifique sua internet.');
-    }
-}
-
-// Tooltips
-const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
-});
-// ==================== COPIAR LINK ====================
-function copiarLink(url, botao) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(function() {
-            feedbackCopiado(botao);
-        }).catch(function() {
-            copiarLinkFallback(url, botao);
-        });
-    } else {
-        copiarLinkFallback(url, botao);
-    }
-}
-
-function copiarLinkFallback(url, botao) {
-    var textarea = document.createElement('textarea');
-    textarea.value = url;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    try { document.execCommand('copy'); feedbackCopiado(botao); } 
-    catch (err) { alert('Erro ao copiar link'); }
-    document.body.removeChild(textarea);
-}
-
-function feedbackCopiado(botao) {
-    var originalHTML = botao.innerHTML;
-    botao.classList.add('copiado');
-    botao.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-    setTimeout(function() {
-        botao.classList.remove('copiado');
-        botao.innerHTML = originalHTML;
-    }, 2000);
-}
-var eventoId = parseInt('{{ evento.id }}');
-var autoRefreshInterval;
-
-function carregarInscricoes() {
-    fetch('/api/evento/' + eventoId + '/status')
-        .then(function(response) { return response.json(); })
-        .then(function(data) {
-            atualizarTabelaInscricoes(data.lista);
-            atualizarContadores(data);
-        })
-        .catch(function(error) { console.error('Erro:', error); });
-}
-
-function atualizarTabelaInscricoes(lista) {
-    var tbody = document.querySelector('.premium-table tbody');
-    if (!tbody) return;
-    
-    if (lista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p class="empty-text">Nenhum inscrito ainda</p></div></td></tr>';
-        document.querySelector('.table-count').textContent = '0 inscrito(s)';
-        return;
-    }
-    
-    var html = '';
-    lista.forEach(function(insc, index) {
-        html += '<tr>';
-        html += '<td><span class="index-badge">' + (index + 1) + '</span></td>';
-        html += '<td><span class="matricula-code">' + insc.matricula + '</span></td>';
-        html += '<td><strong>' + insc.nome + '</strong></td>';
-        html += '<td><span class="funcao-badge"><i class="fas fa-briefcase me-1"></i>' + insc.funcao + '</span></td>';
-        html += '<td><span style="color:var(--text-muted);font-size:0.85em;"><i class="far fa-clock me-1"></i>' + (insc.hora_inscricao || 'Agora') + '</span></td>';
-        html += '<td><button class="btn-remove btn-excluir-trigger" data-inscricao-id="' + insc.id + '" data-inscricao-nome="' + insc.nome.replace(/"/g, '&quot;') + '"><i class="fas fa-trash-alt"></i> Remover</button></td>';
-        html += '</tr>';
-    });
-    
-    tbody.innerHTML = html;
-    
-    // Atualizar contador
-    document.querySelector('.table-count').textContent = lista.length + ' inscrito(s)';
-    
-    // Re-vincular eventos dos botões
-    vincularBotoesExcluir();
-}
-
-function atualizarContadores(data) {
-    var vagasOcupadas = data.inscritos || 0;
-    var vagasDisponiveis = (data.total_vagas || 0) - vagasOcupadas;
-    
-    // Atualizar cards
-    var cards = document.querySelectorAll('.stat-card');
-    if (cards.length >= 3) {
-        cards[1].querySelector('.stat-value').textContent = vagasOcupadas;
-        cards[2].querySelector('.stat-value').textContent = Math.max(0, vagasDisponiveis);
-    }
-}
-
-function vincularBotoesExcluir() {
-    var botoes = document.querySelectorAll('.btn-excluir-trigger');
-    botoes.forEach(function(botao) {
-        botao.removeEventListener('click', handleExcluirClick);
-        botao.addEventListener('click', handleExcluirClick);
-    });
-}
-
-function handleExcluirClick() {
-    var id = this.getAttribute('data-inscricao-id');
-    var nome = this.getAttribute('data-inscricao-nome');
-    cancelarInscricao(id, nome);
-}
-
-// Iniciar auto-refresh a cada 5 segundos
-autoRefreshInterval = setInterval(carregarInscricoes, 5000);
-
-// Pausar quando aba não está visível
+// ==================== PAUSA QUANDO ABA INATIVA ====================
 document.addEventListener('visibilitychange', function() {
     clearInterval(autoRefreshInterval);
     if (document.hidden) {
@@ -792,10 +656,98 @@ document.addEventListener('visibilitychange', function() {
     }
 });
 
-// Vincular botões na primeira carga
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(vincularBotoesExcluir, 500);
-});
+// ==================== FUNÇÕES ====================
+function carregarInscricoes() {
+    fetch('/api/evento/' + eventoId + '/status')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            atualizarTabelaInscricoes(data.lista);
+            atualizarContadores(data);
+        })
+        .catch(function(e) { console.error('Erro:', e); });
+}
+
+function atualizarTabelaInscricoes(lista) {
+    var tbody = document.querySelector('.premium-table tbody');
+    if (!tbody) return;
+    
+    if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p class="empty-text">Nenhum inscrito ainda</p></div></td></tr>';
+        var cb = document.querySelector('.table-count');
+        if (cb) cb.textContent = '0 inscrito(s)';
+        return;
+    }
+    
+    var html = '';
+    lista.forEach(function(insc, index) {
+        html += '<tr>';
+        html += '<td><span class="index-badge">' + (index + 1) + '</span></td>';
+        html += '<td><span class="matricula-code">' + insc.matricula + '</span></td>';
+        html += '<td><strong>' + escapar(insc.nome) + '</strong></td>';
+        html += '<td><span class="funcao-badge"><i class="fas fa-briefcase me-1"></i>' + escapar(insc.funcao) + '</span></td>';
+        html += '<td><span style="color:var(--text-muted);font-size:0.85em;"><i class="far fa-clock me-1"></i>' + (insc.hora_inscricao || '--') + '</span></td>';
+        html += '<td><button class="btn-remove btn-excluir-trigger" data-inscricao-id="' + insc.id + '" data-inscricao-nome="' + escapar(insc.nome) + '"><i class="fas fa-trash-alt"></i> Remover</button></td>';
+        html += '</tr>';
+    });
+    
+    tbody.innerHTML = html;
+    
+    var cb = document.querySelector('.table-count');
+    if (cb) cb.textContent = lista.length + ' inscrito(s)';
+    
+    vincularBotoesExcluir();
+}
+
+function atualizarContadores(data) {
+    var cards = document.querySelectorAll('.stat-card .stat-value');
+    if (cards.length >= 3) {
+        cards[1].textContent = data.inscritos || 0;
+        cards[2].textContent = Math.max(0, (data.total_vagas || 0) - (data.inscritos || 0));
+    }
+}
+
+function vincularBotoesExcluir() {
+    document.querySelectorAll('.btn-excluir-trigger').forEach(function(btn) {
+        btn.onclick = function() {
+            cancelarInscricao(this.getAttribute('data-inscricao-id'), this.getAttribute('data-inscricao-nome'));
+        };
+    });
+}
+
+function cancelarInscricao(inscricaoId, nome) {
+    inscricaoParaRemover = inscricaoId;
+    document.getElementById('modalNome').textContent = nome;
+    modalInstance.show();
+}
+
+async function executarCancelamento(inscricaoId) {
+    try {
+        var resp = await fetch('/api/cancelar-inscricao', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({inscricao_id: parseInt(inscricaoId), admin: true})
+        });
+        var data = await resp.json();
+        if (data.sucesso) { location.reload(); }
+        else { alert('Erro ao cancelar.'); }
+    } catch (e) { console.error(e); }
+}
+
+// ==================== COPIAR LINK ====================
+function copiarLink(url, botao) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() {
+            botao.classList.add('copiado');
+            botao.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            setTimeout(function() { botao.classList.remove('copiado'); botao.innerHTML = '<i class="fas fa-link"></i> Copiar Link'; }, 2000);
+        });
+    }
+}
+
+function escapar(texto) {
+    if (!texto) return '';
+    return texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 </script>
 
 <style>
