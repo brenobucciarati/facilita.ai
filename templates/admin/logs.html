@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Logs de Acesso - FACILITA.AI{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-primary: #0a0e14; --bg-card: #1a2332; --bg-input: #1e293b;
+        --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
+        --accent-green: #10b981; --accent-red: #ef4444; --accent-purple: #8b5cf6;
+        --accent-blue: #3b82f6; --accent-yellow: #f59e0b;
+        --border-color: rgba(255,255,255,0.06); --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px;
+    }
+    body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    .navbar-logs { background: rgba(20,27,34,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); padding: 12px 0; position: sticky; top: 0; z-index: 100; }
+    .container-logs { max-width: 1000px; margin: 20px auto; padding: 0 16px; }
+    .btn-nav { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-back { color: var(--text-secondary); border: 2px solid var(--border-color); }
+    .btn-back:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    .btn-usuarios { color: var(--accent-purple); border: 2px solid rgba(139,92,246,0.3); }
+    .btn-usuarios:hover { background: var(--accent-purple); color: #fff; }
+
+    .card-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 20px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .card-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 700; font-size: 1.1em; }
+    .card-title .icon-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(245,158,11,0.15); color: var(--accent-yellow); font-size: 0.9em; }
+    .log-count { background: rgba(245,158,11,0.1); color: var(--accent-yellow); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8em; }
+
+    /* Filtros */
+    .filtros-grid {
+        display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto;
+        gap: 8px; margin-bottom: 16px; align-items: end;
+    }
+    .filtro-group { display: flex; flex-direction: column; gap: 4px; }
+    .filtro-group label { color: var(--text-muted); font-size: 0.65em; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+    .filtro-input {
+        background: var(--bg-input); border: 2px solid var(--border-color); color: var(--text-primary);
+        padding: 8px 10px; border-radius: 8px; font-size: 0.8em; font-family: 'Inter', sans-serif;
+        transition: all 0.2s; width: 100%;
+    }
+    .filtro-input:focus { border-color: var(--accent-yellow); outline: none; box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
+    select.filtro-input { cursor: pointer; }
+    .btn-filtrar {
+        padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.8em; cursor: pointer;
+        border: none; background: var(--accent-yellow); color: #000; white-space: nowrap;
+        transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: fit-content;
+    }
+    .btn-filtrar:hover { box-shadow: 0 4px 15px rgba(245,158,11,0.3); }
+    .btn-limpar {
+        padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.8em; cursor: pointer;
+        border: 2px solid var(--border-color); background: transparent; color: var(--text-secondary);
+        white-space: nowrap; transition: all 0.2s;
+    }
+    .btn-limpar:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+
+    /* Tabela */
+    .tabela-logs { width: 100%; border-collapse: collapse; }
+    .tabela-logs th { color: var(--text-muted); font-size: 0.7em; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .tabela-logs td { padding: 9px 8px; color: var(--text-primary); font-size: 0.8em; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .tabela-logs tbody tr { transition: all 0.2s; }
+    .tabela-logs tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    .badge-acao {
+        padding: 4px 10px; border-radius: 12px; font-size: 0.65em; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+    }
+    .badge-login { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+    .badge-evento { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+    .badge-user { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+    .badge-delete { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+    .badge-outro { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+    /* Paginação */
+    .paginacao { display: flex; gap: 6px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
+    .page-link { padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,0.03); color: var(--text-secondary); text-decoration: none; font-size: 0.8em; font-weight: 600; transition: all 0.2s; border: 1px solid transparent; }
+    .page-link:hover { background: rgba(255,255,255,0.08); color: #fff; border-color: var(--border-color); }
+    .page-link.active { background: var(--accent-yellow); color: #000; border-color: var(--accent-yellow); }
+    .page-link.disabled { opacity: 0.3; pointer-events: none; }
+
+    .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    .empty-state i { font-size: 3em; display: block; margin-bottom: 12px; opacity: 0.3; }
+
+    @media (max-width: 768px) {
+        .filtros-grid { grid-template-columns: 1fr 1fr; }
+        .tabela-logs th:nth-child(4), .tabela-logs td:nth-child(4),
+        .tabela-logs th:nth-child(5), .tabela-logs td:nth-child(5) { display: none; }
+    }
+    @media (max-width: 400px) {
+        .filtros-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar-logs">
+    <div class="container-logs d-flex justify-content-between align-items-center">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--text-primary);font-weight:700;">
+            <span style="font-size:1.2em;">📊</span><span>Logs de Acesso</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <a href="{{ url_for('admin_usuarios') }}" class="btn-nav btn-usuarios"><i class="fas fa-users-cog"></i> Usuários</a>
+            <a href="{{ url_for('dashboard') }}" class="btn-nav btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-logs">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for cat, msg in messages %}
+        <div class="alert-modern alert-{{ cat }}">
+            <i class="fas fa-{{ 'check-circle' if cat=='success' else 'exclamation-circle' }}"></i>
+            {{ msg|safe }}
+        </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}    {% endwith %}
+
+    <!-- Painel de Filtros -->
+    <div class="card-panel">
+        <div class="card-header">
+            <div class="card-title"><span class="icon-circle"><i class="fas fa-filter"></i></span>Filtros</div>
+            <span class="log-count">{{ logs.total }} registro(s)</span>
+        </div>
+        <form method="GET" action="{{ url_for('admin_logs') }}">
+            <div class="filtros-grid">
+                <div class="filtro-group">
+                    <label>Data Início</label>
+                    <input type="date" name="data_inicio" class="filtro-input" value="{{ request.args.get('data_inicio', '') }}">
+                </div>
+                <div class="filtro-group">
+                    <label>Data Fim</label>
+                    <input type="date" name="data_fim" class="filtro-input" value="{{ request.args.get('data_fim', '') }}">
+                </div>
+                <div class="filtro-group">
+                    <label>Usuário</label>
+                    <select name="user_id" class="filtro-input">
+                        <option value="">Todos</option>
+                        {% for u in usuarios_filtro %}
+                        <option value="{{ u.id }}" {% if request.args.get('user_id')|int == u.id %}selected{% endif %}>{{ u.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label>Ação</label>
+                    <select name="acao" class="filtro-input">
+                        <option value="">Todas</option>
+                        <option value="login" {% if request.args.get('acao')=='login' %}selected{% endif %}>Login</option>
+                        <option value="criar_evento" {% if request.args.get('acao')=='criar_evento' %}selected{% endif %}>Criar Evento</option>
+                        <option value="excluir_evento" {% if request.args.get('acao')=='excluir_evento' %}selected{% endif %}>Excluir Evento</option>
+                        <option value="criar_usuario" {% if request.args.get('acao')=='criar_usuario' %}selected{% endif %}>Criar Usuário</option>
+                        <option value="toggle_usuario" {% if request.args.get('acao')=='toggle_usuario' %}selected{% endif %}>Ativar/Desativar</option>
+                        <option value="reset_senha" {% if request.args.get('acao')=='reset_senha' %}selected{% endif %}>Reset Senha</option>
+                        <option value="excluir_usuario" {% if request.args.get('acao')=='excluir_usuario' %}selected{% endif %}>Excluir Usuário</option>
+                        <option value="inscricao" {% if request.args.get('acao')=='inscricao' %}selected{% endif %}>Inscrição</option>
+                        <option value="acesso_link" {% if request.args.get('acao')=='acesso_link' %}selected{% endif %}>Acesso Link</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:4px;align-items:end;">
+                    <button type="submit" class="btn-filtrar"><i class="fas fa-search"></i> Filtrar</button>
+                    <a href="{{ url_for('admin_logs') }}" class="btn-limpar"><i class="fas fa-times"></i></a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabela de Logs -->
+    <div class="card-panel">
+        {% if logs.items %}
+        <div style="overflow-x:auto;">
+            <table class="tabela-logs">
+                <thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th><th>Descrição</th><th>IP</th></tr></thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td style="font-size:0.75em;white-space:nowrap;">{{ log.data.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ log.usuario.username if log.usuario else '-' }}</td>
+                        <td>
+                            <span class="badge-acao 
+                                {% if 'login' in log.acao %}badge-login
+                                {% elif 'evento' in log.acao %}badge-evento
+                                {% elif 'usuario' in log.acao or 'senha' in log.acao or 'toggle' in log.acao %}badge-user
+                                {% elif 'excluir' in log.acao %}badge-delete
+                                {% else %}badge-outro{% endif %}">
+                                <i class="fas fa-{{ 
+                                    'sign-in-alt' if 'login' in log.acao
+                                    else 'calendar-plus' if 'criar_evento' in log.acao
+                                    else 'trash-alt' if 'excluir' in log.acao
+                                    else 'user-plus' if 'criar_usuario' in log.acao
+                                    else 'key' if 'senha' in log.acao
+                                    else 'toggle-on' if 'toggle' in log.acao
+                                    else 'pencil-alt' if 'inscricao' in log.acao
+                                    else 'link' if 'acesso' in log.acao
+                                    else 'circle' }}"></i>
+                                {{ log.acao.replace('_', ' ').title() }}
+                            </span>
+                        </td>
+                        <td style="font-size:0.75em;">{{ log.descricao or '-' }}</td>
+                        <td style="font-size:0.7em;color:var(--text-muted);white-space:nowrap;">{{ log.ip }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginação -->
+        {% if logs.pages > 1 %}
+        <div class="paginacao">
+            {% if logs.has_prev %}
+            <a href="?page={{ logs.prev_num }}{% if request.args.get('data_inicio') %}&data_inicio={{ request.args.get('data_inicio') }}{% endif %}{% if request.args.get('data_fim') %}&data_fim={{ request.args.get('data_fim') }}{% endif %}{% if request.args.get('user_id') %}&user_id={{ request.args.get('user_id') }}{% endif %}{% if request.args.get('acao') %}&acao={{ request.args.get('acao') }}{% endif %}" class="page-link">← Anterior</a>
+            {% endif %}
+            {% for p in range(1, logs.pages+1) %}
+            <a href="?page={{ p }}{% if request.args.get('data_inicio') %}&data_inicio={{ request.args.get('data_inicio') }}{% endif %}{% if request.args.get('data_fim') %}&data_fim={{ request.args.get('data_fim') }}{% endif %}{% if request.args.get('user_id') %}&user_id={{ request.args.get('user_id') }}{% endif %}{% if request.args.get('acao') %}&acao={{ request.args.get('acao') }}{% endif %}" class="page-link {% if p==logs.page %}active{% endif %}">{{ p }}</a>
+            {% endfor %}
+            {% if logs.has_next %}
+            <a href="?page={{ logs.next_num }}{% if request.args.get('data_inicio') %}&data_inicio={{ request.args.get('data_inicio') }}{% endif %}{% if request.args.get('data_fim') %}&data_fim={{ request.args.get('data_fim') }}{% endif %}{% if request.args.get('user_id') %}&user_id={{ request.args.get('user_id') }}{% endif %}{% if request.args.get('acao') %}&acao={{ request.args.get('acao') }}{% endif %}" class="page-link">Próximo →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state"><i class="fas fa-search"></i><p>Nenhum log encontrado com esses filtros</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -10,45 +10,25 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
     <style>
-        :root {
-            --bg-primary: #0a0e14;
-            --bg-card: #1a2332;
-            --accent-red: #ef4444;
-            --accent-red-light: #f87171;
-            --accent-yellow: #f59e0b;
-            --text-primary: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border-color: rgba(255, 255, 255, 0.06);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: var(--bg-primary);
+            background: #0a0e14;
             font-family: 'Inter', 'Segoe UI', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
-        /* Background Particles */
         .bg-particles {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
         }
 
         .particle {
@@ -59,309 +39,167 @@
         }
 
         @keyframes floatUp {
-            0% {
-                transform: translateY(100vh) scale(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) scale(1);
-                opacity: 0;
-            }
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1); opacity: 0; }
         }
 
-        /* Main Card */
         .card-container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 440px;
-            animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; z-index: 1;
+            width: 100%; max-width: 440px;
+            animation: cardEntry 0.6s ease;
         }
 
         @keyframes cardEntry {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .card-esgotado {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            background: #1a2332;
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 24px;
-            padding: 48px 32px;
+            padding: 40px 28px;
             text-align: center;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
         }
 
         .card-esgotado::before {
             content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 3px;
             background: linear-gradient(90deg, #ef4444, #f87171, #ef4444);
             animation: shimmer 2s ease-in-out infinite;
         }
 
         @keyframes shimmer {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+            50% { opacity: 0.5; }
         }
 
-        /* Icon */
         .icon-wrapper {
-            width: 100px;
-            height: 100px;
-            background: rgba(239, 68, 68, 0.08);
-            border: 2px solid rgba(239, 68, 68, 0.2);
+            width: 80px; height: 80px;
+            background: rgba(239,68,68,0.08);
+            border: 2px solid rgba(239,68,68,0.2);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 24px;
-            position: relative;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
             animation: pulse 2s ease-in-out infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { 
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-            }
-            50% { 
-                box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
-            }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(239,68,68,0); }
         }
 
-        .icon-wrapper .emoji {
-            font-size: 3em;
-            animation: shake 0.5s ease-in-out;
-            animation-delay: 0.5s;
-        }
+        .icon-wrapper .emoji { font-size: 2.5em; }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        /* Content */
         .titulo-esgotado {
-            font-size: 1.8em;
-            font-weight: 800;
-            color: var(--accent-red);
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
+            font-size: 1.5em; font-weight: 800;
+            color: #ef4444; margin-bottom: 8px;
         }
 
         .subtitulo-esgotado {
-            color: var(--text-secondary);
-            font-size: 1em;
-            margin-bottom: 24px;
-            line-height: 1.5;
+            color: #94a3b8; font-size: 0.9em;
+            margin-bottom: 20px; line-height: 1.5;
         }
 
-        .evento-nome {
-            color: var(--text-primary);
-            font-weight: 700;
-        }
+        .evento-nome { color: #e2e8f0; font-weight: 700; }
 
-        /* Info Cards */
         .info-cards {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; margin-bottom: 20px;
         }
 
         .info-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 14px; text-align: center;
         }
 
-        .info-card .info-icon {
-            font-size: 1.3em;
-            margin-bottom: 6px;
-        }
+        .info-card .info-icon { font-size: 1.1em; margin-bottom: 4px; }
+        .info-card .info-value { font-size: 1.3em; font-weight: 700; color: #e2e8f0; }
+        .info-card .info-label { font-size: 0.7em; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
 
-        .info-card .info-value {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
+        .progress-container { margin-bottom: 20px; }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.75em; color: #64748b; font-weight: 600; }
+        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #ef4444, #f87171); border-radius: 10px; width: 100%; animation: fillBar 1.5s ease forwards; }
 
-        .info-card .info-label {
-            font-size: 0.75em;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 2px;
-        }
+        @keyframes fillBar { from { width: 0%; } to { width: 100%; } }
 
-        /* Progress Bar */
-        .progress-container {
-            margin-bottom: 24px;
-        }
-
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.8em;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ef4444, #f87171);
-            border-radius: 10px;
-            width: 100%;
-            animation: fillBar 1.5s ease forwards;
-        }
-
-        @keyframes fillBar {
-            from { width: 0%; }
-            to { width: 100%; }
-        }
-
-        /* Alert Message */
         .alert-message {
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            text-align: left;
-            margin-bottom: 20px;
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 12px; padding: 14px;
+            display: flex; align-items: flex-start; gap: 8px;
+            text-align: left; margin-bottom: 16px;
         }
 
-        .alert-message i {
-            color: var(--accent-red);
-            font-size: 1.2em;
-            margin-top: 2px;
-            flex-shrink: 0;
-        }
+        .alert-message i { color: #ef4444; font-size: 1em; margin-top: 2px; flex-shrink: 0; }
+        .alert-message .alert-text { color: #94a3b8; font-size: 0.8em; line-height: 1.4; }
+        .alert-message .alert-text strong { color: #f87171; }
 
-        .alert-message .alert-text {
-            color: var(--text-secondary);
-            font-size: 0.85em;
-            line-height: 1.5;
-        }
-
-        .alert-message .alert-text strong {
-            color: var(--accent-red-light);
-        }
-
-        /* Footer */
         .card-footer {
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
-            margin-top: 4px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 16px; margin-top: 4px;
         }
 
         .evento-data {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: var(--text-muted);
-            font-size: 0.85em;
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; color: #64748b; font-size: 0.8em;
         }
 
-        .evento-data i {
-            color: var(--accent-yellow);
-        }
+        .evento-data i { color: #f59e0b; }
 
-        /* Back Button */
         .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-top: 16px; padding: 10px 20px;
+            background: rgba(255,255,255,0.03);
+            color: #94a3b8; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; text-decoration: none;
+            font-weight: 600; font-size: 0.85em;
+            transition: all 0.2s; cursor: pointer;
         }
 
-        .btn-back:hover {
-            background: rgba(255, 255, 255, 0.06);
-            color: var(--text-primary);
-            border-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
+        .btn-back:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; transform: translateY(-1px); }
 
-        /* Responsive */
+        .refresh-text { text-align: center; color: #64748b; font-size: 0.7em; margin-top: 10px; opacity: 0.7; }
+
+        /* ==================== RESPONSIVE ==================== */
         @media (max-width: 480px) {
-            .card-esgotado {
-                padding: 32px 20px;
-            }
-            
-            .icon-wrapper {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .icon-wrapper .emoji {
-                font-size: 2.5em;
-            }
-            
-            .titulo-esgotado {
-                font-size: 1.4em;
-            }
-            
-            .info-cards {
-                grid-template-columns: 1fr;
-            }
+            .card-esgotado { padding: 28px 18px; border-radius: 20px; }
+            .icon-wrapper { width: 64px; height: 64px; }
+            .icon-wrapper .emoji { font-size: 2em; }
+            .titulo-esgotado { font-size: 1.3em; }
+            .subtitulo-esgotado { font-size: 0.8em; }
+            .info-card { padding: 10px; }
+            .info-card .info-value { font-size: 1.1em; }
+            .info-card .info-label { font-size: 0.6em; letter-spacing: 0.5px; }
+        }
+
+        @media (max-width: 360px) {
+            .card-esgotado { padding: 20px 14px; border-radius: 16px; }
+            .icon-wrapper { width: 56px; height: 56px; }
+            .icon-wrapper .emoji { font-size: 1.8em; }
+            .titulo-esgotado { font-size: 1.15em; }
+            .info-cards { grid-template-columns: 1fr; gap: 6px; }
+            .btn-back { padding: 8px 16px; font-size: 0.8em; }
         }
     </style>
 </head>
 <body>
-    <!-- Background Particles -->
     <div class="bg-particles" id="particles"></div>
     
-    <!-- Main Card -->
     <div class="card-container">
         <div class="card-esgotado">
-            <!-- Icon -->
             <div class="icon-wrapper">
                 <span class="emoji">😔</span>
             </div>
             
-            <!-- Title -->
             <h1 class="titulo-esgotado">VAGAS ESGOTADAS!</h1>
             <p class="subtitulo-esgotado">
                 Infelizmente todas as vagas do evento<br>
@@ -369,7 +207,6 @@
                 já foram preenchidas.
             </p>
             
-            <!-- Info Cards -->
             <div class="info-cards">
                 <div class="info-card">
                     <div class="info-icon">👥</div>
@@ -378,31 +215,28 @@
                 </div>
                 <div class="info-card">
                     <div class="info-icon">✅</div>
-                    <div class="info-value" style="color: var(--accent-red);">{{ evento.total_vagas }}</div>
+                    <div class="info-value" style="color:#ef4444;">{{ evento.total_vagas }}</div>
                     <div class="info-label">Preenchidas</div>
                 </div>
             </div>
             
-            <!-- Progress Bar -->
             <div class="progress-container">
                 <div class="progress-label">
                     <span>Ocupação</span>
-                    <span style="color: var(--accent-red); font-weight: 700;">100%</span>
+                    <span style="color:#ef4444;font-weight:700;">100%</span>
                 </div>
                 <div class="progress-bar-bg">
                     <div class="progress-bar-fill"></div>
                 </div>
             </div>
             
-            <!-- Alert -->
             <div class="alert-message">
                 <i class="fas fa-info-circle"></i>
                 <div class="alert-text">
-                    <strong>Fique atento!</strong> Caso alguém cancele a inscrição, as vagas serão liberadas automaticamente. Recarregue a página para verificar.
+                    <strong>Fique atento!</strong> Caso alguém cancele a inscrição, as vagas serão liberadas. Recarregue a página para verificar.
                 </div>
             </div>
             
-            <!-- Footer -->
             <div class="card-footer">
                 <div class="evento-data">
                     <i class="far fa-calendar-alt"></i>
@@ -411,81 +245,45 @@
             </div>
         </div>
         
-        <!-- Back Button -->
-        <div style="text-align: center;">
+        <div style="text-align:center;">
             <button onclick="window.location.reload()" class="btn-back">
-                <i class="fas fa-sync-alt"></i>
-                Verificar Vagas Novamente
+                <i class="fas fa-sync-alt"></i> Verificar Vagas
             </button>
+            <div class="refresh-text" id="refresh-text"></div>
         </div>
     </div>
     
     <script>
-        // ==================== PARTICLES ====================
-        function createParticles() {
-            const container = document.getElementById('particles');
-            const colors = [
-                'rgba(239, 68, 68, 0.15)',
-                'rgba(248, 113, 113, 0.1)',
-                'rgba(252, 165, 165, 0.08)'
-            ];
-            
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                const size = Math.random() * 4 + 2;
-                const left = Math.random() * 100;
-                const delay = Math.random() * 8;
-                const duration = Math.random() * 6 + 6;
-                
-                particle.style.cssText = `
-                    width: ${size}px;
-                    height: ${size}px;
-                    left: ${left}%;
-                    background: ${colors[Math.floor(Math.random() * colors.length)]};
-                    animation-delay: ${delay}s;
-                    animation-duration: ${duration}s;
-                `;
-                
-                container.appendChild(particle);
-            }
+        var container = document.getElementById('particles');
+        var colors = ['rgba(239,68,68,0.15)', 'rgba(248,113,113,0.1)', 'rgba(252,165,165,0.08)'];
+        
+        for (var i = 0; i < 25; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.cssText = 
+                'width:' + (Math.random()*4+2) + 'px;' +
+                'height:' + (Math.random()*4+2) + 'px;' +
+                'left:' + (Math.random()*100) + '%;' +
+                'background:' + colors[Math.floor(Math.random()*colors.length)] + ';' +
+                'animation-delay:' + (Math.random()*8) + 's;' +
+                'animation-duration:' + (Math.random()*6+6) + 's;';
+            container.appendChild(p);
         }
-        
-        // ==================== AUTO REFRESH ====================
-        let segundos = 0;
-        const refreshMessage = document.createElement('div');
-        refreshMessage.style.cssText = `
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.75em;
-            margin-top: 12px;
-            opacity: 0.7;
-        `;
-        document.querySelector('.card-container').appendChild(refreshMessage);
-        
-        setInterval(() => {
+
+        var segundos = 0;
+        var msg = document.getElementById('refresh-text');
+        setInterval(function() {
             segundos++;
             if (segundos <= 30) {
-                refreshMessage.textContent = `Verificação automática em ${30 - segundos}s...`;
+                msg.textContent = 'Verificação automática em ' + (30-segundos) + 's...';
             } else {
                 window.location.reload();
             }
         }, 1000);
-        
-        // ==================== INIT ====================
-        createParticles();
-        
-        // ==================== KEYBOARD ====================
+
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'r' || e.key === 'R') {
-                window.location.reload();
-            }
+            if (e.key === 'r' || e.key === 'R') window.location.reload();
         });
-        
-        console.log('%c😔 Vagas Esgotadas %c- Recarregue para tentar novamente',
-            'color: #ef4444; font-weight: bold;',
-            'color: #94a3b8;');
     </script>
 </body>
 </html>

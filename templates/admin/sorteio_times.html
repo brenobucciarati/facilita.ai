@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+{% block title %}Sorteio de Times - {{ evento.nome }}{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; }
+    body { background: #0a0e14 !important; font-family: 'Inter', sans-serif; margin: 0; }
+
+    .navbar-sorteio {
+        background: rgba(20,27,34,0.9); backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255,255,255,0.06); padding: 10px 0;
+        position: sticky; top: 0; z-index: 100;
+    }
+    .btn-back { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: #64748b; border: 2px solid rgba(255,255,255,0.06); display: inline-flex; align-items: center; gap: 6px; }
+    .btn-back:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
+
+    .config-panel {
+        background: #1a2332; border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 16px; padding: 14px; margin-bottom: 14px;
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end;
+    }
+    .config-group { display: flex; flex-direction: column; gap: 4px; }
+    .config-group label { color: #64748b; font-size: 0.7em; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+    .config-group select {
+        background: #1e293b; border: 2px solid rgba(255,255,255,0.08); color: #e2e8f0;
+        padding: 8px 12px; border-radius: 8px; font-weight: 600; font-family: 'Inter', sans-serif;
+    }
+    .btn-distribuir {
+        padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.85em; border: none; cursor: pointer;
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: #fff; box-shadow: 0 4px 15px rgba(139,92,246,0.3);
+        display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    .btn-distribuir:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139,92,246,0.4); }
+    .info-badge {
+        display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+        background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2);
+        border-radius: 20px; color: #a78bfa; font-weight: 600; font-size: 0.8em;
+    }
+
+    /* ==================== TIMES GRID ==================== */
+    .times-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+    }
+    .time-card {
+        background: #1a2332; border-radius: 16px; padding: 14px 10px;
+        position: relative; overflow: hidden; transition: all 0.3s ease;
+        border-top: 4px solid #10b981;
+    }
+    .time-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    .shirt-area { text-align: center; margin-bottom: 8px; position: relative; height: 50px; }
+    .shirt-icon {
+        font-size: 2.8em; position: absolute; top: 0; left: 50%;
+        transform: translateX(-50%); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        transition: all 0.3s ease;
+    }
+    .time-header { text-align: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .time-nome { font-size: 1em; font-weight: 800; }
+    .time-vagas { font-size: 0.7em; color: #64748b; font-weight: 600; margin-top: 2px; }
+    .time-bar { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+    .time-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+    .jogador-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 6px 8px; background: rgba(255,255,255,0.02); border-radius: 8px;
+        margin-bottom: 3px; font-size: 0.78em; transition: all 0.2s; position: relative;
+    }
+    .jogador-item:hover { background: rgba(255,255,255,0.05); }
+    .jogador-num {
+        width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center;
+        justify-content: center; font-size: 0.6em; font-weight: 700; margin-right: 5px; flex-shrink: 0;
+    }
+    .jogador-actions {
+        display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+        background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+        padding: 3px; z-index: 10; gap: 3px;
+    }
+    .jogador-item:hover .jogador-actions { display: flex; }
+    .btn-action {
+        background: transparent; border: none; color: #94a3b8; cursor: pointer;
+        padding: 3px 6px; border-radius: 4px; font-size: 0.75em; transition: all 0.2s;
+    }
+    .btn-action:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .btn-action.remover:hover { color: #ef4444; }
+    .btn-action.mover:hover { color: #f59e0b; }
+    .btn-reorganizar {
+        background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.2);
+        padding: 5px 8px; border-radius: 6px; font-size: 0.68em; cursor: pointer; width: 100%;
+        margin-top: 4px; font-weight: 600; transition: all 0.2s;
+    }
+    .btn-reorganizar:hover { background: #3b82f6; color: #fff; }
+    .btn-completar {
+        background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2);
+        padding: 5px 8px; border-radius: 6px; font-size: 0.68em; cursor: pointer; width: 100%;
+        margin-top: 4px; font-weight: 600; transition: all 0.2s;
+    }
+    .btn-completar:hover { background: #ef4444; color: #fff; }
+    .vaga-vazia {
+        padding: 6px; background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.04);
+        border-radius: 8px; text-align: center; color: #3a4455; font-size: 0.7em;
+        cursor: pointer; transition: all 0.2s;
+    }
+    .vaga-vazia:hover { background: rgba(139,92,246,0.05); border-color: #8b5cf6; color: #8b5cf6; }
+
+    .espera-section {
+        background: #1a2332; border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 16px; padding: 12px; margin-top: 12px;
+    }
+    .espera-titulo { color: #f59e0b; font-weight: 700; font-size: 0.8em; margin-bottom: 6px; }
+    .espera-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; font-size: 0.7em; color: #64748b; }
+
+    /* ==================== MODAIS ==================== */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+        animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-card {
+        background: #1a2332; border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px; padding: 24px; max-width: 500px; width: 90%;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+        animation: scaleIn 0.3s cubic-bezier(0.16,1,0.3,1);
+        max-height: 85vh; overflow-y: auto;
+    }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .modal-title { color: #e2e8f0; font-weight: 700; font-size: 1.1em; margin-bottom: 4px; text-align: center; }
+    .modal-subtitle { color: #64748b; font-size: 0.8em; text-align: center; margin-bottom: 16px; }
+    .modal-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+        gap: 8px; margin-bottom: 16px;
+    }
+    .modal-option {
+        padding: 10px 6px; border-radius: 12px; text-align: center; cursor: pointer;
+        border: 2px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);
+        color: #94a3b8; font-weight: 700; font-size: 0.85em; transition: all 0.2s;
+    }
+    .modal-option:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.1); color: #fff; }
+    .modal-option.selecionado { border-color: #10b981; background: rgba(16,185,129,0.15); color: #10b981; }
+    .modal-input {
+        width: 100%; padding: 10px; background: #1e293b; border: 2px solid rgba(255,255,255,0.08);
+        border-radius: 8px; color: #e2e8f0; font-size: 0.9em; margin-bottom: 12px; font-family: 'Inter', sans-serif;
+    }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .btn-modal-cancel {
+        padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 0.85em;
+        background: transparent; color: #64748b; border: 2px solid rgba(255,255,255,0.06); cursor: pointer;
+    }
+    .btn-modal-cancel:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
+    .btn-modal-confirm {
+        padding: 10px 16px; border-radius: 10px; font-weight: 700; font-size: 0.85em;
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: #fff; border: none; cursor: pointer;
+    }
+    .btn-modal-confirm:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139,92,246,0.4); }
+    .btn-modal-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-modal-danger {
+        background: #ef4444 !important; background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    }
+.modal-card {
+    pointer-events: auto;
+}
+.modal-overlay {
+    pointer-events: auto;
+}
+#modalConteudo input {
+    position: relative;
+    z-index: 10000;
+}
+    /* ==================== RESPONSIVO ==================== */
+    @media (max-width: 768px) {
+        .times-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .time-card { padding: 10px 8px; }
+        .shirt-icon { font-size: 2.2em; }
+        .shirt-area { height: 40px; }
+        .jogador-item { font-size: 0.7em; padding: 4px 6px; }
+        .config-panel { flex-direction: column; align-items: stretch; }
+    }
+    @media (max-width: 400px) {
+        .times-grid { gap: 6px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar-sorteio">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div style="display:flex;align-items:center;gap:8px;color:#e2e8f0;font-weight:700;">
+            <span style="font-size:1.2em;">⚽</span>
+            <span>Sorteio de Times - {{ evento.nome }}</span>
+        </div>
+        <a href="{{ url_for('gerenciar_evento', evento_id=evento.id) }}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</nav>
+
+<div class="container mt-3">
+    <form method="GET" action="{{ url_for('sorteio_times', evento_id=evento.id) }}" class="config-panel">
+        <div class="config-group">
+            <label>Nº Times</label>
+            <select name="num_times" onchange="this.form.submit()">
+                {% for n in [2,3,4,5,6,7,8,10] %}
+                <option value="{{ n }}" {% if n == num_times %}selected{% endif %}>{{ n }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="config-group">
+            <label>Vagas/Time</label>
+            <select name="vagas_por_time" onchange="this.form.submit()">
+                {% for v in [3,4,5,6,7,8,10] %}
+                <option value="{{ v }}" {% if v == vagas_por_time %}selected{% endif %}>{{ v }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <span style="color:#64748b;font-size:0.8em;">Total: <strong style="color:#e2e8f0;">{{ total_vagas }}</strong></span>
+        <span style="color:#64748b;font-size:0.8em;">Sorteio A/B: <strong style="color:#fbbf24;">{{ sorteio_qtd }}</strong></span>
+        
+    </form>
+
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;color:#64748b;font-size:0.8em;">
+        <span>Presentes: <strong style="color:#e2e8f0;">{{ total_presentes }}</strong>/{{ total_vagas }}</span>
+    </div>
+
+    <div class="times-grid">
+        {% for time in times %}
+        <div class="time-card" data-cor="{{ time.cor }}">
+            <div class="shirt-area"><span class="shirt-icon" data-cor="{{ time.cor }}">👕</span></div>
+            <div class="time-header">
+                <div class="time-nome" data-cor="{{ time.cor }}">TIME {{ time.nome }}</div>
+                <span class="time-vagas">{{ times_data[time]|length }}/{{ vagas_por_time }}</span>
+                <div class="time-bar"><div class="time-bar-fill" data-pct="{{ (times_data[time]|length / vagas_por_time * 100)|int if vagas_por_time > 0 else 0 }}" data-cor="{{ time.cor }}"></div></div>
+            </div>
+            {% if times_data[time] %}
+                {% for tj in times_data[time] %}
+                <div class="jogador-item">
+                    <div style="display:flex;align-items:center;gap:4px;">
+    <span class="jogador-num" data-cor="{{ time.cor }}">{{ loop.index }}</span>
+    <span>
+        {{ tj.inscricao.nome.split()[0] }}{% if tj.inscricao.nome.split()|length > 1 %} {{ tj.inscricao.nome.split()[1][0] }}.{% endif %}
+    </span>
+</div>
+<div class="jogador-actions">
+    <button class="btn-action remover" onclick="confirmarRemover('{{ tj.id }}', '{{ time.nome }}', '{{ tj.inscricao.nome.split()[0] }}{% if tj.inscricao.nome.split()|length > 1 %} {{ tj.inscricao.nome.split()[1][0] }}.{% endif %}')"><i class="fas fa-trash-alt"></i></button>
+    <button class="btn-action mover" onclick="abrirModalMover('{{ tj.id }}', '{{ time.nome }}')"><i class="fas fa-exchange-alt"></i></button>
+</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% for i in range(times_data[time]|length, vagas_por_time) %}
+            <div class="vaga-vazia" onclick="abrirModalVaga('{{ time.nome }}')"><i class="fas fa-user-plus"></i> Vaga {{ i+1 }}</div>
+            {% endfor %}
+            <button class="btn-reorganizar" onclick="abrirModalReorganizar('{{ time.nome }}')">🎲 Reorganizar</button>
+            {% if times_data[time]|length < vagas_por_time %}
+            <button class="btn-completar" onclick="abrirModalCompletar('{{ time.nome }}')">👤 Completar</button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if espera %}
+    <div class="espera-section">
+        <div class="espera-titulo">📋 Lista de Espera ({{ espera|length }})</div>
+        {% for jogador in espera %}
+        <div class="espera-item"><span>{{ jogador.nome }}</span><button class="btn-back" style="padding:2px 8px;font-size:0.65em;" onclick="abrirModalAdicionarEspera('{{ jogador.id }}')"><i class="fas fa-plus"></i></button></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- MODAL GENÉRICO -->
+<div class="modal-overlay" id="modalGeral" style="display:none;">
+    <div class="modal-card">
+        <div class="modal-title" id="modalTitulo"></div>
+        <div class="modal-subtitle" id="modalSubtitulo"></div>
+        <div id="modalConteudo"></div>
+        <div class="modal-actions" id="modalAcoes"></div>
+    </div>
+</div>
+
+<div id="times-data" style="display:none;">{% for time in times %}<span data-nome="{{ time.nome }}"></span>{% endfor %}</div>
+
+<script>
+var eventoId = parseInt('{{ evento.id }}');
+var timesNomes = [];
+document.querySelectorAll('#times-data span').forEach(function(el) { timesNomes.push(el.getAttribute('data-nome')); });
+
+// ==================== MODAL GENÉRICO ====================
+function abrirModal(titulo, subtitulo, conteudoHTML, botoes) {
+    document.getElementById('modalTitulo').textContent = titulo;
+    document.getElementById('modalSubtitulo').textContent = subtitulo || '';
+    document.getElementById('modalConteudo').innerHTML = conteudoHTML;
+    var acoes = document.getElementById('modalAcoes');
+    acoes.innerHTML = '';
+    botoes.forEach(function(btn) {
+        var b = document.createElement('button');
+        b.className = btn.classe || 'btn-modal-confirm';
+        b.textContent = btn.texto;
+        b.onclick = btn.acao;
+        if (btn.desabilitado) b.disabled = true;
+        b.id = btn.id || '';
+        acoes.appendChild(b);
+    });
+    document.getElementById('modalGeral').style.display = 'flex';
+    
+    // ✅ FOCAR NO PRIMEIRO INPUT DO MODAL
+  setTimeout(function() {
+    var input = document.querySelector('#modalConteudo input');
+    if (input) {
+        input.focus();
+        input.click(); // Garante que o campo está ativo
+    }
+}, 200);
+}
+function fecharModal() { document.getElementById('modalGeral').style.display = 'none'; }
+document.getElementById('modalGeral').addEventListener('click', function(e) { if (e.target === this) fecharModal(); });
+
+// ==================== GRID DE TIMES (para modais) ====================
+function montarGridTimes(selecionarCallback) {
+    var html = '<div class="modal-grid">';
+    timesNomes.forEach(function(nome) {
+        html += '<div class="modal-option" data-time="' + nome + '" onclick="selecionarTime(this, \'' + nome + '\')">TIME ' + nome + '</div>';
+    });
+    html += '</div>';
+    return html;
+}
+
+// ==================== CONFIRMAÇÕES ====================
+function confirmarRemover(id, timeNome, nomeJogador) {
+    abrirModal('Remover Jogador', 'Tem certeza que deseja remover <strong>' + nomeJogador + '</strong> do Time ' + timeNome + '?', '',
+        [
+            {texto: 'Cancelar', classe: 'btn-modal-cancel', acao: fecharModal},
+            {texto: 'Remover', classe: 'btn-modal-confirm btn-modal-danger', acao: function() { removerJogador(id); fecharModal(); }}
+        ]
+    );
+}
+
+// ==================== MODAIS ESPECÍFICOS ====================
+function abrirModalMover(id, timeAtual) {
+    var html = montarGridTimes();
+    abrirModal('Mover Jogador', 'Selecione o time de destino:', html,
+        [
+            {texto: 'Cancelar', classe: 'btn-modal-cancel', acao: fecharModal},
+            {texto: 'Mover', classe: 'btn-modal-confirm', id: 'btnConfirmarMover', desabilitado: true, acao: function() {
+                var timeSelecionado = document.querySelector('#modalConteudo .modal-option.selecionado');
+                if (timeSelecionado) moverJogador(id, timeSelecionado.getAttribute('data-time'));
+                fecharModal();
+            }}
+        ]
+    );
+}
+
+function abrirModalReorganizar(timeNome) {
+    var html = montarGridTimes();
+    abrirModal('Reorganizar Times', 'Embaralhar TIME ' + timeNome + ' com:', html,
+        [
+            {texto: 'Cancelar', classe: 'btn-modal-cancel', acao: fecharModal},
+            {texto: 'Reorganizar', classe: 'btn-modal-confirm', id: 'btnConfirmarReorg', desabilitado: true, acao: function() {
+                var timeSelecionado = document.querySelector('#modalConteudo .modal-option.selecionado');
+                if (timeSelecionado) reorganizarTimes(timeNome, timeSelecionado.getAttribute('data-time'));
+                fecharModal();
+            }}
+        ]
+    );
+}
+
+function abrirModalCompletar(timeNome) {
+    var html = montarGridTimes();
+    abrirModal('Completar Time', 'Sortear jogadores para TIME ' + timeNome + ' de:', html,
+        [
+            {texto: 'Cancelar', classe: 'btn-modal-cancel', acao: fecharModal},
+            {texto: 'Completar', classe: 'btn-modal-confirm', id: 'btnConfirmarCompletar', desabilitado: true, acao: function() {
+                var timeSelecionado = document.querySelector('#modalConteudo .modal-option.selecionado');
+                if (timeSelecionado) completarTime(timeNome, timeSelecionado.getAttribute('data-time'));
+                fecharModal();
+            }}
+        ]
+    );
+}
+
+function abrirModalAdicionarEspera(inscricaoId) {
+    var html = montarGridTimes();
+    abrirModal('Adicionar da Espera', 'Selecione o time:', html,
+        [
+            {texto: 'Cancelar', classe: 'btn-modal-cancel', acao: fecharModal},
+            {texto: 'Adicionar', classe: 'btn-modal-confirm', id: 'btnConfirmarAdd', desabilitado: true, acao: function() {
+                var timeSelecionado = document.querySelector('#modalConteudo .modal-option.selecionado');
+                if (timeSelecionado) adicionarDaEspera(inscricaoId, timeSelecionado.getAttribute('data-time'));
+                fecharModal();
+            }}
+        ]
+    );
+}
+
+function abrirModalVaga(timeNome) {
+    var html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+    html += '<button class="btn-modal-confirm" style="width:100%;" onclick="fecharModal(); abrirModalAvulso(\'' + timeNome + '\');">👤 Inserir Jogador Avulso</button>';
+    html += '<button class="btn-modal-confirm" style="width:100%;background:linear-gradient(135deg,#3b82f6,#2563eb);" onclick="fecharModal(); abrirModalCompletar(\'' + timeNome + '\');">🎲 Sortear de Outro Time</button>';
+    html += '</div>';
+    abrirModal('Preencher Vaga - TIME ' + timeNome, 'Escolha como preencher:', html, [{texto: 'Cancelar', classe: 'btn-modal-cancel', acao: fecharModal}]);
+}
+
+function abrirModalAvulso(timeNome) {
+    var html = '<input type="text" class="modal-input" id="inputAvulso" placeholder="Nome do jogador" autofocus>';
+    html += '<input type="text" class="modal-input" id="inputSobrenomeAvulso" placeholder="Inicial do sobrenome (opcional)">';
+    abrirModal('Jogador Avulso - TIME ' + timeNome, 'Digite o nome do jogador:', html,
+        [
+            {texto: 'Cancelar', classe: 'btn-modal-cancel', acao: fecharModal},
+            {texto: 'Adicionar', classe: 'btn-modal-confirm', acao: function() {
+                var nomeEl = document.getElementById('inputAvulso');
+                var sobrenomeEl = document.getElementById('inputSobrenomeAvulso');
+                var nome = nomeEl ? nomeEl.value.trim() : '';
+                var sobrenome = sobrenomeEl ? sobrenomeEl.value.trim() : '';
+                if (nome) {
+                    adicionarAvulso(timeNome, nome, sobrenome);
+                    fecharModal();
+                } else {
+                    alert('Digite um nome!');
+                    if (nomeEl) nomeEl.focus();
+                }
+            }}
+        ]
+    );
+}
+
+// ==================== SELEÇÃO NO GRID ====================
+function selecionarTime(el, nome) {
+    document.querySelectorAll('#modalConteudo .modal-option').forEach(function(e) { e.classList.remove('selecionado'); });
+    el.classList.add('selecionado');
+    var btn = document.querySelector('#modalAcoes .btn-modal-confirm');
+    if (btn) btn.disabled = false;
+}
+
+// ==================== CORE ====================
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.time-nome[data-cor], .shirt-icon[data-cor], .jogador-num[data-cor]').forEach(function(el) {
+        var cor = el.getAttribute('data-cor');
+        if(el.classList.contains('jogador-num')) el.style.background = cor + '20';
+        el.style.color = cor;
+    });
+    document.querySelectorAll('.time-bar-fill[data-pct][data-cor]').forEach(function(bar) {
+        bar.style.width = bar.getAttribute('data-pct') + '%';
+        bar.style.background = bar.getAttribute('data-cor');
+    });
+});
+
+function fetchReload(url, body) {
+    fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body || {}) })
+        .then(function(r) { return r.json(); })
+        .then(function(d) { if (d.sucesso) location.reload(); else alert(d.mensagem); });
+}
+
+function removerJogador(id) { fetchReload('/api/time/remover-jogador/' + id); }
+function moverJogador(id, timeDestino) { fetchReload('/api/time/mover-jogador', {time_jogador_id: id, time_destino: timeDestino}); }
+function reorganizarTimes(timeA, timeB) { fetchReload('/api/time/reorganizar', {evento_id: eventoId, time_a: timeA, time_b: timeB}); }
+function completarTime(timeReceptor, timeDoador) { fetchReload('/api/time/completar-time', {evento_id: eventoId, time_doador: timeDoador, time_receptor: timeReceptor}); }
+function adicionarDaEspera(id, time) { fetchReload('/api/time/adicionar-jogador', {evento_id: eventoId, inscricao_id: parseInt(id), time_nome: time}); }
+function adicionarAvulso(time, nome, sobrenome) { fetchReload('/api/time/adicionar-avulso', {evento_id: eventoId, time_nome: time, nome: nome, sobrenome: sobrenome}); }
+</script>
+{% endblock %}

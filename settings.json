@@ -2,5 +2,8 @@
     "html.validate.styles": false,
     "html.validate.scripts": false,
     "css.validate": false,
-    "javascript.validate.enable": false
+    "javascript.validate.enable": false,
+    "files.associations": {
+        "*.html": "jinja-html"
+    }
 }
