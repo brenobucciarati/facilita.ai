@@ -319,16 +319,31 @@ def excluir_evento(evento_id):
 @app.route('/e/<codigo>')
 def pagina_inscricao(codigo):
     evento = Evento.query.filter_by(codigo_link=codigo).first_or_404()
-    if evento.status != 'aberto':
-        return render_template('public/evento_fechado.html', evento=evento)
     
-    vagas_ocupadas = Inscricao.query.filter_by(evento_id=evento.id, data_cancelamento=None).count()
+    # ✅ Verificar se o evento foi excluído
+    if evento.excluido:
+        return render_template('public/evento_fechado.html', evento=evento, motivo='excluido')
+    
+    # ✅ Verificar se o evento está fechado
+    if evento.status != 'aberto':
+        return render_template('public/evento_fechado.html', evento=evento, motivo='encerrado')
+    
+    vagas_ocupadas = Inscricao.query.filter_by(
+        evento_id=evento.id,
+        data_cancelamento=None
+    ).count()
+    
     vagas_disponiveis = evento.total_vagas - vagas_ocupadas
     
     if vagas_disponiveis <= 0:
         return render_template('public/vagas_esgotadas.html', evento=evento)
     
-    return render_template('public/inscricao.html', evento=evento, vagas_disponiveis=vagas_disponiveis)
+    porcentagem = int((vagas_disponiveis / evento.total_vagas) * 100) if evento.total_vagas > 0 else 0
+    
+    return render_template('public/inscricao.html',
+                         evento=evento,
+                         vagas_disponiveis=vagas_disponiveis,
+                         porcentagem=porcentagem)
 
 @app.route('/api/validar-matricula', methods=['POST'])
 def validar_matricula():
