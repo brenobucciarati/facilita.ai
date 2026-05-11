@@ -50,9 +50,11 @@ def registrar_log(acao, descricao='', evento_id=None):
 def load_user(user_id):
     return Admin.query.get(int(user_id))
 
-# ============ CRIAÇÃO INICIAL ============
+# ============ CRIAÇÃO INICIAL E LIMPEZA AUTOMÁTICA ============
 with app.app_context():
     db.create_all()
+    
+    # Criar admin master se não existir
     if not Admin.query.first():
         admin = Admin(
             username='admin',
@@ -63,6 +65,30 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
         print("✅ Admin master criado: admin / admin123")
+    
+    # ✅ LIMPEZA AUTOMÁTICA DA LIXEIRA (eventos excluídos há mais de 7 dias)
+    data_limite = datetime.utcnow() - timedelta(days=7)
+    eventos_para_limpar = Evento.query.filter(
+        Evento.excluido == True,
+        Evento.data_exclusao <= data_limite
+    ).all()
+
+    if eventos_para_limpar:
+        for evento in eventos_para_limpar:
+            # Deletar dependentes na ordem correta
+            times = Time.query.filter_by(evento_id=evento.id).all()
+            for time in times:
+                TimeJogador.query.filter_by(time_id=time.id).delete()
+            Time.query.filter_by(evento_id=evento.id).delete()
+            MatriculaBloqueada.query.filter_by(evento_id=evento.id).delete()
+            Inscricao.query.filter_by(evento_id=evento.id).delete()
+            MatriculaCadastrada.query.filter_by(evento_id=evento.id).delete()
+            FuncaoBloqueada.query.filter_by(evento_id=evento.id).delete()
+            LogAcesso.query.filter_by(evento_id=evento.id).delete()
+            db.session.delete(evento)
+
+        db.session.commit()
+        print(f"✅ Limpeza automática: {len(eventos_para_limpar)} evento(s) removido(s) permanentemente.")
 
 # ============ LOGIN ============
 @app.route('/admin/login', methods=['GET', 'POST'])
