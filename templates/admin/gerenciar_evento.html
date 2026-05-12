@@ -380,13 +380,17 @@ function carregarInscricoes() {
 }
 
 function atualizarTabelaInscricoes(lista) {
-    var tbody = document.querySelector('.premium-table tbody');
+    // ✅ Pegar APENAS o tbody da PRIMEIRA tabela (inscritos)
+    var tbody = document.querySelector('.table-container:first-of-type .premium-table tbody');
     if (!tbody) return;
+    
     if (!lista.length) {
         tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p class="empty-text">Nenhum inscrito</p></div></td></tr>';
-        var cb = document.querySelector('.table-count-green'); if (cb) cb.textContent = '0 inscrito(s)';
+        var cb = document.querySelector('.table-count-green');
+        if (cb) cb.textContent = '0 inscrito(s)';
         return;
     }
+    
     var html = '';
     lista.forEach(function(insc, i) {
         html += '<tr><td><span class="index-badge">' + (i+1) + '</span></td>';
@@ -396,8 +400,12 @@ function atualizarTabelaInscricoes(lista) {
         html += '<td><span style="color:var(--text-muted);font-size:0.85em;"><i class="far fa-clock me-1"></i>' + (insc.hora_inscricao||'--') + '</span></td>';
         html += '<td><button class="btn-remove btn-excluir-trigger" data-inscricao-id="' + insc.id + '" data-inscricao-nome="' + escapar(insc.nome) + '"><i class="fas fa-trash-alt"></i> Remover</button></td></tr>';
     });
+    
     tbody.innerHTML = html;
-    var cb = document.querySelector('.table-count-green'); if (cb) cb.textContent = lista.length + ' inscrito(s)';
+    
+    var cb = document.querySelector('.table-count-green');
+    if (cb) cb.textContent = lista.length + ' inscrito(s)';
+    
     vincularBotoesExcluir();
 }
 
