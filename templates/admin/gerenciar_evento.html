@@ -104,7 +104,9 @@
     .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
     .table-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-size: 1.1em; font-weight: 700; }
     .table-title .icon-circle { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8em; }
-    .table-count { background: rgba(16,185,129,0.1); color: var(--accent-green); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8em; }
+    .table-count { padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8em; }
+    .table-count-green { background: rgba(16,185,129,0.1); color: var(--accent-green); }
+    .table-count-red { background: rgba(239,68,68,0.1); color: var(--accent-red); }
     .premium-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
     .premium-table thead th { background: transparent; color: var(--text-muted); font-size: 0.7em; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; padding: 10px 8px; border: none; }
     .premium-table tbody tr { background: var(--bg-secondary); transition: all 0.2s ease; border-radius: var(--radius-md); }
@@ -114,6 +116,7 @@
     .premium-table tbody td:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; text-align: right; }
     .index-badge { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark)); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8em; }
     .matricula-code { background: rgba(16,185,129,0.1); color: var(--accent-green); padding: 4px 8px; border-radius: var(--radius-sm); font-family: 'Courier New', monospace; font-weight: 600; font-size: 0.8em; }
+    .matricula-code-red { background: rgba(239,68,68,0.1); color: var(--accent-red); }
     .funcao-badge { background: rgba(59,130,246,0.1); color: var(--accent-blue); padding: 4px 10px; border-radius: 20px; font-size: 0.7em; font-weight: 600; white-space: nowrap; }
     .btn-remove { background: transparent; color: var(--accent-red); border: 2px solid rgba(239,68,68,0.3); padding: 6px 12px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.8em; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 4px; }
     .btn-remove:hover { background: var(--accent-red); color: #fff; }
@@ -126,10 +129,10 @@
     .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
     .alert-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
 
-@keyframes toastIn {
-    from { opacity: 0; transform: translateY(30px) scale(0.9); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
+    @keyframes toastIn {
+        from { opacity: 0; transform: translateY(30px) scale(0.9); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
     @media (max-width: 768px) {
         .btn-nav { padding: 6px 10px; font-size: 0.75em; gap: 4px; }
@@ -180,9 +183,9 @@
             <button class="btn-nav btn-nav-red" data-bs-toggle="modal" data-bs-target="#modalBloquear">
                 <i class="fas fa-ban"></i> <span class="hide-mobile">Bloquear</span>
             </button>
-           <button class="btn-nav btn-nav-green btn-copiar-link" type="button" data-url="{{ request.host_url }}e/{{ evento.codigo_link }}">
-    <i class="fas fa-link"></i> <span class="hide-mobile">Copiar Link</span>
-</button>
+            <button class="btn-nav btn-nav-green btn-copiar-link" type="button" data-url="{{ request.host_url }}e/{{ evento.codigo_link }}">
+                <i class="fas fa-link"></i> <span class="hide-mobile">Copiar Link</span>
+            </button>
             <a href="{{ url_for('sorteio_times', evento_id=evento.id) }}" class="btn-nav btn-nav-purple">
                 <i class="fas fa-random"></i> <span class="hide-mobile">Sortear Times</span>
             </a>
@@ -234,7 +237,7 @@
             <div class="table-title">
                 <span class="icon-circle"><i class="fas fa-clipboard-list"></i></span>
                 Lista de Inscritos
-                {% if inscricoes %}<span class="table-count">{{ inscricoes|length }} inscrito(s)</span>{% endif %}
+                {% if inscricoes %}<span class="table-count table-count-green">{{ inscricoes|length }} inscrito(s)</span>{% endif %}
             </div>
         </div>
         {% if inscricoes %}
@@ -259,6 +262,47 @@
         <div class="empty-state">
             <div class="empty-icon">📋</div>
             <p class="empty-text">Nenhum inscrito ainda</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Lista de Bloqueios (SEMPRE VISÍVEL) -->
+    <div class="table-container mt-4">
+        <div class="table-header">
+            <div class="table-title" style="color:#ef4444;">
+                <span class="icon-circle" style="background:rgba(239,68,68,0.2);"><i class="fas fa-ban"></i></span>
+                Matrículas Bloqueadas
+                <span class="table-count table-count-red">{{ bloqueios|length }} bloqueio(s)</span>
+            </div>
+        </div>
+        {% if bloqueios %}
+        <div style="overflow-x:auto;">
+            <table class="premium-table">
+                <thead><tr><th>Matrícula</th><th>Motivo</th><th>Data</th><th>Expira</th><th></th></tr></thead>
+                <tbody>
+                    {% for bloq in bloqueios %}
+                    <tr>
+                        <td><span class="matricula-code matricula-code-red">{{ bloq.matricula }}</span></td>
+                        <td>{{ bloq.motivo }}</td>
+                        <td>{{ bloq.data_bloqueio.strftime('%d/%m/%Y') }}</td>
+                        <td>{% if bloq.data_expiracao %}{{ bloq.data_expiracao.strftime('%d/%m/%Y') }}{% else %}<span style="color:#ef4444;">Permanente</span>{% endif %}</td>
+                        <td>
+                            <form action="{{ url_for('desbloquear_matricula', evento_id=evento.id, bloqueio_id=bloq.id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn-nav btn-nav-green" style="padding:4px 10px;font-size:0.75em;">
+                                    <i class="fas fa-unlock"></i> Desbloquear
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🔓</div>
+            <p class="empty-text">Nenhuma matrícula bloqueada</p>
+            <p class="text-muted mt-2" style="font-size:0.8em;">Use o botão "Bloquear" na navbar para restringir matrículas.</p>
         </div>
         {% endif %}
     </div>
@@ -307,49 +351,6 @@
     </div>
 </div>
 
-<!-- Lista de Bloqueios -->
-{% if bloqueios %}
-<!-- Lista de Bloqueios (sempre visível) -->
-<div class="table-container mt-4">
-    <div class="table-header">
-        <div class="table-title" style="color:#ef4444;">
-            <span class="icon-circle" style="background:rgba(239,68,68,0.2);"><i class="fas fa-ban"></i></span>
-            Matrículas Bloqueadas
-            <span class="table-count" style="background:rgba(239,68,68,0.1);color:#ef4444;">{{ bloqueios|length }} bloqueio(s)</span>
-        </div>
-    </div>
-    {% if bloqueios %}
-    <div style="overflow-x:auto;">
-        <table class="premium-table">
-            <thead><tr><th>Matrícula</th><th>Motivo</th><th>Data</th><th>Expira</th><th></th></tr></thead>
-            <tbody>
-                {% for bloq in bloqueios %}
-                <tr>
-                    <td><span class="matricula-code" style="background:rgba(239,68,68,0.1);color:#ef4444;">{{ bloq.matricula }}</span></td>
-                    <td>{{ bloq.motivo }}</td>
-                    <td>{{ bloq.data_bloqueio.strftime('%d/%m/%Y') }}</td>
-                    <td>{% if bloq.data_expiracao %}{{ bloq.data_expiracao.strftime('%d/%m/%Y') }}{% else %}<span style="color:#ef4444;">Permanente</span>{% endif %}</td>
-                    <td>
-                        <form action="{{ url_for('desbloquear_matricula', evento_id=evento.id, bloqueio_id=bloq.id) }}" method="POST" style="display:inline;">
-                            <button type="submit" class="btn-nav btn-nav-green" style="padding:4px 10px;font-size:0.75em;">
-                                <i class="fas fa-unlock"></i> Desbloquear
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-icon">🔓</div>
-        <p class="empty-text">Nenhuma matrícula bloqueada</p>
-        <p class="text-muted mt-2" style="font-size:0.8em;">Use o botão "Bloquear" acima para restringir matrículas.</p>
-    </div>
-    {% endif %}
-</div>
-
 <script>
 var eventoId = parseInt('{{ evento.id }}');
 var autoRefreshInterval;
@@ -383,7 +384,7 @@ function atualizarTabelaInscricoes(lista) {
     if (!tbody) return;
     if (!lista.length) {
         tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p class="empty-text">Nenhum inscrito</p></div></td></tr>';
-        var cb = document.querySelector('.table-count'); if (cb) cb.textContent = '0 inscrito(s)';
+        var cb = document.querySelector('.table-count-green'); if (cb) cb.textContent = '0 inscrito(s)';
         return;
     }
     var html = '';
@@ -396,7 +397,7 @@ function atualizarTabelaInscricoes(lista) {
         html += '<td><button class="btn-remove btn-excluir-trigger" data-inscricao-id="' + insc.id + '" data-inscricao-nome="' + escapar(insc.nome) + '"><i class="fas fa-trash-alt"></i> Remover</button></td></tr>';
     });
     tbody.innerHTML = html;
-    var cb = document.querySelector('.table-count'); if (cb) cb.textContent = lista.length + ' inscrito(s)';
+    var cb = document.querySelector('.table-count-green'); if (cb) cb.textContent = lista.length + ' inscrito(s)';
     vincularBotoesExcluir();
 }
 
@@ -418,13 +419,12 @@ async function executarCancelamento(id) {
     var d = await r.json(); if (d.sucesso) location.reload(); else alert('Erro.');
 }
 
-// ==================== COPIAR LINK (via event listener) ====================
+// ==================== COPIAR LINK ====================
 document.addEventListener('DOMContentLoaded', function() {
     var btnCopiar = document.querySelector('.btn-copiar-link');
     if (btnCopiar) {
         btnCopiar.addEventListener('click', function() {
             var url = this.getAttribute('data-url');
-            
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(url).then(function() {
                     mostrarToast('✅ Link copiado!', 'success');
@@ -432,7 +432,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     mostrarToast('❌ Erro ao copiar', 'error');
                 });
             } else {
-                // Fallback
                 var t = document.createElement('textarea');
                 t.value = url; t.style.position = 'fixed'; t.style.opacity = '0';
                 document.body.appendChild(t); t.select();
@@ -447,7 +446,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function mostrarToast(msg, tipo) {
     var old = document.getElementById('toast-copiado');
     if (old) old.remove();
-    
     var toast = document.createElement('div');
     toast.id = 'toast-copiado';
     toast.innerHTML = msg;
@@ -458,7 +456,6 @@ function mostrarToast(msg, tipo) {
         'font-size:0.95em;box-shadow:0 8px 25px rgba(0,0,0,0.5);' +
         'animation:toastIn 0.35s ease;font-family:Inter,sans-serif;';
     document.body.appendChild(toast);
-    
     setTimeout(function() {
         toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)';
         toast.style.transition = 'all 0.3s ease';
