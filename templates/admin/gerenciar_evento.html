@@ -364,6 +364,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     carregarInscricoes();
     autoRefreshInterval = setInterval(carregarInscricoes, 5000);
+    // Vincular botões da tabela original
+    setTimeout(vincularBotoesExcluir, 500);
 });
 
 document.addEventListener('visibilitychange', function() {
@@ -380,17 +382,18 @@ function carregarInscricoes() {
 }
 
 function atualizarTabelaInscricoes(lista) {
-    // ✅ Pegar APENAS o tbody da PRIMEIRA tabela (inscritos)
-    var tbody = document.querySelector('.table-container:first-of-type .premium-table tbody');
+    // ✅ Pegar APENAS o tbody da tabela de INSCRITOS (primeira .table-container)
+    var container = document.querySelector('.table-container');
+    if (!container) return;
+    var tbody = container.querySelector('.premium-table tbody');
     if (!tbody) return;
     
     if (!lista.length) {
         tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p class="empty-text">Nenhum inscrito</p></div></td></tr>';
-        var cb = document.querySelector('.table-count-green');
+        var cb = container.querySelector('.table-count');
         if (cb) cb.textContent = '0 inscrito(s)';
         return;
     }
-    
     var html = '';
     lista.forEach(function(insc, i) {
         html += '<tr><td><span class="index-badge">' + (i+1) + '</span></td>';
@@ -400,12 +403,9 @@ function atualizarTabelaInscricoes(lista) {
         html += '<td><span style="color:var(--text-muted);font-size:0.85em;"><i class="far fa-clock me-1"></i>' + (insc.hora_inscricao||'--') + '</span></td>';
         html += '<td><button class="btn-remove btn-excluir-trigger" data-inscricao-id="' + insc.id + '" data-inscricao-nome="' + escapar(insc.nome) + '"><i class="fas fa-trash-alt"></i> Remover</button></td></tr>';
     });
-    
     tbody.innerHTML = html;
-    
-    var cb = document.querySelector('.table-count-green');
+    var cb = container.querySelector('.table-count');
     if (cb) cb.textContent = lista.length + ' inscrito(s)';
-    
     vincularBotoesExcluir();
 }
 
@@ -415,16 +415,34 @@ function atualizarContadores(data) {
 }
 
 function vincularBotoesExcluir() {
-    document.querySelectorAll('.btn-excluir-trigger').forEach(function(btn) {
-        btn.onclick = function() { cancelarInscricao(this.getAttribute('data-inscricao-id'), this.getAttribute('data-inscricao-nome')); };
+    // ✅ Vincular apenas botões DENTRO da primeira .table-container
+    var container = document.querySelector('.table-container');
+    if (!container) return;
+    container.querySelectorAll('.btn-excluir-trigger').forEach(function(btn) {
+        btn.onclick = function() {
+            cancelarInscricao(
+                this.getAttribute('data-inscricao-id'),
+                this.getAttribute('data-inscricao-nome')
+            );
+        };
     });
 }
 
-function cancelarInscricao(id, nome) { inscricaoParaRemover = id; document.getElementById('modalNome').textContent = nome; modalInstance.show(); }
+function cancelarInscricao(id, nome) {
+    inscricaoParaRemover = id;
+    document.getElementById('modalNome').textContent = nome;
+    modalInstance.show();
+}
 
 async function executarCancelamento(id) {
-    var r = await fetch('/api/cancelar-inscricao', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({inscricao_id: parseInt(id), admin: true}) });
-    var d = await r.json(); if (d.sucesso) location.reload(); else alert('Erro.');
+    var r = await fetch('/api/cancelar-inscricao', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({inscricao_id: parseInt(id), admin: true})
+    });
+    var d = await r.json();
+    if (d.sucesso) location.reload();
+    else alert('Erro ao cancelar inscrição.');
 }
 
 // ==================== COPIAR LINK ====================
@@ -449,6 +467,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // ✅ Vincular botões originais
+    setTimeout(function() {
+        document.querySelectorAll('.btn-excluir-trigger').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                cancelarInscricao(
+                    this.getAttribute('data-inscricao-id'),
+                    this.getAttribute('data-inscricao-nome')
+                );
+            });
+        });
+    }, 500);
 });
 
 function mostrarToast(msg, tipo) {
