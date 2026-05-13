@@ -51,8 +51,38 @@ def load_user(user_id):
     return Admin.query.get(int(user_id))
 
 # ============ CRIAÇÃO INICIAL ============
+import shutil
+from datetime import datetime
+
 with app.app_context():
     db.create_all()
+    
+    # ✅ BACKUP AUTOMÁTICO DO BANCO SQLITE
+    backup_dir = '/opt/render/project/src/backups'
+    os.makedirs(backup_dir, exist_ok=True)
+    
+    # Fazer backup do banco atual (se existir)
+    if os.path.exists('pelada.db'):
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_path = os.path.join(backup_dir, f'pelada_backup_{timestamp}.db')
+        shutil.copy2('pelada.db', backup_path)
+        print(f"✅ Backup criado: {backup_path}")
+        
+        # Manter apenas os últimos 3 backups
+        backups = sorted([f for f in os.listdir(backup_dir) if f.endswith('.db')])
+        while len(backups) > 3:
+            os.remove(os.path.join(backup_dir, backups[0]))
+            backups.pop(0)
+    
+    # Restaurar backup mais recente (se banco estiver vazio)
+    if not Admin.query.first():
+        backups = sorted([f for f in os.listdir(backup_dir) if f.endswith('.db')])
+        if backups:
+            latest = os.path.join(backup_dir, backups[-1])
+            shutil.copy2(latest, 'pelada.db')
+            print(f"✅ Banco restaurado do backup: {backups[-1]}")
+    
+    # Criar admin se não existir
     if not Admin.query.first():
         admin = Admin(
             username='admin',
@@ -62,7 +92,7 @@ with app.app_context():
         )
         db.session.add(admin)
         db.session.commit()
-        print("✅ Admin master criado: admin / admin123")
+        print("✅ Admin master criado")
 
 # ============ LOGIN ============
 @app.route('/admin/login', methods=['GET', 'POST'])
