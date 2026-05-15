@@ -15,6 +15,13 @@ import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
+import ssl
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'connect_args': {
+        'sslmode': 'disable',
+        'connect_timeout': 10
+    }
+}
 db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'admin_login'
