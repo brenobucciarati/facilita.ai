@@ -20,10 +20,12 @@ app.config.from_object(Config)
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'connect_args': {
         'sslmode': 'require',
-        'connect_timeout': 10
+        'connect_timeout': 10,
+        'keepalives_idle': 5,
+        'keepalives_interval': 2,
+        'keepalives_count': 2
     }
 }
-
 db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'admin_login'
