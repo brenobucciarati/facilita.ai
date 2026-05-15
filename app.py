@@ -58,8 +58,38 @@ def load_user(user_id):
     return Admin.query.get(int(user_id))
 
 # ============ CRIAÇÃO INICIAL ============
+import shutil
+from datetime import datetime
+
 with app.app_context():
     db.create_all()
+    
+    # ✅ BACKUP AUTOMÁTICO DO BANCO SQLITE
+    backup_dir = '/opt/render/project/src/backups'
+    os.makedirs(backup_dir, exist_ok=True)
+    
+    # Fazer backup do banco atual (se existir)
+    if os.path.exists('pelada.db'):
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_path = os.path.join(backup_dir, f'pelada_backup_{timestamp}.db')
+        shutil.copy2('pelada.db', backup_path)
+        print(f"✅ Backup criado: {backup_path}")
+        
+        # Manter apenas os últimos 3 backups
+        backups = sorted([f for f in os.listdir(backup_dir) if f.endswith('.db')])
+        while len(backups) > 3:
+            os.remove(os.path.join(backup_dir, backups[0]))
+            backups.pop(0)
+    
+    # Restaurar backup mais recente (se banco estiver vazio)
+    if not Admin.query.first():
+        backups = sorted([f for f in os.listdir(backup_dir) if f.endswith('.db')])
+        if backups:
+            latest = os.path.join(backup_dir, backups[-1])
+            shutil.copy2(latest, 'pelada.db')
+            print(f"✅ Banco restaurado do backup: {backups[-1]}")
+    
+    # Criar admin se não existir
     if not Admin.query.first():
         admin = Admin(
             username='admin',
@@ -69,7 +99,7 @@ with app.app_context():
         )
         db.session.add(admin)
         db.session.commit()
-        print("✅ Admin master criado: admin / admin123")
+        print("✅ Admin master criado")
 
 # ============ LOGIN ============
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -296,6 +326,34 @@ def criar_evento():
     
     return render_template('admin/criar_evento.html', funcoes=funcoes)
 
+@app.route('/api/limpeza-automatica')
+def limpeza_automatica():
+    """Rota que pode ser chamada pelo UptimeRobot ou cron job para limpar eventos antigos"""
+    data_limite = datetime.utcnow() - timedelta(days=7)
+    
+    eventos_para_limpar = Evento.query.filter(
+        Evento.excluido == True,
+        Evento.data_exclusao <= data_limite
+    ).all()
+    
+    if eventos_para_limpar:
+        for evento in eventos_para_limpar:
+            times = Time.query.filter_by(evento_id=evento.id).all()
+            for time in times:
+                TimeJogador.query.filter_by(time_id=time.id).delete()
+            Time.query.filter_by(evento_id=evento.id).delete()
+            MatriculaBloqueada.query.filter_by(evento_id=evento.id).delete()
+            Inscricao.query.filter_by(evento_id=evento.id).delete()
+            MatriculaCadastrada.query.filter_by(evento_id=evento.id).delete()
+            FuncaoBloqueada.query.filter_by(evento_id=evento.id).delete()
+            LogAcesso.query.filter_by(evento_id=evento.id).delete()
+            db.session.delete(evento)
+        db.session.commit()
+        print(f"✅ Limpeza: {len(eventos_para_limpar)} evento(s) removido(s)")
+        return jsonify({'status': 'ok', 'limpos': len(eventos_para_limpar)})
+    
+    return jsonify({'status': 'ok', 'limpos': 0})
+
 # ============ GERENCIAR EVENTO ============
 @app.route('/admin/evento/<int:evento_id>')
 @login_required
@@ -326,16 +384,31 @@ def excluir_evento(evento_id):
 @app.route('/e/<codigo>')
 def pagina_inscricao(codigo):
     evento = Evento.query.filter_by(codigo_link=codigo).first_or_404()
-    if evento.status != 'aberto':
-        return render_template('public/evento_fechado.html', evento=evento)
     
-    vagas_ocupadas = Inscricao.query.filter_by(evento_id=evento.id, data_cancelamento=None).count()
+    # ✅ Verificar se o evento foi excluído
+    if evento.excluido:
+        return render_template('public/evento_fechado.html', evento=evento, motivo='excluido')
+    
+    # ✅ Verificar se o evento está fechado
+    if evento.status != 'aberto':
+        return render_template('public/evento_fechado.html', evento=evento, motivo='encerrado')
+    
+    vagas_ocupadas = Inscricao.query.filter_by(
+        evento_id=evento.id,
+        data_cancelamento=None
+    ).count()
+    
     vagas_disponiveis = evento.total_vagas - vagas_ocupadas
     
     if vagas_disponiveis <= 0:
         return render_template('public/vagas_esgotadas.html', evento=evento)
     
-    return render_template('public/inscricao.html', evento=evento, vagas_disponiveis=vagas_disponiveis)
+    porcentagem = int((vagas_disponiveis / evento.total_vagas) * 100) if evento.total_vagas > 0 else 0
+    
+    return render_template('public/inscricao.html',
+                         evento=evento,
+                         vagas_disponiveis=vagas_disponiveis,
+                         porcentagem=porcentagem)
 
 @app.route('/api/validar-matricula', methods=['POST'])
 def validar_matricula():

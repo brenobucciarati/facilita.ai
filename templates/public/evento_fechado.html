@@ -4,252 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0a0e14">
-    <title>Evento Encerrado - {{ evento.nome }}</title>
+    <title>{% if motivo == 'excluido' %}Evento Excluído{% else %}Evento Encerrado{% endif %} - {{ evento.nome }}</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            background: #0a0e14;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 16px;
-            position: relative;
-            overflow: hidden;
+            background: #0a0e14; font-family: 'Inter', 'Segoe UI', sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 16px; position: relative; overflow-x: hidden;
         }
-
-        /* Background particles */
-        .bg-particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
+        .bg-particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
         .particle {
-            position: absolute;
-            background: rgba(245, 158, 11, 0.06);
-            border-radius: 50%;
-            animation: floatUp 10s linear infinite;
+            position: absolute; border-radius: 50%; animation: floatUp 10s linear infinite;
         }
-
+        .particle-encerrado { background: rgba(245, 158, 11, 0.08); }
+        .particle-excluido { background: rgba(239, 68, 68, 0.08); }
         @keyframes floatUp {
             0% { transform: translateY(100vh) scale(0); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { transform: translateY(-100vh) scale(1); opacity: 0; }
         }
-
-        /* Main card */
         .card-container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 440px;
-            animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; z-index: 1; width: 100%; max-width: 440px;
+            animation: cardEntry 0.6s ease;
         }
-
         @keyframes cardEntry {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         .card-encerrado {
-            background: #1a2332;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 24px;
-            padding: 48px 32px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            background: #1a2332; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px; padding: 40px 28px; text-align: center;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
         }
-
-        .card-encerrado::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
+        .card-encerrado.excluido::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, #ef4444, #f87171, #ef4444);
+        }
+        .card-encerrado.encerrado::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
             background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
         }
-
-        /* Icon */
         .icon-wrapper {
-            width: 100px;
-            height: 100px;
-            background: rgba(245, 158, 11, 0.08);
-            border: 2px solid rgba(245, 158, 11, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 24px;
-            animation: pulse 2s ease-in-out infinite;
+            width: 80px; height: 80px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px; animation: pulse 2s ease-in-out infinite;
         }
-
+        .icon-excluido {
+            background: rgba(239,68,68,0.08); border: 2px solid rgba(239,68,68,0.2);
+        }
+        .icon-encerrado {
+            background: rgba(245,158,11,0.08); border: 2px solid rgba(245,158,11,0.2);
+        }
         @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
-            50% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); }
+            0%,100%{box-shadow:0 0 0 0 currentColor}
+            50%{box-shadow:0 0 0 15px transparent}
         }
-
-        .icon-wrapper .emoji {
-            font-size: 3em;
+        .icon-wrapper.excluido { animation: pulseRed 2s ease-in-out infinite; }
+        @keyframes pulseRed {
+            0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}
+            50%{box-shadow:0 0 0 15px rgba(239,68,68,0)}
         }
-
-        /* Content */
-        .titulo-encerrado {
-            font-size: 1.8em;
-            font-weight: 800;
-            color: #f59e0b;
-            margin-bottom: 12px;
-            letter-spacing: -0.5px;
-        }
-
-        .subtitulo-encerrado {
-            color: #94a3b8;
-            font-size: 1em;
-            margin-bottom: 24px;
-            line-height: 1.6;
-        }
-
-        .evento-nome {
-            color: #e2e8f0;
-            font-weight: 700;
-            background: rgba(245, 158, 11, 0.08);
-            padding: 4px 12px;
-            border-radius: 6px;
-        }
-
-        /* Status badge */
+        .icon-wrapper .emoji { font-size: 2.5em; }
+        .titulo { font-size: 1.5em; font-weight: 800; margin-bottom: 8px; }
+        .titulo-excluido { color: #ef4444; }
+        .titulo-encerrado { color: #f59e0b; }
+        .subtitulo { color: #94a3b8; font-size: 0.9em; margin-bottom: 20px; line-height: 1.5; }
+        .evento-nome { color: #e2e8f0; font-weight: 700; }
         .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            color: #f59e0b;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 24px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #f59e0b;
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-
-        /* Info card */
-        .info-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-
-        .info-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: #64748b;
-            font-size: 0.9em;
-        }
-
-        .info-row i {
-            color: #f59e0b;
-        }
-
-        .info-row strong {
-            color: #94a3b8;
-        }
-
-        /* Alert */
-        .alert-info {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            background: rgba(59, 130, 246, 0.06);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: left;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border-radius: 25px;
+            font-weight: 700; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px;
             margin-bottom: 20px;
         }
-
-        .alert-info i {
-            color: #3b82f6;
-            font-size: 1.1em;
-            margin-top: 1px;
+        .badge-excluido {
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444;
         }
-
-        .alert-info .alert-text {
-            color: #94a3b8;
-            font-size: 0.85em;
-            line-height: 1.5;
+        .badge-encerrado {
+            background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #f59e0b;
         }
-
-        /* Footer */
-        .card-footer {
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding-top: 20px;
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot-excluido { background: #ef4444; }
+        .dot-encerrado { background: #f59e0b; animation: pulse 1.5s infinite; }
+        .info-card {
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 14px; margin-bottom: 16px;
         }
-
-        .footer-text {
-            color: #64748b;
-            font-size: 0.8em;
-            opacity: 0.6;
+        .info-row { display: flex; align-items: center; justify-content: center; gap: 8px; color: #64748b; font-size: 0.85em; }
+        .info-row i { color: #f59e0b; }
+        .info-row strong { color: #94a3b8; }
+        .alert-info {
+            display: flex; align-items: flex-start; gap: 10px;
+            border-radius: 12px; padding: 14px; text-align: left; margin-bottom: 16px;
         }
-
-        /* Responsive */
+        .alert-excluido {
+            background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2);
+        }
+        .alert-encerrado {
+            background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2);
+        }
+        .alert-info i { font-size: 1em; margin-top: 2px; }
+        .alert-excluido i { color: #ef4444; }
+        .alert-encerrado i { color: #3b82f6; }
+        .alert-text { color: #94a3b8; font-size: 0.8em; line-height: 1.4; }
+        .alert-text strong { color: #e2e8f0; }
+        .footer-text { color: #64748b; font-size: 0.75em; opacity: 0.6; margin-top: 12px; }
+        
         @media (max-width: 480px) {
-            .card-encerrado { padding: 32px 20px; }
-            .icon-wrapper { width: 80px; height: 80px; }
-            .icon-wrapper .emoji { font-size: 2.5em; }
-            .titulo-encerrado { font-size: 1.4em; }
+            .card-encerrado { padding: 28px 18px; border-radius: 20px; }
+            .icon-wrapper { width: 64px; height: 64px; }
+            .icon-wrapper .emoji { font-size: 2em; }
+            .titulo { font-size: 1.3em; }
         }
     </style>
 </head>
 <body>
-    <!-- Background particles -->
     <div class="bg-particles" id="particles"></div>
     
-    <!-- Main card -->
     <div class="card-container">
-        <div class="card-encerrado">
-            <!-- Icon -->
-            <div class="icon-wrapper">
-                <span class="emoji">🔒</span>
+        <div class="card-encerrado {% if motivo == 'excluido' %}excluido{% else %}encerrado{% endif %}">
+            <!-- Ícone -->
+            <div class="icon-wrapper {% if motivo == 'excluido' %}icon-excluido excluido{% else %}icon-encerrado{% endif %}">
+                <span class="emoji">{% if motivo == 'excluido' %}🗑️{% else %}🔒{% endif %}</span>
             </div>
             
-            <!-- Title -->
-            <h1 class="titulo-encerrado">EVENTO ENCERRADO</h1>
-            <p class="subtitulo-encerrado">
-                O evento <span class="evento-nome">{{ evento.nome }}</span> não está mais aceitando novas inscrições.
+            <!-- Título -->
+            <h1 class="titulo {% if motivo == 'excluido' %}titulo-excluido{% else %}titulo-encerrado{% endif %}">
+                {% if motivo == 'excluido' %}
+                    EVENTO EXCLUÍDO
+                {% else %}
+                    EVENTO ENCERRADO
+                {% endif %}
+            </h1>
+            <p class="subtitulo">
+                O evento <span class="evento-nome">{{ evento.nome }}</span> 
+                {% if motivo == 'excluido' %}
+                    foi <strong style="color:#ef4444;">excluído permanentemente</strong> pelo administrador e não está mais disponível.
+                {% else %}
+                    não está mais aceitando novas inscrições.
+                {% endif %}
             </p>
             
-            <!-- Status -->
-            <div class="status-badge">
-                <span class="status-dot"></span>
-                Inscrições Fechadas
+            <!-- Status Badge -->
+            <div class="status-badge {% if motivo == 'excluido' %}badge-excluido{% else %}badge-encerrado{% endif %}">
+                <span class="status-dot {% if motivo == 'excluido' %}dot-excluido{% else %}dot-encerrado{% endif %}"></span>
+                {% if motivo == 'excluido' %}
+                    Evento Finalizado
+                {% else %}
+                    Inscrições Fechadas
+                {% endif %}
             </div>
             
             <!-- Info -->
@@ -260,60 +167,49 @@
                 </div>
             </div>
             
-            <!-- Alert -->
-            <div class="alert-info">
-                <i class="fas fa-info-circle"></i>
+            <!-- Alerta -->
+            <div class="alert-info {% if motivo == 'excluido' %}alert-excluido{% else %}alert-encerrado{% endif %}">
+                <i class="fas fa-{% if motivo == 'excluido' %}trash-alt{% else %}info-circle{% endif %}"></i>
                 <div class="alert-text">
-                    <strong>O que aconteceu?</strong><br>
-                    O administrador encerrou as inscrições para este evento. Entre em contato com o organizador para mais informações.
+                    {% if motivo == 'excluido' %}
+                        <strong>Este evento foi removido.</strong><br>
+                        O administrador excluiu este evento permanentemente. Se você tinha uma inscrição, ela não é mais válida.
+                    {% else %}
+                        <strong>O que aconteceu?</strong><br>
+                        O administrador encerrou as inscrições para este evento. Entre em contato com o organizador para mais informações.
+                    {% endif %}
                 </div>
             </div>
             
             <!-- Footer -->
-            <div class="card-footer">
-                <span class="footer-text">
-                    <i class="fas fa-shield-alt"></i>
-                    Sistema FACILITA.AI
-                </span>
+            <div class="footer-text">
+                <i class="fas fa-shield-alt"></i> FACILITA.AI
             </div>
         </div>
     </div>
     
     <script>
-        // Create particles
-        function createParticles() {
-            var container = document.getElementById('particles');
-            var colors = [
-                'rgba(245, 158, 11, 0.08)',
-                'rgba(251, 191, 36, 0.06)',
-                'rgba(252, 211, 77, 0.04)'
-            ];
-            
-            for (var i = 0; i < 25; i++) {
-                var particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                var size = Math.random() * 4 + 2;
-                var left = Math.random() * 100;
-                var delay = Math.random() * 10;
-                var duration = Math.random() * 8 + 6;
-                
-                particle.style.cssText = 
-                    'width: ' + size + 'px; ' +
-                    'height: ' + size + 'px; ' +
-                    'left: ' + left + '%; ' +
-                    'background: ' + colors[Math.floor(Math.random() * colors.length)] + '; ' +
-                    'animation-delay: ' + delay + 's; ' +
-                    'animation-duration: ' + duration + 's;';
-                
-                container.appendChild(particle);
-            }
+        var motivo = '{{ motivo }}';
+        var container = document.getElementById('particles');
+        var colors = motivo === 'excluido' 
+            ? ['rgba(239,68,68,0.08)', 'rgba(248,113,113,0.06)', 'rgba(252,165,165,0.04)']
+            : ['rgba(245,158,11,0.08)', 'rgba(251,191,36,0.06)', 'rgba(252,211,77,0.04)'];
+        var particleClass = motivo === 'excluido' ? 'particle particle-excluido' : 'particle particle-encerrado';
+        
+        for (var i = 0; i < 25; i++) {
+            var p = document.createElement('div');
+            p.className = particleClass;
+            p.style.cssText = 
+                'width:' + (Math.random()*4+2) + 'px;' +
+                'height:' + (Math.random()*4+2) + 'px;' +
+                'left:' + (Math.random()*100) + '%;' +
+                'animation-delay:' + (Math.random()*10) + 's;' +
+                'animation-duration:' + (Math.random()*8+6) + 's;';
+            container.appendChild(p);
         }
         
-        createParticles();
-        
-        console.log('%c🔒 Evento Encerrado %c- Inscrições fechadas',
-            'color: #f59e0b; font-weight: bold;',
+        console.log('%c' + (motivo === 'excluido' ? '🗑️ Evento Excluído' : '🔒 Evento Encerrado') + ' %c- ' + (motivo === 'excluido' ? 'Removido pelo admin' : 'Inscrições fechadas'),
+            'color: ' + (motivo === 'excluido' ? '#ef4444' : '#f59e0b') + '; font-weight: bold;',
             'color: #94a3b8;');
     </script>
 </body>
