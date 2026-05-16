@@ -157,7 +157,7 @@ def dashboard():
     else:
         eventos = Evento.query.filter_by(criado_por=current_user.id, excluido=False).order_by(Evento.created_at.desc()).all()
     
-    total_cadastrados = MatriculaCadastrada.query.filter_by(evento_id=0).count()
+    total_cadastrados = MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None)).count()
     return render_template('admin/dashboard.html', eventos=eventos, total_cadastrados=total_cadastrados)
 
 @app.route('/admin/usuarios')
