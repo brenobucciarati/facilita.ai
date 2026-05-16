@@ -15,6 +15,7 @@ import openpyxl
 import os
 import time
 import logging
+import shutil
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -23,11 +24,11 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# ✅ CONFIGURAÇÃO SSL CORRETA - SEM event.listen FORA DO CONTEXTO
+# ✅ CONFIGURAÇÃO SSL CORRETA
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_size': 5,
-    'pool_recycle': 300,  # Reciclar conexões a cada 5 minutos
-    'pool_pre_ping': True,  # CRÍTICO: verifica conexão antes de usar
+    'pool_recycle': 300,
+    'pool_pre_ping': True,
     'pool_timeout': 30,
     'max_overflow': 10,
     'connect_args': {
@@ -37,8 +38,6 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'keepalives_idle': 30,
         'keepalives_interval': 10,
         'keepalives_count': 5,
-        'tcp_user_timeout': 10000,
-        'options': '-c statement_timeout=30000'
     }
 }
 
@@ -48,7 +47,7 @@ login_manager.login_view = 'admin_login'
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# ============ DECORATOR RETRY (sem usar app context) ============
+# ============ DECORATOR DE RETRY ============
 def retry_on_db_error(max_retries=3):
     def decorator(f):
         @wraps(f)
@@ -103,7 +102,7 @@ def load_user(user_id):
             return Admin.query.get(int(user_id))
         raise
 
-# ============ MIDDLEWARES (depois do app definido) ============
+# ============ MIDDLEWARES ============
 @app.before_request
 def before_request():
     """Manter conexão ativa antes de cada requisição"""
@@ -113,7 +112,6 @@ def before_request():
         if 'SSL error' in str(e):
             logger.warning("⚠️ SSL Error detectado, recriando sessão...")
             db.session.remove()
-            db.session.execute('SELECT 1')
     except Exception as e:
         logger.error(f"Erro inesperado no before_request: {e}")
         db.session.remove()
@@ -123,47 +121,7 @@ def shutdown_session(exception=None):
     """Garantir que a sessão seja fechada ao final da requisição"""
     db.session.remove()
 
-# ============ CRIAÇÃO INICIAL ============
-import shutil
-from datetime import datetime
-from sqlalchemy import event
-from sqlalchemy.exc import OperationalError
-import time
-
-# Event listener para reconectar automaticamente
-@event.listens_for(db.engine, 'engine_connect')
-def ping_connection(connection, branch):
-    if branch:
-        return
-    
-    # Testar conexão
-    try:
-        connection.scalar('SELECT 1')
-    except OperationalError as e:
-        if 'SSL error' in str(e) or 'connection was closed' in str(e):
-            print(f"⚠️ Conexão perdida, invalidando: {e}")
-            connection.invalidate()
-            raise
-
-# Decorator para retry em queries
-def retry_on_db_error(max_retries=3):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            for attempt in range(max_retries):
-                try:
-                    return f(*args, **kwargs)
-                except OperationalError as e:
-                    if 'SSL error' in str(e) and attempt < max_retries - 1:
-                        print(f"⚠️ Tentativa {attempt + 1} falhou, tentando novamente...")
-                        db.session.rollback()
-                        time.sleep(2 ** attempt)  # Backoff exponencial
-                        continue
-                    raise
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-
+# ============ INICIALIZAÇÃO DO BANCO (DENTRO DO CONTEXTO) ============
 with app.app_context():
     db.create_all()
     
@@ -179,7 +137,8 @@ with app.app_context():
         db.session.commit()
         logger.info("✅ Admin master criado")
 
-# ============ LOGIN ============
+# ============ ROTAS ============
+
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -204,11 +163,9 @@ def admin_logout():
 def index():
     return redirect(url_for('admin_login'))
 
-# ============ DASHBOARD ============
 @app.route('/admin/dashboard')
 @login_required
 def dashboard():
-    # ✅ Mostrar apenas eventos do usuário logado (ou todos se for admin)
     if current_user.role == 'admin':
         eventos = Evento.query.filter_by(excluido=False).order_by(Evento.created_at.desc()).all()
     else:
@@ -217,7 +174,6 @@ def dashboard():
     total_cadastrados = MatriculaCadastrada.query.filter_by(evento_id=0).count()
     return render_template('admin/dashboard.html', eventos=eventos, total_cadastrados=total_cadastrados)
 
-# ============ PAINEL MASTER ============
 @app.route('/admin/usuarios')
 @login_required
 @admin_required
@@ -285,10 +241,10 @@ def admin_logs():
     
     return render_template('admin/logs.html', logs=logs, usuarios_filtro=usuarios_filtro)
 
-# ============ UPLOAD FUNCIONÁRIOS ============
+# ============ UPLOAD FUNCIONÁRIOS (COM RETRY) ============
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
 @login_required
-@retry_on_db_error(max_retries=3)  # ← PROTEGIDA CONTRA SSL ERROR
+@retry_on_db_error(max_retries=3)
 def cadastrar_funcionarios():
     total_cadastrados = MatriculaCadastrada.query.filter_by(evento_id=0).count()
     
