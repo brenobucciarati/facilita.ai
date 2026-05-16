@@ -255,62 +255,87 @@ def cadastrar_funcionarios():
                 if filename.endswith('.csv'):
                     with open(filepath, 'r', encoding='utf-8') as f:
                         for line in f:
-                            parts = line.strip().split('\t') if '\t' in line else line.strip().split(',')
-                            if len(parts) >= 2:
+                            line = line.strip()
+                            if not line:  # Pular linhas vazias
+                                continue
+                            parts = line.split('\t') if '\t' in line else line.split(',')
+                            if len(parts) >= 2:  # Pelo menos 2 colunas
                                 rows.append(parts)
                 else:
                     wb = openpyxl.load_workbook(filepath, read_only=True)
                     ws = wb.active
-                    rows = list(ws.iter_rows(values_only=True))
+                    for row in ws.iter_rows(values_only=True):
+                        if row and row[0] and row[1]:  # Tem matrícula e nome
+                            rows.append(row)
                 
                 sistema = ['000010', '000063', '000099', '000777', '000888', '000999', '888888']
                 
-                # 🔥 OTIMIZAÇÃO: Buscar todos os existentes de uma vez (1 consulta apenas)
+                # Buscar todos os existentes de uma vez
                 existentes_dict = {}
                 for existente in MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None)).all():
                     existentes_dict[existente.matricula] = existente
                 
                 novos = []
                 atualizados = 0
+                linhas_ignoradas = 0
                 
                 for row in rows:
-                    if not row[0] or not row[1]:
-                        continue
-                    
                     try:
-                        matricula = str(int(row[0])).zfill(6)
-                    except:
+                        # Garantir que temos pelo menos 2 colunas
+                        if len(row) < 2:
+                            linhas_ignoradas += 1
+                            continue
+                        
+                        # Processar matrícula
+                        try:
+                            matricula = str(int(float(row[0]))).zfill(6)
+                        except:
+                            linhas_ignoradas += 1
+                            continue
+                        
+                        if matricula in sistema:
+                            continue
+                        
+                        # Processar nome
+                        nome = str(row[1]).strip().upper()
+                        if not nome:
+                            continue
+                        
+                        # Processar função (3ª coluna ou padrão)
+                        if len(row) >= 3 and row[2]:
+                            funcao = str(row[2]).strip().upper()
+                        else:
+                            funcao = 'GERAL'
+                        
+                        if matricula in existentes_dict:
+                            # Atualizar existente
+                            existentes_dict[matricula].nome = nome
+                            existentes_dict[matricula].funcao = funcao
+                            atualizados += 1
+                        else:
+                            # Adicionar à lista de novos
+                            novos.append({
+                                'evento_id': None,
+                                'matricula': matricula,
+                                'nome': nome,
+                                'funcao': funcao,
+                                'ativo': True
+                            })
+                    except Exception as e:
+                        linhas_ignoradas += 1
                         continue
-                    
-                    if matricula in sistema:
-                        continue
-                    
-                    nome = str(row[1]).strip().upper()
-                    funcao = str(row[2]).strip().upper() if len(row) > 2 and row[2] else 'NÃO INFORMADO'
-                    
-                    if matricula in existentes_dict:
-                        # Atualizar existente
-                        existentes_dict[matricula].nome = nome
-                        existentes_dict[matricula].funcao = funcao
-                        atualizados += 1
-                    else:
-                        # Adicionar à lista de novos
-                        novos.append({
-                            'evento_id': None,
-                            'matricula': matricula,
-                            'nome': nome,
-                            'funcao': funcao,
-                            'ativo': True
-                        })
                 
-                # 🔥 OTIMIZAÇÃO: Inserir todos de uma vez (bulk insert)
+                # Inserir todos de uma vez
                 if novos:
                     db.session.bulk_insert_mappings(MatriculaCadastrada, novos)
                 
                 db.session.commit()
                 os.remove(filepath)
                 
-                flash(f'✅ {len(novos)} novos | {atualizados} atualizados', 'success')
+                mensagem = f'✅ {len(novos)} novos | {atualizados} atualizados'
+                if linhas_ignoradas > 0:
+                    mensagem += f' | ⚠️ {linhas_ignoradas} linhas ignoradas'
+                flash(mensagem, 'success')
                 return redirect(url_for('dashboard'))
                 
             except Exception as e:
