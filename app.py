@@ -967,20 +967,14 @@ def atualizar_vagas(evento_id):
         db.session.commit()
         flash(f'✅ Vagas atualizadas para {novo_total}!', 'success')
     return redirect(url_for('gerenciar_evento', evento_id=evento_id))
+from sqlalchemy import text  # ← Adicione no topo do arquivo
+
 @app.before_request
 def before_request():
-    """Manter conexão ativa antes de cada requisição"""
     try:
-        # Ping leve para manter conexão viva
-        db.session.execute('SELECT 1')
-    except OperationalError as e:
-        if 'SSL error' in str(e):
-            print("⚠️ SSL Error detectado, recriando sessão...")
-            db.session.remove()
-            # Forçar nova conexão
-            db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))  # ← CORRETO
     except Exception as e:
-        print(f"⚠️ Erro inesperado no before_request: {e}")
+        print(f"Erro: {e}")
         db.session.remove()
 
 @app.teardown_appcontext
