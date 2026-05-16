@@ -222,17 +222,6 @@ def admin_logs():
     usuarios_filtro = Admin.query.order_by(Admin.username).all()
     
     return render_template('admin/logs.html', logs=logs, usuarios_filtro=usuarios_filtro)
-@app.route('/admin/atualizar-banco')
-@login_required
-@admin_required
-def atualizar_banco():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text('ALTER TABLE matricula_cadastrada ADD COLUMN IF NOT EXISTS criado_por INTEGER REFERENCES admin(id)'))
-        db.session.commit()
-        return '✅ Coluna criado_por adicionada com sucesso!'
-    except Exception as e:
-        return f'❌ Erro: {str(e)}'
 
 # ============ UPLOAD FUNCIONÁRIOS (COM RETRY) ============
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
