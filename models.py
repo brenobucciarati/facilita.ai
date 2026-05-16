@@ -63,6 +63,7 @@ class MatriculaCadastrada(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     funcao = db.Column(db.String(50), nullable=False)
     ativo = db.Column(db.Boolean, default=True)
+    criado_por = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=True)
     
 class FuncaoBloqueada(db.Model):
     id = db.Column(db.Integer, primary_key=True)
