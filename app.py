@@ -25,19 +25,15 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # ✅ CONFIGURAÇÃO SSL CORRETA
+# ✅ MAIS RÁPIDO:
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 5,
-    'pool_recycle': 300,
+    'pool_size': 10,  # Aumentado
+    'pool_recycle': 600,
     'pool_pre_ping': True,
-    'pool_timeout': 30,
-    'max_overflow': 10,
+    'max_overflow': 20,
     'connect_args': {
         'sslmode': 'require',
-        'connect_timeout': 10,
-        'keepalives': 1,
-        'keepalives_idle': 30,
-        'keepalives_interval': 10,
-        'keepalives_count': 5,
+        'connect_timeout': 5,  # Reduzido
     }
 }
 
@@ -956,7 +952,7 @@ def desbloquear_matricula(evento_id, bloqueio_id):
 @app.route('/admin/evento/<int:evento_id>/sincronizar-base', methods=['POST'])
 @login_required
 def sincronizar_base(evento_id):
-    base = MatriculaCadastrada.query.filter_by(evento_id=0, ativo=True).all()
+    base = MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None), MatriculaCadastrada.ativo == True).all()
     contador = 0
     for cadastro in base:
         if not MatriculaCadastrada.query.filter_by(evento_id=evento_id, matricula=cadastro.matricula).first():
