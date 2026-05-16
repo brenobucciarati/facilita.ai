@@ -10,38 +10,62 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from functools import wraps
+from sqlalchemy.exc import OperationalError
 import openpyxl
 import os
+import time
+import logging
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# ✅ CONFIGURAÇÃO SSL CORRETA E COMPLETA PARA NEON
+# ✅ CONFIGURAÇÃO SSL CORRETA - SEM event.listen FORA DO CONTEXTO
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 5,  # Pool de conexões
+    'pool_size': 5,
     'pool_recycle': 300,  # Reciclar conexões a cada 5 minutos
-    'pool_pre_ping': True,  # Verificar conexão antes de usar (CRÍTICO!)
-    'pool_timeout': 30,  # Timeout para pegar conexão do pool
-    'max_overflow': 10,  # Conexões extras se necessário
+    'pool_pre_ping': True,  # CRÍTICO: verifica conexão antes de usar
+    'pool_timeout': 30,
+    'max_overflow': 10,
     'connect_args': {
         'sslmode': 'require',
-        'sslcert': None,  # Neon não precisa de certificado específico
-        'sslkey': None,
-        'sslrootcert': None,
         'connect_timeout': 10,
-        'keepalives': 1,  # Habilitar keepalive
-        'keepalives_idle': 30,  # Segundos antes de enviar keepalive
-        'keepalives_interval': 10,  # Intervalo entre keepalives
-        'keepalives_count': 5,  # Tentativas de keepalive
-        'tcp_user_timeout': 10000,  # Timeout TCP em ms
-        'options': '-c statement_timeout=30000'  # Timeout de queries
+        'keepalives': 1,
+        'keepalives_idle': 30,
+        'keepalives_interval': 10,
+        'keepalives_count': 5,
+        'tcp_user_timeout': 10000,
+        'options': '-c statement_timeout=30000'
     }
 }
+
 db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'admin_login'
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# ============ DECORATOR RETRY (sem usar app context) ============
+def retry_on_db_error(max_retries=3):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return f(*args, **kwargs)
+                except OperationalError as e:
+                    if 'SSL error' in str(e) and attempt < max_retries - 1:
+                        logger.warning(f"⚠️ Tentativa {attempt + 1} falhou, tentando novamente...")
+                        db.session.rollback()
+                        time.sleep(2 ** attempt)
+                        continue
+                    raise
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 # ============ DECORATOR ADMIN MASTER ============
 def admin_required(f):
@@ -74,11 +98,30 @@ def load_user(user_id):
         return Admin.query.get(int(user_id))
     except OperationalError as e:
         if 'SSL error' in str(e):
-            print(f"⚠️ SSL Error no load_user, tentando reconectar...")
+            logger.warning("⚠️ SSL Error no load_user, tentando reconectar...")
             db.session.rollback()
-            # Tentar novamente com nova sessão
             return Admin.query.get(int(user_id))
         raise
+
+# ============ MIDDLEWARES (depois do app definido) ============
+@app.before_request
+def before_request():
+    """Manter conexão ativa antes de cada requisição"""
+    try:
+        db.session.execute('SELECT 1')
+    except OperationalError as e:
+        if 'SSL error' in str(e):
+            logger.warning("⚠️ SSL Error detectado, recriando sessão...")
+            db.session.remove()
+            db.session.execute('SELECT 1')
+    except Exception as e:
+        logger.error(f"Erro inesperado no before_request: {e}")
+        db.session.remove()
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    """Garantir que a sessão seja fechada ao final da requisição"""
+    db.session.remove()
 
 # ============ CRIAÇÃO INICIAL ============
 import shutil
@@ -124,31 +167,6 @@ def retry_on_db_error(max_retries=3):
 with app.app_context():
     db.create_all()
     
-    # ✅ BACKUP AUTOMÁTICO DO BANCO SQLITE
-    backup_dir = '/opt/render/project/src/backups'
-    os.makedirs(backup_dir, exist_ok=True)
-    
-    # Fazer backup do banco atual (se existir)
-    if os.path.exists('pelada.db'):
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        backup_path = os.path.join(backup_dir, f'pelada_backup_{timestamp}.db')
-        shutil.copy2('pelada.db', backup_path)
-        print(f"✅ Backup criado: {backup_path}")
-        
-        # Manter apenas os últimos 3 backups
-        backups = sorted([f for f in os.listdir(backup_dir) if f.endswith('.db')])
-        while len(backups) > 3:
-            os.remove(os.path.join(backup_dir, backups[0]))
-            backups.pop(0)
-    
-    # Restaurar backup mais recente (se banco estiver vazio)
-    if not Admin.query.first():
-        backups = sorted([f for f in os.listdir(backup_dir) if f.endswith('.db')])
-        if backups:
-            latest = os.path.join(backup_dir, backups[-1])
-            shutil.copy2(latest, 'pelada.db')
-            print(f"✅ Banco restaurado do backup: {backups[-1]}")
-    
     # Criar admin se não existir
     if not Admin.query.first():
         admin = Admin(
@@ -159,7 +177,7 @@ with app.app_context():
         )
         db.session.add(admin)
         db.session.commit()
-        print("✅ Admin master criado")
+        logger.info("✅ Admin master criado")
 
 # ============ LOGIN ============
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -270,7 +288,7 @@ def admin_logs():
 # ============ UPLOAD FUNCIONÁRIOS ============
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
 @login_required
-@retry_on_db_error(max_retries=3)  # ← ADICIONE ESTA LINHA
+@retry_on_db_error(max_retries=3)  # ← PROTEGIDA CONTRA SSL ERROR
 def cadastrar_funcionarios():
     total_cadastrados = MatriculaCadastrada.query.filter_by(evento_id=0).count()
     
@@ -334,6 +352,7 @@ def cadastrar_funcionarios():
                 flash(f'✅ {contador_novos} novos | {contador_atualizados} atualizados', 'success')
                 return redirect(url_for('dashboard'))
             except Exception as e:
+                db.session.rollback()
                 flash(f'❌ Erro: {str(e)}', 'danger')
                 return redirect(request.url)
     
