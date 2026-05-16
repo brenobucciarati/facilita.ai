@@ -984,15 +984,7 @@ def atualizar_vagas(evento_id):
         db.session.commit()
         flash(f'✅ Vagas atualizadas para {novo_total}!', 'success')
     return redirect(url_for('gerenciar_evento', evento_id=evento_id))
-from sqlalchemy import text  # ← Adicione no topo do arquivo
 
-@app.before_request
-def before_request():
-    try:
-        db.session.execute(text('SELECT 1'))  # ← CORRETO
-    except Exception as e:
-        print(f"Erro: {e}")
-        db.session.remove()
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
