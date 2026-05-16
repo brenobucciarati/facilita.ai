@@ -616,11 +616,14 @@ def marcar_presenca(inscricao_id):
     return jsonify({'sucesso': True})
 
 def distribuir_jogador_automaticamente(inscricao):
-    """Coloca o jogador no time correto automaticamente"""
+    """Coloca o jogador no time correto automaticamente seguindo a regra:
+    - 10 primeiros (ou vagas_por_time * 2): sorteio alternado entre Time A e B
+    - Restante: preenchimento por bloco (C, D, E, F...)
+    """
     evento_id = inscricao.evento_id
     
     # Verificar se já existem times criados para este evento
-    times = Time.query.filter_by(evento_id=evento_id).all()
+    times = Time.query.filter_by(evento_id=evento_id).order_by(Time.nome).all()
     if not times:
         return  # Não tem times configurados ainda
     
@@ -629,41 +632,43 @@ def distribuir_jogador_automaticamente(inscricao):
     if ja_em_time:
         return  # Já está em um time
     
-    # Pegar configuração do evento (ou usar padrão)
     num_times = len(times)
-    vagas_por_time = 5  # Padrão
+    vagas_por_time = 5  # Padrão (idealmente puxar da configuração)
+    sorteio_qtd = vagas_por_time * 2  # 10 se 5 vagas
     
     times_nomes = [t.nome for t in times]
-    sorteio_qtd = vagas_por_time * 2
+    time_dict = {t.nome: t for t in times}
     
-    # Contar quantos presentes já estão nos times
-    total_em_times = TimeJogador.query.join(Time).filter(
-        Time.evento_id == evento_id
-    ).count()
+    # Contar quantos jogadores já estão nos times (total)
+    total_em_times = TimeJogador.query.join(Time).filter(Time.evento_id == evento_id).count()
+    posicao = total_em_times + 1  # Próxima posição (1-based)
     
-    posicao = total_em_times + 1  # Próxima posição
-    
-    # Aplicar lógica de distribuição
+    # ✅ Aplicar a lógica de distribuição
     if posicao <= sorteio_qtd:
+        # Sorteio: alterna entre A e B
         time_nome = 'A' if posicao % 2 == 1 else 'B'
     else:
-        restante = posicao - sorteio_qtd - 1
-        bloco_idx = restante // vagas_por_time
+        # Preenchimento por bloco (ordem de chegada)
+        restante = posicao - sorteio_qtd - 1  # 0-based para o restante
+        bloco_idx = restante // vagas_por_time  # 0=C, 1=D, 2=E, 3=F...
         time_nome = times_nomes[bloco_idx % num_times]
     
-    # Encontrar o time
-    time_dict = {t.nome: t for t in times}
+    # ✅ Verificar se o time_nome existe
     if time_nome not in time_dict:
-    # Procura qualquer time com vaga
+        # Procura qualquer time com vaga
         for nome in times_nomes:
             t = time_dict[nome]
-            if TimeJogador.query.filter_by(time_id=t.id).count() < vagas_por_time:
+            count = TimeJogador.query.filter_by(time_id=t.id).count()
+            if count < vagas_por_time:
                 time_nome = nome
                 break
     
+    if time_nome not in time_dict:
+        return  # Não achou time disponível
+    
     time = time_dict[time_nome]
     
-    # Verificar se o time não está cheio
+    # Verificar se o time está cheio
     count = TimeJogador.query.filter_by(time_id=time.id).count()
     if count >= vagas_por_time:
         # Procurar próximo time com vaga
@@ -673,11 +678,16 @@ def distribuir_jogador_automaticamente(inscricao):
                 time = t
                 break
     
+    # Verificar novamente se tem vaga
+    count = TimeJogador.query.filter_by(time_id=time.id).count()
+    if count >= vagas_por_time:
+        return  # Todos os times estão cheios
+    
     # Adicionar ao time
     tj = TimeJogador(
         time_id=time.id,
         inscricao_id=inscricao.id,
-        ordem=TimeJogador.query.filter_by(time_id=time.id).count() + 1
+        ordem=count + 1
     )
     db.session.add(tj)
     db.session.commit()
