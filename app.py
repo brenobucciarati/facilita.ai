@@ -332,7 +332,7 @@ def cadastrar_funcionarios():
                 flash(f'❌ Erro: {str(e)}', 'danger')
                 return redirect(request.url)
     
-    return render_template('admin/cadastrar-funcionarios.html', total_cadastrados=total_cadastrados)
+    return render_template('admin/cadastrar_funcionarios.html', total_cadastrados=total_cadastrados)
 # ============ CRIAR EVENTO ============
 @app.route('/admin/criar-evento', methods=['GET', 'POST'])
 @login_required
