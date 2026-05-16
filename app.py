@@ -244,8 +244,8 @@ def admin_logs():
 # ============ UPLOAD FUNCIONÁRIOS (COM RETRY) ============
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
 @login_required
-@retry_on_db_error(max_retries=3)
 def cadastrar_funcionarios():
+    # ✅ CORRIGIDO: usar None em vez de 0
     total_cadastrados = MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None)).count()
     
     if request.method == 'POST':
@@ -264,7 +264,6 @@ def cadastrar_funcionarios():
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
                 
-                # Processar arquivo
                 if filename.endswith('.csv'):
                     rows = []
                     with open(filepath, 'r', encoding='utf-8') as f:
@@ -273,20 +272,13 @@ def cadastrar_funcionarios():
                             if len(parts) >= 2:
                                 rows.append(parts)
                 else:
-                    wb = openpyxl.load_workbook(filepath, read_only=True)  # read_only = mais rápido
+                    wb = openpyxl.load_workbook(filepath)
                     ws = wb.active
                     rows = list(ws.iter_rows(values_only=True))
                 
                 sistema = ['000010', '000063', '000099', '000777', '000888', '000999', '888888']
-                
-                # ✅ OTIMIZAÇÃO: Buscar todos os existentes de uma vez
-                matriculas_existentes = {}
-                for existente in MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None)).all():
-                    matriculas_existentes[existente.matricula] = existente
-                
                 contador_novos = 0
                 contador_atualizados = 0
-                novos_registros = []
                 
                 for row in rows:
                     if not row[0] or not row[1]:
@@ -299,38 +291,37 @@ def cadastrar_funcionarios():
                         continue
                     
                     nome = str(row[1]).strip().upper()
+                    # ✅ CORRIGIDO: tratamento seguro da 3ª coluna
                     funcao = str(row[2]).strip().upper() if len(row) > 2 and row[2] else 'NÃO INFORMADO'
                     
-                    if matricula in matriculas_existentes:
-                        # Atualizar existente
-                        existente = matriculas_existentes[matricula]
+                    # ✅ CORRIGIDO: usar None em vez de 0
+                    existente = MatriculaCadastrada.query.filter(
+                        MatriculaCadastrada.evento_id.is_(None),
+                        MatriculaCadastrada.matricula == matricula
+                    ).first()
+                    
+                    if existente:
                         existente.nome = nome
                         existente.funcao = funcao
                         contador_atualizados += 1
                     else:
-                        # Adicionar à lista de novos
-                        novos_registros.append({
-                            'evento_id': None,
-                            'matricula': matricula,
-                            'nome': nome,
-                            'funcao': funcao,
-                            'ativo': True
-                        })
+                        # ✅ CORRIGIDO: evento_id = None
+                        novo = MatriculaCadastrada(
+                            evento_id=None,
+                            matricula=matricula,
+                            nome=nome,
+                            funcao=funcao,
+                            ativo=True
+                        )
+                        db.session.add(novo)
                         contador_novos += 1
-                
-                # ✅ OTIMIZAÇÃO: Inserir todos de uma vez (bulk insert)
-                if novos_registros:
-                    db.session.bulk_insert_mappings(MatriculaCadastrada, novos_registros)
                 
                 db.session.commit()
                 os.remove(filepath)
-                
                 flash(f'✅ {contador_novos} novos | {contador_atualizados} atualizados', 'success')
                 return redirect(url_for('dashboard'))
-                
             except Exception as e:
-                db.session.rollback()
-                flash(f'❌ Erro: {str(e)}', 'danger')
+                flash(f'❌ Erro: {str(e)}', 'success')
                 return redirect(request.url)
     
     return render_template('admin/cadastrar_funcionarios.html', total_cadastrados=total_cadastrados)

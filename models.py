@@ -58,7 +58,7 @@ class Evento(db.Model):
 
 class MatriculaCadastrada(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    evento_id = db.Column(db.Integer, db.ForeignKey('evento.id'), nullable=False)
+    evento_id = db.Column(db.Integer, db.ForeignKey('evento.id'), nullable=True)
     matricula = db.Column(db.String(6), nullable=False)
     nome = db.Column(db.String(100), nullable=False)
     funcao = db.Column(db.String(50), nullable=False)
