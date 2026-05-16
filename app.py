@@ -230,7 +230,6 @@ def admin_logs():
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
 @login_required
 def cadastrar_funcionarios():
-    # ✅ CORRIGIR AQUI (linha 1)
     total_cadastrados = MatriculaCadastrada.query.filter(
         MatriculaCadastrada.evento_id.is_(None),
         MatriculaCadastrada.criado_por == current_user.id
@@ -258,27 +257,27 @@ def cadastrar_funcionarios():
                     with open(filepath, 'r', encoding='utf-8') as f:
                         for line in f:
                             line = line.strip()
-                            if not line:  # Pular linhas vazias
+                            if not line:
                                 continue
                             parts = line.split('\t') if '\t' in line else line.split(',')
-                            if len(parts) >= 2:  # Pelo menos 2 colunas
+                            if len(parts) >= 2:
                                 rows.append(parts)
                 else:
                     wb = openpyxl.load_workbook(filepath, read_only=True)
                     ws = wb.active
                     for row in ws.iter_rows(values_only=True):
-                        if row and row[0] and row[1]:  # Tem matrícula e nome
+                        if row and row[0] and row[1]:
                             rows.append(row)
                 
                 sistema = ['000010', '000063', '000099', '000777', '000888', '000999', '888888']
                 
-                # Buscar todos os existentes de uma vez
+                # ✅ Buscar existentes (CORRIGIDO - indentação)
                 existentes_dict = {}
-        for existente in MatriculaCadastrada.query.filter(
-            MatriculaCadastrada.evento_id.is_(None),
-            MatriculaCadastrada.criado_por == current_user.id
-        ).all():
-            existentes_dict[existente.matricula] = existente
+                for existente in MatriculaCadastrada.query.filter(
+                    MatriculaCadastrada.evento_id.is_(None),
+                    MatriculaCadastrada.criado_por == current_user.id
+                ).all():
+                    existentes_dict[existente.matricula] = existente
                 
                 novos = []
                 atualizados = 0
@@ -286,12 +285,10 @@ def cadastrar_funcionarios():
                 
                 for row in rows:
                     try:
-                        # Garantir que temos pelo menos 2 colunas
                         if len(row) < 2:
                             linhas_ignoradas += 1
                             continue
                         
-                        # Processar matrícula
                         try:
                             matricula = str(int(float(row[0]))).zfill(6)
                         except:
@@ -301,37 +298,33 @@ def cadastrar_funcionarios():
                         if matricula in sistema:
                             continue
                         
-                        # Processar nome
                         nome = str(row[1]).strip().upper()
                         if not nome:
                             continue
                         
-                        # Processar função (3ª coluna ou padrão)
                         if len(row) >= 3 and row[2]:
                             funcao = str(row[2]).strip().upper()
                         else:
                             funcao = 'GERAL'
                         
                         if matricula in existentes_dict:
-                            # Atualizar existente
                             existentes_dict[matricula].nome = nome
                             existentes_dict[matricula].funcao = funcao
                             atualizados += 1
                         else:
-                            # Adicionar à lista de novos
+                            # ✅ Adicionar com vírgula (CORRIGIDO)
                             novos.append({
                                 'evento_id': None,
                                 'matricula': matricula,
                                 'nome': nome,
                                 'funcao': funcao,
-                                'ativo': True
-                                'criado_por': current_user.id 
+                                'ativo': True,
+                                'criado_por': current_user.id
                             })
                     except Exception as e:
                         linhas_ignoradas += 1
                         continue
                 
-                # Inserir todos de uma vez
                 if novos:
                     db.session.bulk_insert_mappings(MatriculaCadastrada, novos)
                 
