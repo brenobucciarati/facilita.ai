@@ -16,14 +16,25 @@ import os
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# ✅ CONFIGURAÇÃO SSL CORRETA PARA NEON
+# ✅ CONFIGURAÇÃO SSL CORRETA E COMPLETA PARA NEON
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 5,  # Pool de conexões
+    'pool_recycle': 300,  # Reciclar conexões a cada 5 minutos
+    'pool_pre_ping': True,  # Verificar conexão antes de usar (CRÍTICO!)
+    'pool_timeout': 30,  # Timeout para pegar conexão do pool
+    'max_overflow': 10,  # Conexões extras se necessário
     'connect_args': {
         'sslmode': 'require',
+        'sslcert': None,  # Neon não precisa de certificado específico
+        'sslkey': None,
+        'sslrootcert': None,
         'connect_timeout': 10,
-        'keepalives_idle': 5,
-        'keepalives_interval': 2,
-        'keepalives_count': 2
+        'keepalives': 1,  # Habilitar keepalive
+        'keepalives_idle': 30,  # Segundos antes de enviar keepalive
+        'keepalives_interval': 10,  # Intervalo entre keepalives
+        'keepalives_count': 5,  # Tentativas de keepalive
+        'tcp_user_timeout': 10000,  # Timeout TCP em ms
+        'options': '-c statement_timeout=30000'  # Timeout de queries
     }
 }
 db.init_app(app)
@@ -59,11 +70,56 @@ def registrar_log(acao, descricao='', evento_id=None):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Admin.query.get(int(user_id))
+    try:
+        return Admin.query.get(int(user_id))
+    except OperationalError as e:
+        if 'SSL error' in str(e):
+            print(f"⚠️ SSL Error no load_user, tentando reconectar...")
+            db.session.rollback()
+            # Tentar novamente com nova sessão
+            return Admin.query.get(int(user_id))
+        raise
 
 # ============ CRIAÇÃO INICIAL ============
 import shutil
 from datetime import datetime
+from sqlalchemy import event
+from sqlalchemy.exc import OperationalError
+import time
+
+# Event listener para reconectar automaticamente
+@event.listens_for(db.engine, 'engine_connect')
+def ping_connection(connection, branch):
+    if branch:
+        return
+    
+    # Testar conexão
+    try:
+        connection.scalar('SELECT 1')
+    except OperationalError as e:
+        if 'SSL error' in str(e) or 'connection was closed' in str(e):
+            print(f"⚠️ Conexão perdida, invalidando: {e}")
+            connection.invalidate()
+            raise
+
+# Decorator para retry em queries
+def retry_on_db_error(max_retries=3):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return f(*args, **kwargs)
+                except OperationalError as e:
+                    if 'SSL error' in str(e) and attempt < max_retries - 1:
+                        print(f"⚠️ Tentativa {attempt + 1} falhou, tentando novamente...")
+                        db.session.rollback()
+                        time.sleep(2 ** attempt)  # Backoff exponencial
+                        continue
+                    raise
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 with app.app_context():
     db.create_all()
@@ -214,6 +270,7 @@ def admin_logs():
 # ============ UPLOAD FUNCIONÁRIOS ============
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
 @login_required
+@retry_on_db_error(max_retries=3)  # ← ADICIONE ESTA LINHA
 def cadastrar_funcionarios():
     total_cadastrados = MatriculaCadastrada.query.filter_by(evento_id=0).count()
     
@@ -916,7 +973,26 @@ def atualizar_vagas(evento_id):
         db.session.commit()
         flash(f'✅ Vagas atualizadas para {novo_total}!', 'success')
     return redirect(url_for('gerenciar_evento', evento_id=evento_id))
+@app.before_request
+def before_request():
+    """Manter conexão ativa antes de cada requisição"""
+    try:
+        # Ping leve para manter conexão viva
+        db.session.execute('SELECT 1')
+    except OperationalError as e:
+        if 'SSL error' in str(e):
+            print("⚠️ SSL Error detectado, recriando sessão...")
+            db.session.remove()
+            # Forçar nova conexão
+            db.session.execute('SELECT 1')
+    except Exception as e:
+        print(f"⚠️ Erro inesperado no before_request: {e}")
+        db.session.remove()
 
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    """Garantir que a sessão seja fechada ao final da requisição"""
+    db.session.remove()
 # ============ INICIAR ============
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
