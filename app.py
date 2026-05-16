@@ -153,7 +153,10 @@ def dashboard():
     else:
         eventos = Evento.query.filter_by(criado_por=current_user.id, excluido=False).order_by(Evento.created_at.desc()).all()
     
-    total_cadastrados = MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None)).count()
+    total_cadastrados = MatriculaCadastrada.query.filter(
+    MatriculaCadastrada.evento_id.is_(None),
+    MatriculaCadastrada.criado_por == current_user.id
+).count()
     return render_template('admin/dashboard.html', eventos=eventos, total_cadastrados=total_cadastrados)
 
 @app.route('/admin/usuarios')
@@ -227,8 +230,11 @@ def admin_logs():
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
 @login_required
 def cadastrar_funcionarios():
-    # Usar None em vez de 0 para base geral
-    total_cadastrados = MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None)).count()
+    # ✅ CORRIGIR AQUI (linha 1)
+    total_cadastrados = MatriculaCadastrada.query.filter(
+        MatriculaCadastrada.evento_id.is_(None),
+        MatriculaCadastrada.criado_por == current_user.id
+    ).count()
     
     if request.method == 'POST':
         if 'arquivo' not in request.files:
@@ -268,8 +274,11 @@ def cadastrar_funcionarios():
                 
                 # Buscar todos os existentes de uma vez
                 existentes_dict = {}
-                for existente in MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None)).all():
-                    existentes_dict[existente.matricula] = existente
+        for existente in MatriculaCadastrada.query.filter(
+            MatriculaCadastrada.evento_id.is_(None),
+            MatriculaCadastrada.criado_por == current_user.id
+        ).all():
+            existentes_dict[existente.matricula] = existente
                 
                 novos = []
                 atualizados = 0
@@ -316,6 +325,7 @@ def cadastrar_funcionarios():
                                 'nome': nome,
                                 'funcao': funcao,
                                 'ativo': True
+                                'criado_por': current_user.id 
                             })
                     except Exception as e:
                         linhas_ignoradas += 1
@@ -345,7 +355,11 @@ def cadastrar_funcionarios():
 @login_required
 def criar_evento():
     funcoes = db.session.query(MatriculaCadastrada.funcao)\
-        .filter(MatriculaCadastrada.evento_id.is_(None), MatriculaCadastrada.ativo == True)\
+    .filter(
+        MatriculaCadastrada.evento_id.is_(None),
+        MatriculaCadastrada.criado_por == current_user.id,
+        MatriculaCadastrada.ativo == True
+    )\
         .distinct().order_by(MatriculaCadastrada.funcao).all()
     funcoes = [f[0] for f in funcoes]
     
@@ -366,7 +380,11 @@ def criar_evento():
             db.session.flush()
             
             if tipo == 'matricula':
-                base = MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None), MatriculaCadastrada.ativo == True).all()
+                base = MatriculaCadastrada.query.filter(
+    MatriculaCadastrada.evento_id.is_(None),
+    MatriculaCadastrada.criado_por == current_user.id,
+    MatriculaCadastrada.ativo == True
+).all()
                 for func in base:
                     mat = MatriculaCadastrada(evento_id=evento.id, matricula=func.matricula, nome=func.nome, funcao=func.funcao, ativo=True)
                     db.session.add(mat)
@@ -962,7 +980,11 @@ def desbloquear_matricula(evento_id, bloqueio_id):
 @app.route('/admin/evento/<int:evento_id>/sincronizar-base', methods=['POST'])
 @login_required
 def sincronizar_base(evento_id):
-    base = MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None), MatriculaCadastrada.ativo == True).all()
+    base = MatriculaCadastrada.query.filter(
+    MatriculaCadastrada.evento_id.is_(None),
+    MatriculaCadastrada.criado_por == current_user.id,
+    MatriculaCadastrada.ativo == True
+).all()
     contador = 0
     for cadastro in base:
         if not MatriculaCadastrada.query.filter_by(evento_id=evento_id, matricula=cadastro.matricula).first():
