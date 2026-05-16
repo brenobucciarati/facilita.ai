@@ -102,20 +102,6 @@ def load_user(user_id):
             return Admin.query.get(int(user_id))
         raise
 
-# ============ MIDDLEWARES ============
-@app.before_request
-def before_request():
-    """Manter conexão ativa antes de cada requisição"""
-    try:
-        db.session.execute('SELECT 1')
-    except OperationalError as e:
-        if 'SSL error' in str(e):
-            logger.warning("⚠️ SSL Error detectado, recriando sessão...")
-            db.session.remove()
-    except Exception as e:
-        logger.error(f"Erro inesperado no before_request: {e}")
-        db.session.remove()
-
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     """Garantir que a sessão seja fechada ao final da requisição"""
@@ -338,7 +324,7 @@ def cadastrar_funcionarios():
 @login_required
 def criar_evento():
     funcoes = db.session.query(MatriculaCadastrada.funcao)\
-        .filter(MatriculaCadastrada.evento_id == 0, MatriculaCadastrada.ativo == True)\
+        .filter(MatriculaCadastrada.evento_id.is_(None), MatriculaCadastrada.ativo == True)\
         .distinct().order_by(MatriculaCadastrada.funcao).all()
     funcoes = [f[0] for f in funcoes]
     
@@ -359,7 +345,7 @@ def criar_evento():
             db.session.flush()
             
             if tipo == 'matricula':
-                base = MatriculaCadastrada.query.filter_by(evento_id=0, ativo=True).all()
+                base = MatriculaCadastrada.query.filter(MatriculaCadastrada.evento_id.is_(None), MatriculaCadastrada.ativo == True).all()
                 for func in base:
                     mat = MatriculaCadastrada(evento_id=evento.id, matricula=func.matricula, nome=func.nome, funcao=func.funcao, ativo=True)
                     db.session.add(mat)
