@@ -343,6 +343,32 @@ def cadastrar_funcionarios():
                 return redirect(request.url)
     
     return render_template('admin/cadastrar_funcionarios.html', total_cadastrados=total_cadastrados)
+
+@app.route('/admin/limpar-matriculas', methods=['POST'])
+@login_required
+def limpar_matriculas():
+    """Remove todas as matrículas da base do usuário logado"""
+    
+    # Contar quantas matrículas serão removidas
+    total = MatriculaCadastrada.query.filter(
+        MatriculaCadastrada.evento_id.is_(None),
+        MatriculaCadastrada.criado_por == current_user.id
+    ).count()
+    
+    if total == 0:
+        flash('📂 Nenhuma matrícula para remover.', 'info')
+        return redirect(url_for('cadastrar_funcionarios'))
+    
+    # Deletar matrículas da base do usuário
+    MatriculaCadastrada.query.filter(
+        MatriculaCadastrada.evento_id.is_(None),
+        MatriculaCadastrada.criado_por == current_user.id
+    ).delete()
+    
+    db.session.commit()
+    registrar_log('limpar_matriculas', f'Removeu {total} matrículas da base')
+    flash(f'🗑️ {total} matrículas removidas da base!', 'success')
+    return redirect(url_for('cadastrar_funcionarios'))
 # ============ CRIAR EVENTO ============
 @app.route('/admin/criar-evento', methods=['GET', 'POST'])
 @login_required
