@@ -27,15 +27,14 @@
         .evento-data { font-size: 0.85em; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .vagas-counter { background: rgba(16,185,129,0.06); border: 2px solid rgba(16,185,129,0.2); border-radius: 16px; padding: 18px; text-align: center; margin-bottom: 24px; transition: all 0.3s ease; }
         .vagas-counter.critico { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06); }
-        .vagas-numero { font-size: 3em; font-weight: 800; color: #10b981; line-height: 1; transition: all 0.3s ease; }
-        .vagas-counter.critico .vagas-numero { color: #ef4444; }
+        .vagas-numero { font-size: 3em; font-weight: 800; color: #10b981; line-height: 1; transition: all 0.3s ease; display: none; } /* Escondido por padrão */
+        .vagas-counter.critico .vagas-numero { display: block; color: #ef4444; } /* Mostra só quando crítico */
         .vagas-label { color: #34d399; font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-top: 4px; }
         .vagas-counter.critico .vagas-label { color: #f87171; }
         .vagas-barra { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 12px; overflow: hidden; }
         .vagas-barra-fill { height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 2px; transition: width 0.5s ease; }
         .vagas-counter.critico .vagas-barra-fill { background: linear-gradient(90deg, #ef4444, #f87171); }
         
-        /* Novo estilo para mensagem de poucas vagas */
         .vagas-mensagem { 
             color: #f59e0b; 
             font-size: 1em; 
@@ -43,11 +42,17 @@
             margin-top: 8px;
             animation: pulseText 1.5s ease-in-out infinite;
         }
+        .vagas-counter.critico .vagas-mensagem { 
+            color: #ef4444;
+            animation: pulseText 0.8s ease-in-out infinite;
+        }
         @keyframes pulseText { 
             0%,100%{opacity:1} 
             50%{opacity:0.6} 
         }
-        .vagas-counter.critico .vagas-mensagem { color: #ef4444; }
+        
+        /* Estilo para quando não mostra número */
+        .vagas-sem-numero .vagas-numero { display: none; }
         
         .input-label { display: flex; align-items: center; gap: 6px; color: #94a3b8; font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
         .input-wrapper { position: relative; }
@@ -197,9 +202,11 @@
         if (restantes <= 10) {
             vagasMensagem.innerHTML = '🔥 Corra! Faltam ' + restantes + ' vagas!';
             vagasCounter.classList.add('critico');
+            vagasDisponiveis.style.display = 'block'; // Mostra o número
         } else {
             vagasMensagem.innerHTML = '📝 Se inscreva, faltam poucas vagas!';
             vagasCounter.classList.remove('critico');
+            vagasDisponiveis.style.display = 'none'; // Esconde o número
         }
     }
     
@@ -317,8 +324,16 @@
         atualizarMensagemVagas(restantes);
     }
     
-    // Inicializar a mensagem correta
+    // Inicializar a mensagem e exibição correta
     var vagasIniciais = parseInt('{{ vagas_disponiveis }}');
+    
+    // Configuração inicial: esconder número se tiver mais de 10
+    if (vagasIniciais > 10) {
+        vagasDisponiveis.style.display = 'none';
+    } else {
+        vagasDisponiveis.style.display = 'block';
+    }
+    
     atualizarMensagemVagas(vagasIniciais);
     </script>
 </body>
