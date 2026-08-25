@@ -1,3 +1,5 @@
+[file name]: !DOCTYPE html.txt
+[file content begin]
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -28,7 +30,7 @@
         .vagas-counter { background: rgba(16,185,129,0.06); border: 2px solid rgba(16,185,129,0.2); border-radius: 16px; padding: 18px; text-align: center; margin-bottom: 24px; transition: all 0.3s ease; }
         .vagas-counter.critico { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06); }
         .vagas-numero { font-size: 3em; font-weight: 800; color: #10b981; line-height: 1; transition: all 0.3s ease; display: none; } /* Escondido por padrão */
-        .vagas-counter.critico .vagas-numero { display: block; color: #ef4444; } /* Mostra só quando crítico */
+        .vagas-counter.critico .vagas-numero { display: block; color: #ef4444; } /* Mostra só quando crítico (< 10) */
         .vagas-label { color: #34d399; font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-top: 4px; }
         .vagas-counter.critico .vagas-label { color: #f87171; }
         .vagas-barra { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 12px; overflow: hidden; }
@@ -121,13 +123,7 @@
                 <div class="vagas-barra">
                     <div class="vagas-barra-fill" id="vagas-barra-fill"></div>
                 </div>
-                <div class="vagas-mensagem" id="vagas-mensagem">
-                    {% if vagas_disponiveis <= 10 %}
-                        🔥 Corra! Faltam {{ vagas_disponiveis }} vagas!
-                    {% else %}
-                        📝 Se inscreva, faltam poucas vagas!
-                    {% endif %}
-                </div>
+                <div class="vagas-mensagem" id="vagas-mensagem"></div>
             </div>
             
             <div id="form-area">
@@ -199,15 +195,42 @@
     
     // ==================== FUNÇÃO PARA ATUALIZAR MENSAGEM ====================
     function atualizarMensagemVagas(restantes) {
+        // Verifica se o evento já está esgotado
+        if (restantes <= 0) {
+            formArea.style.display = 'none';
+            esgotadoState.style.display = 'block';
+            vagasCounter.style.display = 'none';
+            return;
+        }
+        
+        // Mostra o counter novamente se estava escondido
+        if (vagasCounter.style.display === 'none') {
+            vagasCounter.style.display = 'block';
+            esgotadoState.style.display = 'none';
+            formArea.style.display = 'block';
+        }
+        
+        // Regras de exibição
         if (restantes <= 10) {
+            // Crítico: mostra número e mensagem de urgência
             vagasMensagem.innerHTML = '🔥 Corra! Faltam ' + restantes + ' vagas!';
             vagasCounter.classList.add('critico');
-            vagasDisponiveis.style.display = 'block'; // Mostra o número
-        } else {
+            vagasDisponiveis.style.display = 'block';
+        } else if (restantes <= 15) {
+            // Poucas vagas: mensagem de alerta sem número
             vagasMensagem.innerHTML = '📝 Se inscreva, faltam poucas vagas!';
             vagasCounter.classList.remove('critico');
-            vagasDisponiveis.style.display = 'none'; // Esconde o número
+            vagasDisponiveis.style.display = 'none';
+        } else {
+            // Muitas vagas: mensagem padrão
+            vagasMensagem.innerHTML = '📝 Inscreva-se, as vagas são limitadas!';
+            vagasCounter.classList.remove('critico');
+            vagasDisponiveis.style.display = 'none';
         }
+        
+        // Atualiza a barra de progresso
+        var percentual = (restantes / TOTAL_VAGAS) * 100;
+        vagasBarraFill.style.width = Math.min(percentual, 100) + '%';
     }
     
     // ==================== INSCRIÇÃO POR NOME ====================
@@ -320,21 +343,22 @@
     
     function atualizarVagas(restantes) {
         vagasDisponiveis.textContent = restantes;
-        vagasBarraFill.style.width = (restantes / TOTAL_VAGAS * 100) + '%';
         atualizarMensagemVagas(restantes);
     }
     
-    // Inicializar a mensagem e exibição correta
+    // ==================== INICIALIZAÇÃO ====================
     var vagasIniciais = parseInt('{{ vagas_disponiveis }}');
     
-    // Configuração inicial: esconder número se tiver mais de 10
-    if (vagasIniciais > 10) {
-        vagasDisponiveis.style.display = 'none';
+    // Verifica se já está esgotado
+    if (vagasIniciais <= 0) {
+        formArea.style.display = 'none';
+        esgotadoState.style.display = 'block';
+        vagasCounter.style.display = 'none';
     } else {
-        vagasDisponiveis.style.display = 'block';
+        // Configura a mensagem inicial
+        atualizarMensagemVagas(vagasIniciais);
     }
-    
-    atualizarMensagemVagas(vagasIniciais);
     </script>
 </body>
 </html>
+[file content end]
