@@ -27,8 +27,8 @@
         .evento-data { font-size: 0.85em; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .vagas-counter { background: rgba(16,185,129,0.06); border: 2px solid rgba(16,185,129,0.2); border-radius: 16px; padding: 18px; text-align: center; margin-bottom: 24px; transition: all 0.3s ease; }
         .vagas-counter.critico { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06); }
-        .vagas-numero { font-size: 3em; font-weight: 800; color: #10b981; line-height: 1; transition: all 0.3s ease; display: none; } /* Escondido por padrão */
-        .vagas-counter.critico .vagas-numero { display: block; color: #ef4444; } /* Mostra só quando crítico */
+        .vagas-numero { font-size: 3em; font-weight: 800; color: #10b981; line-height: 1; transition: all 0.3s ease; display: none; }
+        .vagas-counter.critico .vagas-numero { display: block; color: #ef4444; }
         .vagas-label { color: #34d399; font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-top: 4px; }
         .vagas-counter.critico .vagas-label { color: #f87171; }
         .vagas-barra { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 12px; overflow: hidden; }
@@ -51,7 +51,6 @@
             50%{opacity:0.6} 
         }
         
-        /* Estilo para quando não mostra número */
         .vagas-sem-numero .vagas-numero { display: none; }
         
         .input-label { display: flex; align-items: center; gap: 6px; color: #94a3b8; font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
@@ -69,7 +68,7 @@
         .info-box { background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 16px; padding: 16px 20px; margin: 16px 0; display: none; text-align: center; }
         .info-nome { font-size: 1.3em; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
         .info-funcao { font-size: 0.9em; color: #10b981; font-weight: 600; }
-        .btn-inscrever { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 16px; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .btn-inscrever { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 16px; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
         .btn-inscrever:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(16,185,129,0.4); }
         .btn-inscrever:disabled { background: #2a3444; color: #4a5568; cursor: not-allowed; }
         .btn-inscrever .spinner { display: none; }
@@ -125,7 +124,7 @@
                     {% if vagas_disponiveis <= 10 %}
                         🔥 Corra! Faltam {{ vagas_disponiveis }} vagas!
                     {% else %}
-                        📝 Se inscreva, faltam poucas vagas!
+                        📝 Se inscreva, pois as vagas são limitadas!
                     {% endif %}
                 </div>
             </div>
@@ -202,11 +201,11 @@
         if (restantes <= 10) {
             vagasMensagem.innerHTML = '🔥 Corra! Faltam ' + restantes + ' vagas!';
             vagasCounter.classList.add('critico');
-            vagasDisponiveis.style.display = 'block'; // Mostra o número
+            vagasDisponiveis.style.display = 'block';
         } else {
-            vagasMensagem.innerHTML = '📝 Se inscreva, faltam poucas vagas!';
+            vagasMensagem.innerHTML = '📝 Se inscreva, pois as vagas são limitadas!';
             vagasCounter.classList.remove('critico');
-            vagasDisponiveis.style.display = 'none'; // Esconde o número
+            vagasDisponiveis.style.display = 'none';
         }
     }
     
