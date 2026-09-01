@@ -26,9 +26,23 @@
 
     body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            radial-gradient(600px circle at 90% 0%, rgba(239,68,68,0.05), transparent 40%),
+            radial-gradient(500px circle at 0% 60%, rgba(16,185,129,0.06), transparent 40%);
+    }
+    .container-fluid { position: relative; z-index: 1; }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
     /* ==================== NAVBAR ==================== */
     .navbar-live {
-        background: rgba(20, 27, 34, 0.9);
+        background: rgba(20, 27, 34, 0.88);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-bottom: 1px solid var(--border-color);
@@ -75,7 +89,7 @@
         font-weight: 600;
         font-size: 0.8em;
         text-decoration: none;
-        transition: all 0.25s ease;
+        transition: all 0.25s cubic-bezier(.4,0,.2,1);
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -84,9 +98,9 @@
         white-space: nowrap;
     }
 
-    .btn-live:hover { transform: translateY(-1px); }
+    .btn-live:hover { transform: translateY(-2px); }
     .btn-live-pdf { background: linear-gradient(135deg, var(--accent-red), #dc2626); color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); }
-    .btn-live-pdf:hover { box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35); color: #fff; }
+    .btn-live-pdf:hover { box-shadow: 0 8px 22px rgba(239, 68, 68, 0.4); color: #fff; }
     .btn-live-back { background: transparent; color: var(--text-secondary); border-color: var(--border-color); }
     .btn-live-back:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
 
@@ -106,14 +120,31 @@
         text-align: center;
         position: relative;
         overflow: hidden;
-        transition: all 0.25s ease;
+        transition: all 0.3s cubic-bezier(.4,0,.2,1);
+        animation: fadeInUp 0.45s ease both;
     }
+    .counter-card:nth-child(1){ animation-delay: .03s; }
+    .counter-card:nth-child(2){ animation-delay: .06s; }
+    .counter-card:nth-child(3){ animation-delay: .09s; }
+    .counter-card:nth-child(4){ animation-delay: .12s; }
+    .counter-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
 
     .counter-card.presentes { border-color: rgba(16,185,129,0.4); }
     .counter-card.faltas { border-color: rgba(239,68,68,0.4); }
     .counter-card.pendentes { border-color: rgba(245,158,11,0.4); }
 
-    .counter-icon { font-size: 1.2em; margin-bottom: 4px; }
+    .counter-icon {
+        width: 34px; height: 34px; margin: 0 auto 6px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1em;
+        transition: transform 0.3s ease;
+    }
+    .counter-card:hover .counter-icon { transform: scale(1.1); }
+    .counter-card.presentes .counter-icon { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+    .counter-card.faltas .counter-icon { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+    .counter-card.pendentes .counter-icon { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+    .counter-card:not(.presentes):not(.faltas):not(.pendentes) .counter-icon { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
 
     .counter-value {
         font-size: 2em;
@@ -154,6 +185,7 @@
         border: 1px solid var(--border-color);
         border-radius: var(--radius-xl);
         overflow: hidden;
+        animation: fadeInUp 0.5s ease .1s both;
     }
 
     .table-live-header {
@@ -220,6 +252,8 @@
         z-index: 10;
     }
 
+    .th-icon { color: var(--text-muted); font-size: 1em; }
+
     .premium-table-live tbody td {
         padding: 10px 8px;
         border-bottom: 1px solid rgba(255,255,255,0.03);
@@ -275,7 +309,7 @@
         border: 2px solid transparent;
         font-size: 0.9em;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(.4,0,.2,1);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -283,18 +317,21 @@
     }
 
     .btn-confirmar { border-color: rgba(16,185,129,0.3); color: var(--text-muted); }
-    .btn-confirmar:hover { border-color: var(--accent-green); color: var(--accent-green); background: rgba(16,185,129,0.1); }
+    .btn-confirmar:hover { border-color: var(--accent-green); color: var(--accent-green); background: rgba(16,185,129,0.1); transform: scale(1.08); }
     .btn-confirmar.ativo { background: var(--accent-green); border-color: var(--accent-green); color: #fff; }
 
     .btn-faltar { border-color: rgba(239,68,68,0.3); color: var(--text-muted); }
-    .btn-faltar:hover { border-color: var(--accent-red); color: var(--accent-red); background: rgba(239,68,68,0.1); }
+    .btn-faltar:hover { border-color: var(--accent-red); color: var(--accent-red); background: rgba(239,68,68,0.1); transform: scale(1.08); }
     .btn-faltar.ativo { background: var(--accent-red); border-color: var(--accent-red); color: #fff; }
 
     .btn-resetar { border-color: rgba(245,158,11,0.3); color: var(--text-muted); font-size: 0.8em; }
-    .btn-resetar:hover { border-color: var(--accent-yellow); color: var(--accent-yellow); }
+    .btn-resetar:hover { border-color: var(--accent-yellow); color: var(--accent-yellow); transform: rotate(-90deg); }
 
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .row-animated { animation: fadeInUp 0.3s ease forwards; }
+    @keyframes fadeInUpRow { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .row-animated { animation: fadeInUpRow 0.3s ease forwards; }
+
+    .empty-live { text-align: center; padding: 40px; color: var(--text-muted); }
+    .empty-live .empty-live-icon { width: 60px; height: 60px; margin: 0 auto 12px; border-radius: 50%; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; font-size: 1.6em; opacity: 0.6; }
 
     /* ==================== RESPONSIVE ==================== */
     @media (max-width: 768px) {
@@ -302,7 +339,7 @@
         .counter-card { padding: 10px 8px; }
         .counter-value { font-size: 1.5em; }
         .counter-label { font-size: 0.6em; }
-        .counter-icon { font-size: 1em; }
+        .counter-icon { width: 28px; height: 28px; font-size: 0.85em; }
 
         .navbar-live .container { flex-direction: column; gap: 8px; align-items: flex-start; }
         .live-indicator { font-size: 0.85em; }
@@ -349,11 +386,11 @@
         <div class="d-flex gap-2">
             <a href="{{ url_for('gerar_relatorio', evento_id=evento.id) }}" class="btn-live btn-live-pdf">
                 <i class="fas fa-file-pdf"></i>
-                Gerar Relatório
+                <span class="hide-mobile">Gerar Relatório</span>
             </a>
             <a href="{{ url_for('gerenciar_evento', evento_id=evento.id) }}" class="btn-live btn-live-back">
                 <i class="fas fa-arrow-left"></i>
-                Voltar
+                <span class="hide-mobile">Voltar</span>
             </a>
         </div>
     </div>
@@ -363,25 +400,25 @@
     <!-- Contadores -->
     <div class="counters-grid">
         <div class="counter-card presentes">
-            <div class="counter-icon">✅</div>
+            <div class="counter-icon"><i class="fas fa-check"></i></div>
             <div class="counter-value presentes" id="contador-presentes">0</div>
             <div class="counter-label">Presentes</div>
             <div class="counter-progress presentes" id="progress-presentes" style="width: 0%;"></div>
         </div>
         <div class="counter-card faltas">
-            <div class="counter-icon">❌</div>
+            <div class="counter-icon"><i class="fas fa-xmark"></i></div>
             <div class="counter-value faltas" id="contador-faltas">0</div>
             <div class="counter-label">Faltas</div>
             <div class="counter-progress faltas" id="progress-faltas" style="width: 0%;"></div>
         </div>
         <div class="counter-card pendentes">
-            <div class="counter-icon">⏳</div>
+            <div class="counter-icon"><i class="fas fa-hourglass-half"></i></div>
             <div class="counter-value pendentes" id="contador-pendentes">0</div>
             <div class="counter-label">Pendentes</div>
             <div class="counter-progress pendentes" id="progress-pendentes" style="width: 0%;"></div>
         </div>
         <div class="counter-card">
-            <div class="counter-icon">👥</div>
+            <div class="counter-icon"><i class="fas fa-users"></i></div>
             <div class="counter-value total" id="contador-total">0</div>
             <div class="counter-label">Total Inscritos</div>
         </div>
@@ -410,9 +447,9 @@
                         <th>Matrícula</th>
                         <th>Nome</th>
                         <th>Função</th>
-                        <th style="text-align: center;">✅</th>
-                        <th style="text-align: center;">❌</th>
-                        <th style="text-align: center;">↩️</th>
+                        <th style="text-align: center;"><i class="fas fa-check th-icon"></i></th>
+                        <th style="text-align: center;"><i class="fas fa-xmark th-icon"></i></th>
+                        <th style="text-align: center;"><i class="fas fa-rotate-left th-icon"></i></th>
                     </tr>
                 </thead>
                 <tbody id="lista-inscritos">
@@ -460,9 +497,11 @@ async function carregarStatus() {
         if (data.lista.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                        <div style="font-size: 3em; margin-bottom: 12px;">📋</div>
-                        Nenhum inscrito ainda
+                    <td colspan="7">
+                        <div class="empty-live">
+                            <div class="empty-live-icon"><i class="fas fa-clipboard-list"></i></div>
+                            Nenhum inscrito ainda
+                        </div>
                     </td>
                 </tr>`;
         } else {
