@@ -30,9 +30,21 @@
         font-family: 'Inter', 'Segoe UI', sans-serif;
     }
 
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            radial-gradient(600px circle at 85% 0%, rgba(59,130,246,0.07), transparent 40%),
+            radial-gradient(500px circle at 0% 70%, rgba(16,185,129,0.06), transparent 40%);
+    }
+    .upload-wrapper, .card-panel { position: relative; z-index: 1; }
+
     /* ==================== NAVBAR ==================== */
     .navbar-upload {
-        background: rgba(20, 27, 34, 0.9);
+        background: rgba(20, 27, 34, 0.85);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-bottom: 1px solid var(--border-color);
@@ -61,6 +73,7 @@
         justify-content: center;
         color: #fff;
         font-size: 0.9em;
+        box-shadow: 0 6px 18px rgba(59,130,246,0.3);
     }
 
     .btn-back-upload {
@@ -71,7 +84,7 @@
         text-decoration: none;
         font-weight: 600;
         font-size: 0.9em;
-        transition: all 0.3s ease;
+        transition: all 0.25s cubic-bezier(.4,0,.2,1);
         padding: 8px 16px;
         border-radius: var(--radius-md);
         border: 1px solid var(--border-color);
@@ -80,7 +93,8 @@
     .btn-back-upload:hover {
         color: var(--text-primary);
         background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.12);
+        transform: translateX(-2px);
     }
 
     /* ==================== MAIN CONTAINER ==================== */
@@ -89,6 +103,8 @@
         margin: 40px auto;
         padding: 0 20px;
     }
+
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
     /* ==================== UPLOAD CARD ==================== */
     .upload-card {
@@ -99,6 +115,7 @@
         box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
         position: relative;
         overflow: hidden;
+        animation: fadeInUp 0.5s ease both;
     }
 
     .upload-card::before {
@@ -125,7 +142,7 @@
         align-items: center;
         justify-content: center;
         margin: 0 auto 20px;
-        font-size: 2em;
+        font-size: 1.9em;
         color: #fff;
         box-shadow: 0 15px 40px rgba(59, 130, 246, 0.3);
         animation: floatIcon 3s ease-in-out infinite;
@@ -154,12 +171,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 12px;
+        gap: 14px;
         background: rgba(16, 185, 129, 0.08);
         border: 1px solid rgba(16, 185, 129, 0.2);
         border-radius: var(--radius-lg);
         padding: 16px 20px;
         margin-bottom: 28px;
+        animation: fadeInUp 0.5s ease .1s both;
     }
 
     .stats-badge-upload .count-number {
@@ -175,7 +193,16 @@
     }
 
     .stats-badge-upload .count-icon {
-        font-size: 1.5em;
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius-md);
+        background: rgba(16,185,129,0.15);
+        color: var(--accent-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3em;
+        flex-shrink: 0;
     }
 
     /* ==================== DROP ZONE ==================== */
@@ -185,7 +212,7 @@
         padding: 40px;
         text-align: center;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(.4,0,.2,1);
         background: var(--bg-secondary);
         position: relative;
         overflow: hidden;
@@ -193,24 +220,33 @@
 
     .drop-zone:hover {
         border-color: var(--accent-blue);
-        background: rgba(59, 130, 246, 0.03);
+        background: rgba(59, 130, 246, 0.04);
+        transform: translateY(-2px);
     }
 
     .drop-zone.drag-over {
         border-color: var(--accent-green);
-        background: rgba(16, 185, 129, 0.05);
+        background: rgba(16, 185, 129, 0.06);
         transform: scale(1.02);
     }
 
     .drop-zone-icon {
-        font-size: 3em;
-        margin-bottom: 16px;
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 50%;
+        background: rgba(59,130,246,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7em;
         color: var(--accent-blue);
         transition: all 0.3s ease;
     }
 
     .drop-zone.drag-over .drop-zone-icon {
         color: var(--accent-green);
+        background: rgba(16,185,129,0.15);
         animation: bounce 0.5s ease;
     }
 
@@ -255,6 +291,7 @@
 
     .file-info.show {
         display: flex;
+        animation: fadeInUp 0.3s ease both;
     }
 
     .file-icon {
@@ -265,7 +302,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5em;
+        font-size: 1.4em;
         color: var(--accent-green);
         flex-shrink: 0;
     }
@@ -295,7 +332,7 @@
         padding: 8px 12px;
         border-radius: var(--radius-md);
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
         flex-shrink: 0;
     }
 
@@ -303,6 +340,7 @@
         background: var(--accent-red);
         color: #fff;
         border-color: var(--accent-red);
+        transform: rotate(90deg);
     }
 
     /* ==================== INFO BOX ==================== */
@@ -319,14 +357,22 @@
         gap: 10px;
         padding: 12px 16px;
         background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
         border-radius: var(--radius-md);
         font-size: 0.8em;
         color: var(--text-secondary);
+        transition: border-color 0.25s ease;
+    }
+
+    .info-item:hover {
+        border-color: rgba(59,130,246,0.3);
     }
 
     .info-item i {
         color: var(--accent-blue);
         font-size: 1.1em;
+        width: 18px;
+        text-align: center;
     }
 
     .info-item strong {
@@ -344,7 +390,7 @@
         font-size: 1.1em;
         font-weight: 700;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(.4,0,.2,1);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -375,7 +421,9 @@
     }
 
     .btn-upload-submit.loading .spinner-upload {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
     }
 
     /* ==================== ALERTS ==================== */
@@ -406,46 +454,76 @@
         border: 1px solid rgba(239, 68, 68, 0.3);
         color: #ef4444;
     }
-/* ==================== LIMPAR BASE CARD ==================== */
-.card-panel {
-    background: var(--bg-card);
-    border: 2px solid var(--border-color);
-    border-radius: var(--radius-xl);
-    padding: 24px;
-    margin-top: 24px;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-}
 
-.card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
+    /* ==================== LIMPAR BASE CARD ==================== */
+    .card-panel {
+        background: var(--bg-card);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 24px;
+        margin-top: 24px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        animation: fadeInUp 0.5s ease .15s both;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
 
-.card-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-primary);
-    font-weight: 700;
-    font-size: 1.1em;
-}
+    .card-panel:hover {
+        box-shadow: 0 15px 40px rgba(239,68,68,0.08);
+    }
 
-.card-title .icon-circle {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9em;
-    flex-shrink: 0;
-}
+    .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 1.1em;
+    }
+
+    .card-title .icon-circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9em;
+        flex-shrink: 0;
+    }
+
+    .btn-limpar-base {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9em;
+        cursor: pointer;
+        border: none;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    }
+
+    .btn-limpar-base:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(239,68,68,0.35);
+    }
+
     /* ==================== RESPONSIVE ==================== */
     @media (max-width: 768px) {
         .upload-card {
@@ -479,7 +557,7 @@
 <nav class="navbar-upload">
     <div class="container d-flex justify-content-between align-items-center">
         <div class="page-title-upload">
-            <span class="icon-circle">📤</span>
+            <span class="icon-circle"><i class="fas fa-upload"></i></span>
             Upload de Funcionários
         </div>
         <a href="{{ url_for('dashboard') }}" class="btn-back-upload">
@@ -505,7 +583,7 @@
     
     <div class="upload-card">
         <div class="upload-header">
-            <div class="upload-icon">📤</div>
+            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
             <h2>Carregar Planilha</h2>
             <p>Faça upload da base de funcionários para o sistema.<br>Os dados ficarão salvos permanentemente.</p>
         </div>
@@ -513,7 +591,7 @@
         <!-- Badge de cadastrados -->
         {% if total_cadastrados > 0 %}
         <div class="stats-badge-upload">
-            <span class="count-icon">👥</span>
+            <span class="count-icon"><i class="fas fa-users"></i></span>
             <div>
                 <div class="count-number">{{ total_cadastrados }}</div>
                 <div class="count-label">funcionários cadastrados</div>
@@ -524,7 +602,7 @@
         <form method="POST" enctype="multipart/form-data" id="upload-form">
             <!-- Drop Zone -->
             <div class="drop-zone" id="drop-zone">
-                <div class="drop-zone-icon">📁</div>
+                <div class="drop-zone-icon"><i class="fas fa-folder-open"></i></div>
                 <div class="drop-zone-text">
                     <strong>Arraste e solte</strong> o arquivo aqui
                 </div>
@@ -538,7 +616,7 @@
             
             <!-- Arquivo selecionado -->
             <div class="file-info" id="file-info">
-                <div class="file-icon">📄</div>
+                <div class="file-icon"><i class="fas fa-file-alt"></i></div>
                 <div class="file-details">
                     <div class="file-name" id="file-name"></div>
                     <div class="file-size" id="file-size"></div>
@@ -579,7 +657,7 @@
     </div>
 </div>
 {% if total_cadastrados > 0 %}
-<div class="card-panel" style="border-color: rgba(239,68,68,0.2); margin-top: 16px;">
+<div class="card-panel" style="border-color: rgba(239,68,68,0.2);">
     <div class="card-header">
         <div class="card-title">
             <span class="icon-circle" style="background: rgba(239,68,68,0.15); color: #ef4444;">
@@ -594,7 +672,7 @@
         Esta ação removerá <strong style="color: #ef4444;">todas</strong> as matrículas da sua base.
     </p>
     <form method="POST" action="{{ url_for('limpar_matriculas') }}" onsubmit="return confirm('Tem certeza que deseja remover TODAS as {{ total_cadastrados }} matrículas da sua base?\n\nEsta ação é irreversível!')">
-        <button type="submit" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9em; cursor: pointer; border: none; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff;">
+        <button type="submit" class="btn-limpar-base">
             <i class="fas fa-trash-alt"></i> Limpar Todas as Matrículas
         </button>
     </form>
@@ -652,7 +730,7 @@ function mostrarArquivo(file) {
     const ext = '.' + nomeArquivo.split('.').pop();
     
     if (!extensoes.includes(ext)) {
-        alert('❌ Formato inválido! Use .xlsx, .xls ou .csv');
+        alert('Formato inválido! Use .xlsx, .xls ou .csv');
         fileInput.value = '';
         return;
     }
