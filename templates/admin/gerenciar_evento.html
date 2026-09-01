@@ -27,8 +27,22 @@
 
     body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            radial-gradient(600px circle at 95% 0%, rgba(16,185,129,0.06), transparent 40%),
+            radial-gradient(500px circle at 0% 50%, rgba(139,92,246,0.05), transparent 40%);
+    }
+    .container { position: relative; z-index: 1; }
+
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
     .navbar-premium {
-        background: rgba(20, 27, 34, 0.9);
+        background: rgba(20, 27, 34, 0.88);
         backdrop-filter: blur(20px);
         border-bottom: 1px solid var(--border-color);
         padding: 10px 0;
@@ -44,20 +58,23 @@
         width: 36px; height: 36px;
         background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark));
         border-radius: var(--radius-md);
-        display: flex; align-items: center; justify-content: center; font-size: 1em; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; font-size: 0.95em; flex-shrink: 0;
+        box-shadow: 0 6px 16px rgba(16,185,129,0.3);
+        transition: transform 0.3s ease;
     }
+    .navbar-brand-premium:hover .icon-wrapper { transform: rotate(-8deg) scale(1.05); }
 
     .btn-nav {
         padding: 8px 14px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.82em;
-        text-decoration: none; transition: all 0.25s ease;
+        text-decoration: none; transition: all 0.25s cubic-bezier(.4,0,.2,1);
         display: inline-flex; align-items: center; gap: 6px;
         border: 2px solid transparent; cursor: pointer;
         background: transparent; color: var(--text-secondary); white-space: nowrap;
     }
 
-    .btn-nav:hover { transform: translateY(-1px); }
+    .btn-nav:hover { transform: translateY(-2px); }
     .btn-nav-primary { background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark)); color: #fff; box-shadow: 0 4px 12px rgba(16,185,129,0.25); }
-    .btn-nav-primary:hover { box-shadow: 0 6px 20px rgba(16,185,129,0.35); color: #fff; }
+    .btn-nav-primary:hover { box-shadow: 0 8px 22px rgba(16,185,129,0.4); color: #fff; }
     .btn-nav-outline { background: transparent; color: var(--accent-green); border-color: var(--accent-green); }
     .btn-nav-outline:hover { background: var(--accent-green); color: #fff; }
     .btn-nav-danger { background: transparent; color: var(--text-secondary); border-color: var(--border-color); }
@@ -71,26 +88,36 @@
     .btn-nav-green { background: transparent; color: var(--accent-green); border-color: rgba(16,185,129,0.3); }
     .btn-nav-green:hover { background: var(--accent-green); color: #fff; }
     .btn-nav.copiado { background: #10b981 !important; border-color: #10b981 !important; color: #fff !important; }
+    .btn-nav i.fa-sync-alt { transition: transform 0.4s ease; }
+    .btn-nav-warning:hover i.fa-sync-alt { transform: rotate(180deg); }
 
     .nav-input-vagas {
         width: 52px; padding: 8px 6px;
         background: #1e293b; border: 2px solid rgba(255,255,255,0.1);
         border-radius: var(--radius-md); color: #e2e8f0;
         font-weight: 700; text-align: center; font-size: 0.85em;
+        transition: border-color 0.25s ease;
     }
+    .nav-input-vagas:focus { outline: none; border-color: var(--accent-purple); }
 
     .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
     .stat-card {
         background: var(--bg-card); border: 1px solid var(--border-color);
         border-radius: var(--radius-lg); padding: 14px 12px;
-        position: relative; overflow: hidden; transition: all 0.25s ease;
+        position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(.4,0,.2,1);
         display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0;
+        animation: fadeInUp 0.45s ease both;
     }
-    .stat-card:hover { transform: translateY(-2px); border-color: rgba(16,185,129,0.3); box-shadow: 0 0 20px rgba(16,185,129,0.2); }
-    .stat-card .stat-icon { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.1em; margin-bottom: 6px; flex-shrink: 0; }
-    .stat-card .stat-value { font-size: 1.5em; font-weight: 800; line-height: 1; margin-bottom: 2px; }
+    .stat-card:nth-child(1){ animation-delay: .03s; }
+    .stat-card:nth-child(2){ animation-delay: .06s; }
+    .stat-card:nth-child(3){ animation-delay: .09s; }
+    .stat-card:nth-child(4){ animation-delay: .12s; }
+    .stat-card:hover { transform: translateY(-3px); border-color: rgba(16,185,129,0.3); box-shadow: 0 12px 30px rgba(16,185,129,0.15); }
+    .stat-card .stat-icon { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.1em; margin-bottom: 6px; flex-shrink: 0; transition: transform 0.3s ease; }
+    .stat-card:hover .stat-icon { transform: scale(1.1) rotate(-5deg); }
+    .stat-card .stat-value { font-size: 1.5em; font-weight: 800; line-height: 1; margin-bottom: 2px; transition: color 0.2s ease; }
     .stat-card .stat-label { color: var(--text-muted); font-size: 0.65em; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-    .stat-card .stat-bg { position: absolute; right: -10px; bottom: -10px; font-size: 4em; opacity: 0.03; pointer-events: none; }
+    .stat-card .stat-bg { position: absolute; right: -6px; bottom: -6px; font-size: 2.8em; opacity: 0.05; pointer-events: none; }
     .stat-vagas .stat-icon { background: rgba(16,185,129,0.15); color: var(--accent-green); }
     .stat-vagas .stat-value { color: var(--accent-green); }
     .stat-inscritos .stat-icon { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
@@ -100,7 +127,7 @@
     .stat-link .stat-icon { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
     .stat-link .stat-value { font-size: 0.85em; word-break: break-all; }
 
-    .table-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 16px; overflow: hidden; }
+    .table-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 16px; overflow: hidden; animation: fadeInUp 0.5s ease .1s both; }
     .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
     .table-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-size: 1.1em; font-weight: 700; }
     .table-title .icon-circle { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8em; }
@@ -119,10 +146,10 @@
     .matricula-code-red { background: rgba(239,68,68,0.1); color: var(--accent-red); }
     .funcao-badge { background: rgba(59,130,246,0.1); color: var(--accent-blue); padding: 4px 10px; border-radius: 20px; font-size: 0.7em; font-weight: 600; white-space: nowrap; }
     .btn-remove { background: transparent; color: var(--accent-red); border: 2px solid rgba(239,68,68,0.3); padding: 6px 12px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.8em; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 4px; }
-    .btn-remove:hover { background: var(--accent-red); color: #fff; }
+    .btn-remove:hover { background: var(--accent-red); color: #fff; transform: translateY(-1px); }
 
     .empty-state { text-align: center; padding: 40px 16px; }
-    .empty-icon { font-size: 3em; margin-bottom: 12px; opacity: 0.3; }
+    .empty-icon { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; font-size: 1.7em; opacity: 0.5; color: var(--text-muted); }
     .empty-text { color: var(--text-muted); font-size: 1em; font-weight: 500; }
     .alert-modern { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-lg); font-weight: 500; font-size: 0.85em; animation: slideDown 0.4s ease; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
@@ -133,6 +160,12 @@
         from { opacity: 0; transform: translateY(30px) scale(0.9); }
         to { opacity: 1; transform: translateY(0) scale(1); }
     }
+
+    @keyframes rowIn {
+        from { opacity: 0; transform: translateX(-6px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .premium-table tbody tr { animation: rowIn 0.3s ease both; }
 
     @media (max-width: 768px) {
         .btn-nav { padding: 6px 10px; font-size: 0.75em; gap: 4px; }
@@ -152,7 +185,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center w-100 flex-wrap" style="gap:12px;">
             <a href="{{ url_for('dashboard') }}" class="navbar-brand-premium">
-                <span class="icon-wrapper">⚽</span>
+                <span class="icon-wrapper"><i class="fas fa-futbol"></i></span>
                 <span>{{ evento.nome }}</span>
             </a>
             <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
@@ -210,25 +243,25 @@
             <div class="stat-icon"><i class="fas fa-users"></i></div>
             <div class="stat-value">{{ evento.total_vagas }}</div>
             <div class="stat-label">Total Vagas</div>
-            <div class="stat-bg">⚽</div>
+            <div class="stat-bg"><i class="fas fa-futbol"></i></div>
         </div>
         <div class="stat-card stat-inscritos">
             <div class="stat-icon"><i class="fas fa-user-check"></i></div>
             <div class="stat-value">{{ vagas_ocupadas }}</div>
             <div class="stat-label">Inscritos</div>
-            <div class="stat-bg">👥</div>
+            <div class="stat-bg"><i class="fas fa-users"></i></div>
         </div>
         <div class="stat-card stat-disponiveis">
             <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
             <div class="stat-value">{{ vagas_disponiveis }}</div>
             <div class="stat-label">Disponíveis</div>
-            <div class="stat-bg">🎫</div>
+            <div class="stat-bg"><i class="fas fa-ticket-alt"></i></div>
         </div>
         <div class="stat-card stat-link">
             <div class="stat-icon"><i class="fas fa-link"></i></div>
             <div class="stat-label">Link</div>
             <div class="stat-value"><code style="background:rgba(139,92,246,0.15);color:#8b5cf6;padding:4px 8px;border-radius:6px;font-size:0.8em;">/e/{{ evento.codigo_link }}</code></div>
-            <div class="stat-bg">🔗</div>
+            <div class="stat-bg"><i class="fas fa-link"></i></div>
         </div>
     </div>
 
@@ -260,7 +293,7 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <div class="empty-icon">📋</div>
+            <div class="empty-icon"><i class="fas fa-clipboard-list"></i></div>
             <p class="empty-text">Nenhum inscrito ainda</p>
         </div>
         {% endif %}
@@ -300,7 +333,7 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <div class="empty-icon">🔓</div>
+            <div class="empty-icon"><i class="fas fa-unlock"></i></div>
             <p class="empty-text">Nenhuma matrícula bloqueada</p>
             <p class="text-muted mt-2" style="font-size:0.8em;">Use o botão "Bloquear" na navbar para restringir matrículas.</p>
         </div>
@@ -382,14 +415,14 @@ function carregarInscricoes() {
 }
 
 function atualizarTabelaInscricoes(lista) {
-    // ✅ Pegar APENAS o tbody da tabela de INSCRITOS (primeira .table-container)
+    // Pegar APENAS o tbody da tabela de INSCRITOS (primeira .table-container)
     var container = document.querySelector('.table-container');
     if (!container) return;
     var tbody = container.querySelector('.premium-table tbody');
     if (!tbody) return;
     
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p class="empty-text">Nenhum inscrito</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i class="fas fa-clipboard-list"></i></div><p class="empty-text">Nenhum inscrito</p></div></td></tr>';
         var cb = container.querySelector('.table-count');
         if (cb) cb.textContent = '0 inscrito(s)';
         return;
@@ -415,7 +448,7 @@ function atualizarContadores(data) {
 }
 
 function vincularBotoesExcluir() {
-    // ✅ Vincular apenas botões DENTRO da primeira .table-container
+    // Vincular apenas botões DENTRO da primeira .table-container
     var container = document.querySelector('.table-container');
     if (!container) return;
     container.querySelectorAll('.btn-excluir-trigger').forEach(function(btn) {
@@ -453,22 +486,22 @@ document.addEventListener('DOMContentLoaded', function() {
             var url = this.getAttribute('data-url');
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(url).then(function() {
-                    mostrarToast('✅ Link copiado!', 'success');
+                    mostrarToast('<i class="fas fa-check-circle"></i> Link copiado!', 'success');
                 }).catch(function() {
-                    mostrarToast('❌ Erro ao copiar', 'error');
+                    mostrarToast('<i class="fas fa-exclamation-circle"></i> Erro ao copiar', 'error');
                 });
             } else {
                 var t = document.createElement('textarea');
                 t.value = url; t.style.position = 'fixed'; t.style.opacity = '0';
                 document.body.appendChild(t); t.select();
-                try { document.execCommand('copy'); mostrarToast('✅ Link copiado!', 'success'); }
+                try { document.execCommand('copy'); mostrarToast('<i class="fas fa-check-circle"></i> Link copiado!', 'success'); }
                 catch(e) { prompt('Copie o link:', url); }
                 document.body.removeChild(t);
             }
         });
     }
     
-    // ✅ Vincular botões originais
+    // Vincular botões originais
     setTimeout(function() {
         document.querySelectorAll('.btn-excluir-trigger').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -489,6 +522,7 @@ function mostrarToast(msg, tipo) {
     toast.innerHTML = msg;
     toast.style.cssText = 
         'position:fixed;bottom:24px;right:24px;z-index:99999;' +
+        'display:flex;align-items:center;gap:8px;' +
         'background:' + (tipo === 'success' ? '#10b981' : '#ef4444') + ';' +
         'color:#fff;padding:14px 24px;border-radius:12px;font-weight:600;' +
         'font-size:0.95em;box-shadow:0 8px 25px rgba(0,0,0,0.5);' +
