@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, session, url_for, flash, send_file
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from models import db, Admin, Evento, MatriculaCadastrada, FuncaoBloqueada, Inscricao, MatriculaBloqueada, Time, TimeJogador, LogAcesso, gerar_codigo_unico
+from models import db, Admin, Evento, MatriculaCadastrada, FuncaoBloqueada, Inscricao, MatriculaBloqueada, Time, TimeJogador, LogAcesso, gerar_codigo_unico, Destaque, NotaAtualizacao, Jogador
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -11,6 +11,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from functools import wraps
 from sqlalchemy.exc import OperationalError
+from sqlalchemy import text
 import openpyxl
 import os
 import time
@@ -24,24 +25,90 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# ✅ CONFIGURAÇÃO SSL CORRETA
-# ✅ MAIS RÁPIDO:
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 10,  # Aumentado
-    'pool_recycle': 600,
-    'pool_pre_ping': True,
-    'max_overflow': 20,
-    'connect_args': {
-        'sslmode': 'require',
-        'connect_timeout': 5,  # Reduzido
+# Configurações específicas para PostgreSQL
+if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql://'):
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 10,
+        'pool_recycle': 600,
+        'pool_pre_ping': True,
+        'max_overflow': 20,
+        'connect_args': {
+            'sslmode': 'require',
+            'connect_timeout': 5,
+        }
     }
-}
 
 db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'admin_login'
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# ============ MIGRAÇÃO AUTOMÁTICA ============
+def run_migrations():
+    """Executa migrações automaticamente na inicialização"""
+    try:
+        is_postgres = app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql://')
+        
+        with app.app_context():
+            print("🔄 Verificando migrações pendentes...")
+            
+            # 1. Criar tabelas novas (se não existirem)
+            db.create_all()
+            print("✅ Tabelas verificadas")
+            
+            if is_postgres:
+                # Migrações para PostgreSQL
+                migrations = [
+                    ("inscricao", "jogador_id", "INTEGER"),
+                    ("evento", "vagas_mensalistas", "INTEGER DEFAULT 0"),
+                    ("evento", "vagas_diaristas", "INTEGER DEFAULT 0"),
+                    ("evento", "vagas_visitantes", "INTEGER DEFAULT 0"),
+                    ("evento", "usar_prioridades", "BOOLEAN DEFAULT FALSE"),
+                ]
+                
+                for tabela, coluna, tipo in migrations:
+                    try:
+                        db.session.execute(text(f"ALTER TABLE {tabela} ADD COLUMN IF NOT EXISTS {coluna} {tipo}"))
+                        print(f"✅ {tabela}.{coluna} adicionado")
+                    except Exception as e:
+                        print(f"⚠️ {tabela}.{coluna}: {e}")
+                
+                db.session.commit()
+                print("✅ Migrações PostgreSQL concluídas!")
+            
+            else:
+                # Migrações para SQLite
+                migrations = [
+                    ("inscricao", "jogador_id", "INTEGER"),
+                    ("evento", "vagas_mensalistas", "INTEGER DEFAULT 0"),
+                    ("evento", "vagas_diaristas", "INTEGER DEFAULT 0"),
+                    ("evento", "vagas_visitantes", "INTEGER DEFAULT 0"),
+                    ("evento", "usar_prioridades", "BOOLEAN DEFAULT 0"),
+                ]
+                
+                for tabela, coluna, tipo in migrations:
+                    try:
+                        result = db.session.execute(text(f"PRAGMA table_info({tabela})")).fetchall()
+                        colunas_existentes = [row[1] for row in result]
+                        
+                        if coluna not in colunas_existentes:
+                            db.session.execute(text(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {tipo}"))
+                            print(f"✅ {tabela}.{coluna} adicionado")
+                        else:
+                            print(f"⏭️ {tabela}.{coluna} já existe")
+                    except Exception as e:
+                        print(f"⚠️ {tabela}.{coluna}: {e}")
+                
+                db.session.commit()
+                print("✅ Migrações SQLite concluídas!")
+    
+    except Exception as e:
+        print(f"❌ Erro na migração: {e}")
+
+# ============ EXECUTAR MIGRAÇÕES ============
+with app.app_context():
+    run_migrations()
 
 # ============ DECORATOR DE RETRY ============
 def retry_on_db_error(max_retries=3):
@@ -103,11 +170,8 @@ def shutdown_session(exception=None):
     """Garantir que a sessão seja fechada ao final da requisição"""
     db.session.remove()
 
-# ============ INICIALIZAÇÃO DO BANCO (DENTRO DO CONTEXTO) ============
+# ============ CRIAÇÃO DO ADMIN ============
 with app.app_context():
-    db.create_all()
-    
-    # Criar admin se não existir
     if not Admin.query.first():
         admin = Admin(
             username='admin',
@@ -154,17 +218,34 @@ def dashboard():
         eventos = Evento.query.filter_by(criado_por=current_user.id, excluido=False).order_by(Evento.created_at.desc()).all()
     
     total_cadastrados = MatriculaCadastrada.query.filter(
-    MatriculaCadastrada.evento_id.is_(None),
-    MatriculaCadastrada.criado_por == current_user.id
-).count()
-    return render_template('admin/dashboard.html', eventos=eventos, total_cadastrados=total_cadastrados)
+        MatriculaCadastrada.evento_id.is_(None),
+        MatriculaCadastrada.criado_por == current_user.id
+    ).count()
+    
+    destaque = Destaque.query.filter_by(ativo=True).order_by(Destaque.ordem).first()
+    notas_atualizacao = NotaAtualizacao.query.filter_by(ativo=True).order_by(NotaAtualizacao.ordem).all()
+    
+    return render_template('admin/dashboard.html', 
+                          eventos=eventos, 
+                          total_cadastrados=total_cadastrados,
+                          destaque=destaque,
+                          notas_atualizacao=notas_atualizacao)
 
 @app.route('/admin/usuarios')
 @login_required
 @admin_required
 def admin_usuarios():
     usuarios = Admin.query.order_by(Admin.created_at.desc()).all()
-    return render_template('admin/usuarios.html', usuarios=usuarios)
+    destaques = Destaque.query.order_by(Destaque.ordem).all()
+    notas = NotaAtualizacao.query.order_by(NotaAtualizacao.ordem).all()
+    
+    destaques_dict = [d.to_dict() for d in destaques]
+    notas_dict = [n.to_dict() for n in notas]
+    
+    return render_template('admin/usuarios.html', 
+                          usuarios=usuarios,
+                          destaques=destaques_dict,
+                          notas=notas_dict)
 
 @app.route('/admin/usuarios/criar', methods=['POST'])
 @login_required
@@ -185,6 +266,204 @@ def admin_criar_usuario():
     registrar_log('criar_usuario', f'Criou usuário {username}')
     flash(f'✅ Usuário {username} criado!', 'success')
     return redirect(url_for('admin_usuarios'))
+
+# ============ GERENCIAR DESTAQUES ============
+@app.route('/admin/destaques')
+@login_required
+@admin_required
+def admin_destaques():
+    destaques = Destaque.query.order_by(Destaque.ordem).all()
+    destaques_dict = [d.to_dict() for d in destaques]
+    return render_template('admin/destaques.html', destaques=destaques_dict)
+
+@app.route('/admin/destaques/criar', methods=['POST'])
+@login_required
+@admin_required
+def admin_criar_destaque():
+    try:
+        destaque = Destaque(
+            imagem_url=request.form.get('imagem_url', ''),
+            titulo=request.form['titulo'],
+            descricao=request.form['descricao'],
+            link=request.form.get('link', ''),
+            ativo=request.form.get('ativo') == 'on',
+            ordem=int(request.form.get('ordem', 0)),
+            criado_por=current_user.id
+        )
+        db.session.add(destaque)
+        db.session.commit()
+        registrar_log('criar_destaque', f'Criou destaque: {destaque.titulo}')
+        flash('✅ Destaque criado com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Erro ao criar destaque: {str(e)}', 'danger')
+    return redirect(url_for('admin_destaques'))
+
+@app.route('/admin/destaques/<int:destaque_id>/editar', methods=['POST'])
+@login_required
+@admin_required
+def admin_editar_destaque(destaque_id):
+    destaque = Destaque.query.get_or_404(destaque_id)
+    try:
+        destaque.imagem_url = request.form.get('imagem_url', '')
+        destaque.titulo = request.form['titulo']
+        destaque.descricao = request.form['descricao']
+        destaque.link = request.form.get('link', '')
+        destaque.ativo = request.form.get('ativo') == 'on'
+        destaque.ordem = int(request.form.get('ordem', 0))
+        db.session.commit()
+        registrar_log('editar_destaque', f'Editou destaque: {destaque.titulo}')
+        flash('✅ Destaque atualizado!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Erro: {str(e)}', 'danger')
+    return redirect(url_for('admin_destaques'))
+
+@app.route('/admin/destaques/<int:destaque_id>/excluir', methods=['POST'])
+@login_required
+@admin_required
+def admin_excluir_destaque(destaque_id):
+    destaque = Destaque.query.get_or_404(destaque_id)
+    titulo = destaque.titulo
+    db.session.delete(destaque)
+    db.session.commit()
+    registrar_log('excluir_destaque', f'Excluiu destaque: {titulo}')
+    flash(f'✅ Destaque "{titulo}" excluído!', 'success')
+    return redirect(url_for('admin_destaques'))
+
+# ============ GERENCIAR NOTAS DE ATUALIZAÇÃO ============
+@app.route('/admin/notas')
+@login_required
+@admin_required
+def admin_notas():
+    notas = NotaAtualizacao.query.order_by(NotaAtualizacao.ordem).all()
+    notas_dict = [n.to_dict() for n in notas]
+    return render_template('admin/notas.html', notas=notas_dict)
+
+@app.route('/admin/notas/criar', methods=['POST'])
+@login_required
+@admin_required
+def admin_criar_nota():
+    try:
+        tipo = request.form.get('tipo', 'versao')
+        versao = request.form.get('versao', '') if tipo == 'versao' else None
+        
+        nota = NotaAtualizacao(
+            data=request.form['data'],
+            tipo=tipo,
+            versao=versao,
+            titulo=request.form['titulo'],
+            descricao=request.form['descricao'],
+            ativo=request.form.get('ativo') == 'on',
+            ordem=int(request.form.get('ordem', 0)),
+            criado_por=current_user.id
+        )
+        db.session.add(nota)
+        db.session.commit()
+        registrar_log('criar_nota', f'Criou nota: {nota.titulo}')
+        flash('✅ Nota criada com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Erro: {str(e)}', 'danger')
+    return redirect(url_for('admin_notas'))
+
+@app.route('/admin/notas/<int:nota_id>/editar', methods=['POST'])
+@login_required
+@admin_required
+def admin_editar_nota(nota_id):
+    nota = NotaAtualizacao.query.get_or_404(nota_id)
+    try:
+        tipo = request.form.get('tipo', 'versao')
+        versao = request.form.get('versao', '') if tipo == 'versao' else None
+        
+        nota.data = request.form['data']
+        nota.tipo = tipo
+        nota.versao = versao
+        nota.titulo = request.form['titulo']
+        nota.descricao = request.form['descricao']
+        nota.ativo = request.form.get('ativo') == 'on'
+        nota.ordem = int(request.form.get('ordem', 0))
+        db.session.commit()
+        registrar_log('editar_nota', f'Editou nota: {nota.titulo}')
+        flash('✅ Nota atualizada!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Erro: {str(e)}', 'danger')
+    return redirect(url_for('admin_notas'))
+
+@app.route('/admin/notas/<int:nota_id>/excluir', methods=['POST'])
+@login_required
+@admin_required
+def admin_excluir_nota(nota_id):
+    nota = NotaAtualizacao.query.get_or_404(nota_id)
+    titulo = nota.titulo
+    db.session.delete(nota)
+    db.session.commit()
+    registrar_log('excluir_nota', f'Excluiu nota: {titulo}')
+    flash(f'✅ Nota "{titulo}" excluída!', 'success')
+    return redirect(url_for('admin_notas'))
+
+# ============ FINANCEIRO ============
+@app.route('/admin/financeiro')
+@login_required
+@admin_required
+def financeiro():
+    return render_template('admin/financeiro.html')
+
+@app.route('/admin/api/jogador/<int:jogador_id>/pagar-mensalidade', methods=['POST'])
+@login_required
+@admin_required
+def pagar_mensalidade(jogador_id):
+    jogador = Jogador.query.get_or_404(jogador_id)
+    try:
+        jogador.mensalidade_paga = True
+        jogador.data_pagamento = datetime.utcnow()
+        db.session.commit()
+        registrar_log('pagar_mensalidade', f'Mensalidade de {jogador.nome} paga')
+        return jsonify({'sucesso': True, 'mensagem': 'Mensalidade paga com sucesso!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'sucesso': False, 'mensagem': str(e)})
+
+@app.route('/admin/api/financeiro')
+@login_required
+@admin_required
+def api_financeiro():
+    jogadores = Jogador.query.filter_by(criado_por=current_user.id).all()
+    
+    total_mensalistas = sum(1 for j in jogadores if j.tipo == 'mensalista')
+    total_diaristas = sum(1 for j in jogadores if j.tipo == 'diarista')
+    total_visitantes = sum(1 for j in jogadores if j.tipo == 'visitante')
+    total_jogadores = len(jogadores)
+    
+    mensalidades_pagas = sum(1 for j in jogadores if j.tipo == 'mensalista' and j.mensalidade_paga)
+    mensalidades_pendentes = sum(1 for j in jogadores if j.tipo == 'mensalista' and not j.mensalidade_paga and (not j.data_vencimento or j.data_vencimento >= datetime.utcnow()))
+    mensalidades_vencidas = sum(1 for j in jogadores if j.tipo == 'mensalista' and not j.mensalidade_paga and j.data_vencimento and j.data_vencimento < datetime.utcnow())
+    
+    valor_total = sum(j.valor_mensalidade for j in jogadores if j.tipo == 'mensalista' and j.mensalidade_paga)
+    
+    pendentes = []
+    for j in jogadores:
+        if j.tipo == 'mensalista' and not j.mensalidade_paga:
+            pendentes.append({
+                'id': j.id,
+                'nome': j.nome + (' ' + j.sobrenome if j.sobrenome else ''),
+                'valor': j.valor_mensalidade,
+                'vencimento': j.data_vencimento.strftime('%d/%m/%Y') if j.data_vencimento else 'Não definido',
+                'status': 'vencido' if j.data_vencimento and j.data_vencimento < datetime.utcnow() else 'pendente'
+            })
+    
+    return jsonify({
+        'total_jogadores': total_jogadores,
+        'total_mensalistas': total_mensalistas,
+        'total_diaristas': total_diaristas,
+        'total_visitantes': total_visitantes,
+        'mensalidades_pagas': mensalidades_pagas,
+        'mensalidades_pendentes': mensalidades_pendentes,
+        'mensalidades_vencidas': mensalidades_vencidas,
+        'valor_total': valor_total,
+        'pendentes': pendentes
+    })
 
 @app.route('/admin/usuarios/<int:user_id>/toggle', methods=['POST'])
 @login_required
@@ -226,7 +505,153 @@ def admin_logs():
     
     return render_template('admin/logs.html', logs=logs, usuarios_filtro=usuarios_filtro)
 
-# ============ UPLOAD FUNCIONÁRIOS (COM RETRY) ============
+# ============ JOGADORES (CADASTRO MANUAL) ============
+@app.route('/admin/jogadores')
+@login_required
+@admin_required
+def jogadores():
+    jogadores = Jogador.query.filter_by(criado_por=current_user.id).order_by(Jogador.nome).all()
+    return render_template('admin/jogadores.html', jogadores=jogadores, now=datetime.utcnow())
+
+@app.route('/admin/jogador/cadastrar', methods=['POST'])
+@login_required
+@admin_required
+def cadastrar_jogador():
+    try:
+        nome = request.form.get('nome', '').strip().upper()
+        if not nome:
+            flash('❌ Nome é obrigatório!', 'danger')
+            return redirect(url_for('jogadores'))
+        
+        sobrenome = request.form.get('sobrenome', '').strip().upper()
+        apelido = request.form.get('apelido', '').strip()
+        funcao = request.form.get('funcao', 'GERAL').strip().upper()
+        telefone = request.form.get('telefone', '').strip()
+        email = request.form.get('email', '').strip()
+        tipo = request.form.get('tipo', 'mensalista')
+        
+        data_vencimento = None
+        valor_mensalidade = 0.0
+        mensalidade_paga = False
+        mes_referencia = None
+        
+        if tipo == 'mensalista':
+            data_vencimento_str = request.form.get('data_vencimento')
+            if data_vencimento_str:
+                data_vencimento = datetime.strptime(data_vencimento_str, '%Y-%m-%d')
+            valor_mensalidade = float(request.form.get('valor_mensalidade', 0))
+            mensalidade_paga = request.form.get('mensalidade_paga') == 'on'
+            mes_referencia = request.form.get('mes_referencia', '').strip()
+        
+        jogador = Jogador(
+            nome=nome,
+            sobrenome=sobrenome,
+            apelido=apelido,
+            funcao=funcao,
+            telefone=telefone,
+            email=email,
+            tipo=tipo,
+            mensalidade_paga=mensalidade_paga,
+            data_vencimento=data_vencimento,
+            valor_mensalidade=valor_mensalidade,
+            mes_referencia=mes_referencia,
+            data_pagamento=datetime.utcnow() if mensalidade_paga else None,
+            ativo=True,
+            bloqueado=False,
+            criado_por=current_user.id
+        )
+        db.session.add(jogador)
+        db.session.commit()
+        registrar_log('cadastrar_jogador', f'Cadastrou jogador: {nome} {sobrenome}')
+        flash(f'✅ Jogador {nome} {sobrenome} cadastrado com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Erro ao cadastrar: {str(e)}', 'danger')
+    return redirect(url_for('jogadores'))
+
+@app.route('/admin/jogador/<int:jogador_id>/editar', methods=['POST'])
+@login_required
+@admin_required
+def editar_jogador(jogador_id):
+    jogador = Jogador.query.get_or_404(jogador_id)
+    try:
+        jogador.nome = request.form.get('nome', '').strip().upper()
+        jogador.sobrenome = request.form.get('sobrenome', '').strip().upper()
+        jogador.apelido = request.form.get('apelido', '').strip()
+        jogador.funcao = request.form.get('funcao', 'GERAL').strip().upper()
+        jogador.telefone = request.form.get('telefone', '').strip()
+        jogador.email = request.form.get('email', '').strip()
+        jogador.tipo = request.form.get('tipo', 'mensalista')
+        jogador.mensalidade_paga = request.form.get('mensalidade_paga') == 'on'
+        jogador.ativo = request.form.get('ativo') == 'on'
+        jogador.bloqueado = request.form.get('bloqueado') == 'on'
+        
+        if jogador.tipo == 'mensalista':
+            data_vencimento_str = request.form.get('data_vencimento')
+            if data_vencimento_str:
+                jogador.data_vencimento = datetime.strptime(data_vencimento_str, '%Y-%m-%d')
+            else:
+                jogador.data_vencimento = None
+            jogador.valor_mensalidade = float(request.form.get('valor_mensalidade', 0))
+        else:
+            jogador.data_vencimento = None
+            jogador.valor_mensalidade = 0.0
+            jogador.mensalidade_paga = False
+        
+        jogador.atualizado_em = datetime.utcnow()
+        db.session.commit()
+        registrar_log('editar_jogador', f'Editou jogador: {jogador.nome}')
+        flash(f'✅ Jogador {jogador.nome} atualizado!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Erro ao editar: {str(e)}', 'danger')
+    return redirect(url_for('jogadores'))
+
+@app.route('/admin/jogador/<int:jogador_id>/excluir', methods=['POST'])
+@login_required
+@admin_required
+def excluir_jogador(jogador_id):
+    jogador = Jogador.query.get_or_404(jogador_id)
+    nome = jogador.nome
+    db.session.delete(jogador)
+    db.session.commit()
+    registrar_log('excluir_jogador', f'Excluiu jogador: {nome}')
+    flash(f'✅ Jogador {nome} excluído!', 'success')
+    return redirect(url_for('jogadores'))
+
+@app.route('/admin/jogador/<int:jogador_id>/toggle-status', methods=['POST'])
+@login_required
+@admin_required
+def toggle_jogador_status(jogador_id):
+    jogador = Jogador.query.get_or_404(jogador_id)
+    jogador.ativo = not jogador.ativo
+    db.session.commit()
+    status = 'ativado' if jogador.ativo else 'desativado'
+    registrar_log('toggle_jogador_status', f'{status} jogador: {jogador.nome}')
+    flash(f'✅ Jogador {jogador.nome} {status}!', 'success')
+    return redirect(url_for('jogadores'))
+
+@app.route('/admin/jogador/<int:jogador_id>/toggle-bloqueio', methods=['POST'])
+@login_required
+@admin_required
+def toggle_jogador_bloqueio(jogador_id):
+    jogador = Jogador.query.get_or_404(jogador_id)
+    jogador.bloqueado = not jogador.bloqueado
+    jogador.data_bloqueio = datetime.utcnow() if jogador.bloqueado else None
+    db.session.commit()
+    status = 'bloqueado' if jogador.bloqueado else 'desbloqueado'
+    registrar_log('toggle_jogador_bloqueio', f'{status} jogador: {jogador.nome}')
+    flash(f'✅ Jogador {jogador.nome} {status}!', 'success')
+    return redirect(url_for('jogadores'))
+
+@app.route('/admin/api/jogador/<int:jogador_id>')
+@login_required
+@admin_required
+def api_jogador(jogador_id):
+    jogador = Jogador.query.get_or_404(jogador_id)
+    return jsonify(jogador.to_dict())
+
+# ============ UPLOAD FUNCIONÁRIOS ============
 @app.route('/admin/cadastrar-funcionarios', methods=['GET', 'POST'])
 @login_required
 def cadastrar_funcionarios():
@@ -251,7 +676,6 @@ def cadastrar_funcionarios():
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
                 
-                # Ler arquivo
                 rows = []
                 if filename.endswith('.csv'):
                     with open(filepath, 'r', encoding='utf-8') as f:
@@ -271,7 +695,6 @@ def cadastrar_funcionarios():
                 
                 sistema = ['000010', '000063', '000099', '000777', '000888', '000999', '888888']
                 
-                # ✅ Buscar existentes (CORRIGIDO - indentação)
                 existentes_dict = {}
                 for existente in MatriculaCadastrada.query.filter(
                     MatriculaCadastrada.evento_id.is_(None),
@@ -312,7 +735,6 @@ def cadastrar_funcionarios():
                             existentes_dict[matricula].funcao = funcao
                             atualizados += 1
                         else:
-                            # ✅ Adicionar com vírgula (CORRIGIDO)
                             novos.append({
                                 'evento_id': None,
                                 'matricula': matricula,
@@ -347,9 +769,6 @@ def cadastrar_funcionarios():
 @app.route('/admin/limpar-matriculas', methods=['POST'])
 @login_required
 def limpar_matriculas():
-    """Remove todas as matrículas da base do usuário logado"""
-    
-    # Contar quantas matrículas serão removidas
     total = MatriculaCadastrada.query.filter(
         MatriculaCadastrada.evento_id.is_(None),
         MatriculaCadastrada.criado_por == current_user.id
@@ -359,7 +778,6 @@ def limpar_matriculas():
         flash('📂 Nenhuma matrícula para remover.', 'info')
         return redirect(url_for('cadastrar_funcionarios'))
     
-    # Deletar matrículas da base do usuário
     MatriculaCadastrada.query.filter(
         MatriculaCadastrada.evento_id.is_(None),
         MatriculaCadastrada.criado_por == current_user.id
@@ -369,16 +787,17 @@ def limpar_matriculas():
     registrar_log('limpar_matriculas', f'Removeu {total} matrículas da base')
     flash(f'🗑️ {total} matrículas removidas da base!', 'success')
     return redirect(url_for('cadastrar_funcionarios'))
+
 # ============ CRIAR EVENTO ============
 @app.route('/admin/criar-evento', methods=['GET', 'POST'])
 @login_required
 def criar_evento():
     funcoes = db.session.query(MatriculaCadastrada.funcao)\
-    .filter(
-        MatriculaCadastrada.evento_id.is_(None),
-        MatriculaCadastrada.criado_por == current_user.id,
-        MatriculaCadastrada.ativo == True
-    )\
+        .filter(
+            MatriculaCadastrada.evento_id.is_(None),
+            MatriculaCadastrada.criado_por == current_user.id,
+            MatriculaCadastrada.ativo == True
+        )\
         .distinct().order_by(MatriculaCadastrada.funcao).all()
     funcoes = [f[0] for f in funcoes]
     
@@ -386,13 +805,23 @@ def criar_evento():
         try:
             tipo = request.form.get('tipo_inscricao', 'nome')
             
+            usar_prioridades = request.form.get('usar_prioridades') == 'on'
+            vagas_mensalistas = int(request.form.get('vagas_mensalistas', 0))
+            vagas_diaristas = int(request.form.get('vagas_diaristas', 0))
+            vagas_visitantes = int(request.form.get('vagas_visitantes', 0))
+            total_vagas = int(request.form['total_vagas'])
+            
             evento = Evento(
                 nome=request.form['nome'],
                 data_evento=datetime.strptime(request.form['data_evento'], '%Y-%m-%dT%H:%M'),
-                total_vagas=int(request.form['total_vagas']),
+                total_vagas=total_vagas,
                 codigo_link=gerar_codigo_unico(),
                 status='aberto',
                 tipo_inscricao=tipo,
+                usar_prioridades=usar_prioridades,
+                vagas_mensalistas=vagas_mensalistas,
+                vagas_diaristas=vagas_diaristas,
+                vagas_visitantes=vagas_visitantes,
                 criado_por=current_user.id
             )
             db.session.add(evento)
@@ -400,12 +829,18 @@ def criar_evento():
             
             if tipo == 'matricula':
                 base = MatriculaCadastrada.query.filter(
-    MatriculaCadastrada.evento_id.is_(None),
-    MatriculaCadastrada.criado_por == current_user.id,
-    MatriculaCadastrada.ativo == True
-).all()
+                    MatriculaCadastrada.evento_id.is_(None),
+                    MatriculaCadastrada.criado_por == current_user.id,
+                    MatriculaCadastrada.ativo == True
+                ).all()
                 for func in base:
-                    mat = MatriculaCadastrada(evento_id=evento.id, matricula=func.matricula, nome=func.nome, funcao=func.funcao, ativo=True)
+                    mat = MatriculaCadastrada(
+                        evento_id=evento.id,
+                        matricula=func.matricula,
+                        nome=func.nome,
+                        funcao=func.funcao,
+                        ativo=True
+                    )
                     db.session.add(mat)
                 
                 funcoes_bloquear = request.form.getlist('funcoes_bloquear')
@@ -425,9 +860,66 @@ def criar_evento():
     
     return render_template('admin/criar_evento.html', funcoes=funcoes)
 
+@app.route('/admin/evento/<int:evento_id>/recalcular-vagas', methods=['POST'])
+@login_required
+def recalcular_vagas(evento_id):
+    evento = Evento.query.get_or_404(evento_id)
+    try:
+        total_inscritos = Inscricao.query.filter_by(evento_id=evento.id, data_cancelamento=None).count()
+        
+        if evento.usar_prioridades and total_inscritos > 0:
+            pass
+        
+        db.session.commit()
+        return jsonify({'sucesso': True, 'mensagem': 'Vagas recalculadas!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'sucesso': False, 'mensagem': str(e)})
+
+# ============ APIs PÚBLICAS ============
+@app.route('/api/jogadores/lista')
+def api_jogadores_lista():
+    jogadores = Jogador.query.filter_by(ativo=True, bloqueado=False).all()
+    dados = []
+    for j in jogadores:
+        mensalidade_vencida = False
+        if j.tipo == 'mensalista' and not j.mensalidade_paga:
+            if j.data_vencimento and j.data_vencimento < datetime.utcnow():
+                mensalidade_vencida = True
+        
+        dados.append({
+            'id': j.id,
+            'nome': j.nome,
+            'sobrenome': j.sobrenome,
+            'apelido': j.apelido,
+            'funcao': j.funcao,
+            'tipo': j.tipo,
+            'ativo': j.ativo,
+            'bloqueado': j.bloqueado,
+            'mensalidade_paga': j.mensalidade_paga,
+            'mensalidade_vencida': mensalidade_vencida
+        })
+    return jsonify({'jogadores': dados})
+
+@app.route('/admin/evento/<int:evento_id>/atualizar-config-vagas', methods=['POST'])
+@login_required
+def atualizar_config_vagas(evento_id):
+    evento = Evento.query.get_or_404(evento_id)
+    try:
+        evento.usar_prioridades = request.form.get('usar_prioridades') == 'on'
+        evento.vagas_mensalistas = int(request.form.get('vagas_mensalistas', 0))
+        evento.vagas_diaristas = int(request.form.get('vagas_diaristas', 0))
+        evento.vagas_visitantes = int(request.form.get('vagas_visitantes', 0))
+        db.session.commit()
+        registrar_log('atualizar_config_vagas', f'Atualizou configuração de vagas do evento: {evento.nome}', evento.id)
+        flash('✅ Configuração de vagas atualizada!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Erro: {str(e)}', 'danger')
+    return redirect(url_for('gerenciar_evento', evento_id=evento_id))
+
 @app.route('/api/limpeza-automatica')
 def limpeza_automatica():
-    """Rota que pode ser chamada pelo UptimeRobot ou cron job para limpar eventos antigos"""
     data_limite = datetime.utcnow() - timedelta(days=7)
     
     eventos_para_limpar = Evento.query.filter(
@@ -453,7 +945,6 @@ def limpeza_automatica():
     
     return jsonify({'status': 'ok', 'limpos': 0})
 
-# ============ GERENCIAR EVENTO ============
 @app.route('/admin/evento/<int:evento_id>')
 @login_required
 def gerenciar_evento(evento_id):
@@ -466,7 +957,6 @@ def gerenciar_evento(evento_id):
     return render_template('admin/gerenciar_evento.html', evento=evento, inscricoes=inscricoes,
                          vagas_ocupadas=vagas_ocupadas, vagas_disponiveis=vagas_disponiveis, bloqueios=bloqueios)
 
-# ============ EXCLUIR EVENTO (SOFT DELETE) ============
 @app.route('/admin/evento/<int:evento_id>/excluir', methods=['POST'])
 @login_required
 def excluir_evento(evento_id):
@@ -479,16 +969,13 @@ def excluir_evento(evento_id):
     flash('✅ Evento excluído!', 'success')
     return redirect(url_for('dashboard'))
 
-# ============ APIs PÚBLICAS ============
 @app.route('/e/<codigo>')
 def pagina_inscricao(codigo):
     evento = Evento.query.filter_by(codigo_link=codigo).first_or_404()
     
-    # ✅ Verificar se o evento foi excluído
     if evento.excluido:
         return render_template('public/evento_fechado.html', evento=evento, motivo='excluido')
     
-    # ✅ Verificar se o evento está fechado
     if evento.status != 'aberto':
         return render_template('public/evento_fechado.html', evento=evento, motivo='encerrado')
     
@@ -548,53 +1035,154 @@ def validar_matricula():
 
 @app.route('/api/inscrever', methods=['POST'])
 def inscrever():
-    data = request.json
-    codigo = data.get('codigo_evento', '')
-    evento = Evento.query.filter_by(codigo_link=codigo).first()
-    if not evento:
-        return jsonify({'sucesso': False, 'mensagem': 'Evento não encontrado'}), 404
-    
-    # ✅ INSCRIÇÃO POR NOME
-    if evento.tipo_inscricao == 'nome':
-        nome = data.get('nome', '').strip()
-        if not nome:
-            return jsonify({'sucesso': False, 'mensagem': 'Digite seu nome!'})
+    try:
+        data = request.json
+        print(f"📥 Dados recebidos: {data}")
         
-        vagas_ocupadas = Inscricao.query.filter_by(evento_id=evento.id, data_cancelamento=None).count()
+        codigo = data.get('codigo_evento', '')
+        evento = Evento.query.filter_by(codigo_link=codigo).first()
+        
+        if not evento:
+            return jsonify({'sucesso': False, 'mensagem': 'Evento não encontrado'}), 404
+        
+        if evento.status != 'aberto':
+            return jsonify({'sucesso': False, 'mensagem': 'Evento encerrado'})
+        
+        vagas_ocupadas = Inscricao.query.filter_by(
+            evento_id=evento.id, 
+            data_cancelamento=None
+        ).count()
+        
         if vagas_ocupadas >= evento.total_vagas:
-            return jsonify({'sucesso': False, 'mensagem': 'Vagas esgotadas!', 'vagas_restantes': 0})
+            return jsonify({
+                'sucesso': False, 
+                'mensagem': 'Vagas esgotadas!', 
+                'vagas_restantes': 0
+            })
         
-        inscricao = Inscricao(evento_id=evento.id, matricula='NOME', nome=nome.upper(), funcao='PARTICIPANTE')
+        # ==================== INSCRIÇÃO POR JOGADOR ====================
+        jogador_id = data.get('jogador_id')
+        
+        if jogador_id:
+            jogador = Jogador.query.get(jogador_id)
+            if not jogador:
+                return jsonify({'sucesso': False, 'mensagem': 'Jogador não encontrado'})
+            
+            if not jogador.ativo:
+                return jsonify({'sucesso': False, 'mensagem': 'Jogador inativo'})
+            
+            if jogador.bloqueado:
+                return jsonify({'sucesso': False, 'mensagem': 'Jogador bloqueado'})
+            
+            if jogador.tipo == 'mensalista':
+                mensalidade_vencida = False
+                if not jogador.mensalidade_paga:
+                    if jogador.data_vencimento and jogador.data_vencimento < datetime.utcnow():
+                        mensalidade_vencida = True
+                
+                if mensalidade_vencida:
+                    return jsonify({
+                        'sucesso': False, 
+                        'mensagem': 'Mensalidade vencida! Regularize para se inscrever.'
+                    })
+            
+            inscricao_existente = Inscricao.query.filter_by(
+                evento_id=evento.id, 
+                jogador_id=jogador.id,
+                data_cancelamento=None
+            ).first()
+            
+            if inscricao_existente:
+                return jsonify({'sucesso': False, 'mensagem': 'Você já está inscrito!'})
+            
+            nome_completo = jogador.nome
+            if jogador.sobrenome:
+                nome_completo += ' ' + jogador.sobrenome
+            
+            inscricao = Inscricao(
+                evento_id=evento.id,
+                jogador_id=jogador.id,
+                nome=nome_completo,
+                funcao=jogador.funcao or 'JOGADOR',
+                matricula=None
+            )
+            db.session.add(inscricao)
+            db.session.commit()
+            
+            vagas_restantes = evento.total_vagas - (vagas_ocupadas + 1)
+            return jsonify({
+                'sucesso': True,
+                'mensagem': f'{jogador.nome} inscrito com sucesso!',
+                'vagas_restantes': vagas_restantes
+            })
+        
+        # ==================== INSCRIÇÃO POR NOME ====================
+        if evento.tipo_inscricao == 'nome':
+            nome = data.get('nome', '').strip()
+            if not nome:
+                return jsonify({'sucesso': False, 'mensagem': 'Digite seu nome!'})
+            
+            inscricao = Inscricao(
+                evento_id=evento.id,
+                matricula='NOME',
+                nome=nome.upper(),
+                funcao='PARTICIPANTE',
+                jogador_id=None
+            )
+            db.session.add(inscricao)
+            db.session.commit()
+            
+            vagas_restantes = evento.total_vagas - (vagas_ocupadas + 1)
+            return jsonify({
+                'sucesso': True,
+                'mensagem': f'{nome} inscrito!',
+                'vagas_restantes': vagas_restantes
+            })
+        
+        # ==================== INSCRIÇÃO POR MATRÍCULA ====================
+        matricula = data.get('matricula', '').zfill(6)
+        cadastro = MatriculaCadastrada.query.filter_by(
+            evento_id=evento.id, 
+            matricula=matricula, 
+            ativo=True
+        ).first()
+        
+        if not cadastro:
+            return jsonify({'sucesso': False, 'mensagem': 'Matrícula não autorizada'}), 403
+        
+        inscricao_existente = Inscricao.query.filter_by(
+            evento_id=evento.id, 
+            matricula=matricula, 
+            data_cancelamento=None
+        ).first()
+        
+        if inscricao_existente:
+            return jsonify({'sucesso': False, 'mensagem': 'Você já está inscrito!'})
+        
+        inscricao = Inscricao(
+            evento_id=evento.id,
+            matricula=matricula,
+            nome=cadastro.nome,
+            funcao=cadastro.funcao,
+            jogador_id=None
+        )
         db.session.add(inscricao)
         db.session.commit()
         
-        vagas_ocupadas = Inscricao.query.filter_by(evento_id=evento.id, data_cancelamento=None).count()
-        return jsonify({'sucesso': True, 'mensagem': f'{nome} inscrito!', 'vagas_restantes': evento.total_vagas - vagas_ocupadas})
+        vagas_restantes = evento.total_vagas - (vagas_ocupadas + 1)
+        return jsonify({
+            'sucesso': True,
+            'mensagem': f'{cadastro.nome.split()[0]} inscrito!',
+            'vagas_restantes': vagas_restantes
+        })
     
-    # ✅ INSCRIÇÃO POR MATRÍCULA
-    matricula = data.get('matricula', '').zfill(6)
-    cadastro = MatriculaCadastrada.query.filter_by(evento_id=evento.id, matricula=matricula, ativo=True).first()
-    if not cadastro:
-        return jsonify({'sucesso': False, 'mensagem': 'Matrícula não autorizada'}), 403
-    
-    funcao_bloqueada = FuncaoBloqueada.query.filter_by(evento_id=evento.id, funcao=cadastro.funcao).first()
-    if funcao_bloqueada:
-        return jsonify({'sucesso': False, 'mensagem': f'Inscrições não permitidas para: {cadastro.funcao}'})
-    
-    inscricao_existente = Inscricao.query.filter_by(evento_id=evento.id, matricula=matricula, data_cancelamento=None).first()
-    if inscricao_existente:
-        return jsonify({'sucesso': False, 'mensagem': 'Você já está inscrito!'})
-    
-    vagas_ocupadas = Inscricao.query.filter_by(evento_id=evento.id, data_cancelamento=None).count()
-    if vagas_ocupadas >= evento.total_vagas:
-        return jsonify({'sucesso': False, 'mensagem': 'Vagas esgotadas!', 'vagas_restantes': 0})
-    
-    inscricao = Inscricao(evento_id=evento.id, matricula=matricula, nome=cadastro.nome, funcao=cadastro.funcao)
-    db.session.add(inscricao)
-    db.session.commit()
-    
-    vagas_ocupadas = Inscricao.query.filter_by(evento_id=evento.id, data_cancelamento=None).count()
-    return jsonify({'sucesso': True, 'mensagem': f'{cadastro.nome.split()[0]} inscrito!', 'vagas_restantes': evento.total_vagas - vagas_ocupadas})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'sucesso': False, 
+            'mensagem': f'Erro interno: {str(e)}'
+        }), 500
 
 @app.route('/api/cancelar-inscricao', methods=['POST'])
 def cancelar_inscricao():
@@ -653,46 +1241,34 @@ def marcar_presenca(inscricao_id):
     return jsonify({'sucesso': True})
 
 def distribuir_jogador_automaticamente(inscricao):
-    """Coloca o jogador no time correto automaticamente seguindo a regra:
-    - 10 primeiros (ou vagas_por_time * 2): sorteio alternado entre Time A e B
-    - Restante: preenchimento por bloco (C, D, E, F...)
-    """
     evento_id = inscricao.evento_id
     
-    # Verificar se já existem times criados para este evento
     times = Time.query.filter_by(evento_id=evento_id).order_by(Time.nome).all()
     if not times:
-        return  # Não tem times configurados ainda
+        return
     
-    # Verificar se o jogador já está em algum time
     ja_em_time = TimeJogador.query.filter_by(inscricao_id=inscricao.id).first()
     if ja_em_time:
-        return  # Já está em um time
+        return
     
     num_times = len(times)
-    vagas_por_time = 5  # Padrão (idealmente puxar da configuração)
-    sorteio_qtd = vagas_por_time * 2  # 10 se 5 vagas
+    vagas_por_time = 5
+    sorteio_qtd = vagas_por_time * 2
     
     times_nomes = [t.nome for t in times]
     time_dict = {t.nome: t for t in times}
     
-    # Contar quantos jogadores já estão nos times (total)
     total_em_times = TimeJogador.query.join(Time).filter(Time.evento_id == evento_id).count()
-    posicao = total_em_times + 1  # Próxima posição (1-based)
+    posicao = total_em_times + 1
     
-    # ✅ Aplicar a lógica de distribuição
     if posicao <= sorteio_qtd:
-        # Sorteio: alterna entre A e B
         time_nome = 'A' if posicao % 2 == 1 else 'B'
     else:
-        # Preenchimento por bloco (ordem de chegada)
-        restante = posicao - sorteio_qtd - 1  # 0-based para o restante
-        bloco_idx = restante // vagas_por_time  # 0=C, 1=D, 2=E, 3=F...
+        restante = posicao - sorteio_qtd - 1
+        bloco_idx = restante // vagas_por_time
         time_nome = times_nomes[bloco_idx % num_times]
     
-    # ✅ Verificar se o time_nome existe
     if time_nome not in time_dict:
-        # Procura qualquer time com vaga
         for nome in times_nomes:
             t = time_dict[nome]
             count = TimeJogador.query.filter_by(time_id=t.id).count()
@@ -701,26 +1277,22 @@ def distribuir_jogador_automaticamente(inscricao):
                 break
     
     if time_nome not in time_dict:
-        return  # Não achou time disponível
+        return
     
     time = time_dict[time_nome]
     
-    # Verificar se o time está cheio
     count = TimeJogador.query.filter_by(time_id=time.id).count()
     if count >= vagas_por_time:
-        # Procurar próximo time com vaga
         for nome in times_nomes:
             t = time_dict[nome]
             if TimeJogador.query.filter_by(time_id=t.id).count() < vagas_por_time:
                 time = t
                 break
     
-    # Verificar novamente se tem vaga
     count = TimeJogador.query.filter_by(time_id=time.id).count()
     if count >= vagas_por_time:
-        return  # Todos os times estão cheios
+        return
     
-    # Adicionar ao time
     tj = TimeJogador(
         time_id=time.id,
         inscricao_id=inscricao.id,
@@ -740,7 +1312,7 @@ def admin_reset_senha(user_id):
     registrar_log('reset_senha', f'Resetou senha de {user.username}')
     flash(f'✅ Senha de {user.username} redefinida!', 'success')
     return redirect(url_for('admin_usuarios'))
-# ============ RELATÓRIO PDF ============
+
 @app.route('/admin/evento/<int:evento_id>/relatorio')
 @login_required
 def gerar_relatorio(evento_id):
@@ -1000,10 +1572,10 @@ def desbloquear_matricula(evento_id, bloqueio_id):
 @login_required
 def sincronizar_base(evento_id):
     base = MatriculaCadastrada.query.filter(
-    MatriculaCadastrada.evento_id.is_(None),
-    MatriculaCadastrada.criado_por == current_user.id,
-    MatriculaCadastrada.ativo == True
-).all()
+        MatriculaCadastrada.evento_id.is_(None),
+        MatriculaCadastrada.criado_por == current_user.id,
+        MatriculaCadastrada.ativo == True
+    ).all()
     contador = 0
     for cadastro in base:
         if not MatriculaCadastrada.query.filter_by(evento_id=evento_id, matricula=cadastro.matricula).first():
@@ -1026,12 +1598,10 @@ def atualizar_vagas(evento_id):
         flash(f'✅ Vagas atualizadas para {novo_total}!', 'success')
     return redirect(url_for('gerenciar_evento', evento_id=evento_id))
 
-
 @app.teardown_appcontext
 def shutdown_session(exception=None):
-    """Garantir que a sessão seja fechada ao final da requisição"""
     db.session.remove()
-# ============ INICIAR ============
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)

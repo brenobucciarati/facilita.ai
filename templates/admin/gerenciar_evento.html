@@ -127,6 +127,15 @@
     .stat-link .stat-icon { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
     .stat-link .stat-value { font-size: 0.85em; word-break: break-all; }
 
+    .card-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 20px; margin-bottom: 16px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .card-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 700; font-size: 1.1em; }
+    .card-title .icon-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; flex-shrink: 0; }
+    .icon-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+    .icon-green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+    .icon-yellow { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+    .icon-red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+
     .table-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 16px; overflow: hidden; animation: fadeInUp 0.5s ease .1s both; }
     .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
     .table-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-size: 1.1em; font-weight: 700; }
@@ -134,6 +143,7 @@
     .table-count { padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8em; }
     .table-count-green { background: rgba(16,185,129,0.1); color: var(--accent-green); }
     .table-count-red { background: rgba(239,68,68,0.1); color: var(--accent-red); }
+
     .premium-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
     .premium-table thead th { background: transparent; color: var(--text-muted); font-size: 0.7em; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; padding: 10px 8px; border: none; }
     .premium-table tbody tr { background: var(--bg-secondary); transition: all 0.2s ease; border-radius: var(--radius-md); }
@@ -141,6 +151,7 @@
     .premium-table tbody td { padding: 10px 8px; border: none; color: var(--text-primary); vertical-align: middle; }
     .premium-table tbody td:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
     .premium-table tbody td:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; text-align: right; }
+
     .index-badge { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark)); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8em; }
     .matricula-code { background: rgba(16,185,129,0.1); color: var(--accent-green); padding: 4px 8px; border-radius: var(--radius-sm); font-family: 'Courier New', monospace; font-weight: 600; font-size: 0.8em; }
     .matricula-code-red { background: rgba(239,68,68,0.1); color: var(--accent-red); }
@@ -148,9 +159,46 @@
     .btn-remove { background: transparent; color: var(--accent-red); border: 2px solid rgba(239,68,68,0.3); padding: 6px 12px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.8em; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 4px; }
     .btn-remove:hover { background: var(--accent-red); color: #fff; transform: translateY(-1px); }
 
+    .badge-status { padding: 4px 12px; border-radius: 20px; font-size: 0.6em; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .badge-ativo { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-inativo { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+
+    .input-group-create { margin-bottom: 12px; }
+    .input-label { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.8em; font-weight: 600; margin-bottom: 4px; }
+    .input-label i { color: var(--accent-green); font-size: 0.9em; }
+    .input-create { width: 100%; padding: 10px 14px; background: var(--bg-input); border: 2px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.95em; font-family: 'Inter', sans-serif; transition: all 0.25s ease; outline: none; }
+    .input-create:focus { border-color: var(--accent-green); box-shadow: 0 0 0 4px rgba(16,185,129,0.12); }
+    .input-create[type="number"] { font-weight: 700; text-align: center; }
+    .input-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    .btn-event { flex: 1; padding: 10px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.85em; text-decoration: none; text-align: center; transition: all 0.25s cubic-bezier(.4,0,.2,1); display: inline-flex; align-items: center; justify-content: center; gap: 5px; border: none; cursor: pointer; }
+    .btn-event-primary { background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark)); color: #fff; }
+    .btn-event-primary:hover { box-shadow: 0 8px 25px rgba(16,185,129,0.4); color: #fff; transform: translateY(-1px); }
+    .btn-event-outline { background: transparent; color: var(--accent-green); border: 2px solid var(--accent-green); }
+    .btn-event-outline:hover { background: var(--accent-green); color: #fff; }
+
+    .config-vagas-section { display: block; }
+    .config-vagas-toggle {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; background: var(--bg-secondary);
+        border-radius: var(--radius-md); border: 1px solid var(--border-color);
+        margin-bottom: 12px; cursor: pointer; transition: all 0.25s ease;
+    }
+    .config-vagas-toggle:hover { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.03); }
+    .config-vagas-toggle input[type="checkbox"] {
+        width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-green);
+        flex-shrink: 0;
+    }
+    .config-vagas-toggle label {
+        color: var(--text-secondary); font-weight: 600; cursor: pointer; font-size: 0.85em;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .config-vagas-toggle label i { color: var(--accent-green); }
+
     .empty-state { text-align: center; padding: 40px 16px; }
     .empty-icon { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; font-size: 1.7em; opacity: 0.5; color: var(--text-muted); }
     .empty-text { color: var(--text-muted); font-size: 1em; font-weight: 500; }
+
     .alert-modern { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-lg); font-weight: 500; font-size: 0.85em; animation: slideDown 0.4s ease; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
@@ -176,6 +224,7 @@
         .premium-table tbody td { padding: 8px 4px; font-size: 0.8em; }
         .premium-table th:nth-child(4), .premium-table td:nth-child(4),
         .premium-table th:nth-child(5), .premium-table td:nth-child(5) { display: none; }
+        .input-row { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
@@ -238,6 +287,7 @@
         {% endif %}
     {% endwith %}
 
+    <!-- Stats -->
     <div class="stats-row">
         <div class="stat-card stat-vagas">
             <div class="stat-icon"><i class="fas fa-users"></i></div>
@@ -265,6 +315,80 @@
         </div>
     </div>
 
+    <!-- ==================== CONFIGURAÇÃO DE VAGAS POR TIPO (SÓ PARA JOGADOR) ==================== -->
+    {% if evento.tipo_inscricao == 'jogador' %}
+    <div class="card-panel config-vagas-section">
+        <div class="card-header">
+            <div class="card-title">
+                <span class="icon-circle icon-purple"><i class="fas fa-users-cog"></i></span>
+                Configuração de Vagas por Tipo
+            </div>
+            <span class="badge-status {% if evento.usar_prioridades %}badge-ativo{% else %}badge-inativo{% endif %}">
+                {{ '✅ Ativo' if evento.usar_prioridades else '⛔ Inativo' }}
+            </span>
+        </div>
+        
+        <form method="POST" action="{{ url_for('atualizar_config_vagas', evento_id=evento.id) }}">
+            <div class="config-vagas-toggle" onclick="document.getElementById('usar_prioridades_edit').click()">
+                <input type="checkbox" name="usar_prioridades" id="usar_prioridades_edit" {% if evento.usar_prioridades %}checked{% endif %}>
+                <label for="usar_prioridades_edit">
+                    <i class="fas fa-check-circle"></i> 
+                    Distribuir vagas por tipo de jogador
+                </label>
+            </div>
+            
+            <div class="input-row">
+                <div class="input-group-create">
+                    <label class="input-label" style="color:var(--accent-purple);">
+                        <i class="fas fa-user-clock"></i> Vagas Mensalistas
+                    </label>
+                    <input type="number" name="vagas_mensalistas" class="input-create" value="{{ evento.vagas_mensalistas or 0 }}" min="0" max="{{ evento.total_vagas }}">
+                </div>
+                <div class="input-group-create">
+                    <label class="input-label" style="color:var(--accent-blue);">
+                        <i class="fas fa-user-tag"></i> Vagas Diaristas
+                    </label>
+                    <input type="number" name="vagas_diaristas" class="input-create" value="{{ evento.vagas_diaristas or 0 }}" min="0" max="{{ evento.total_vagas }}">
+                </div>
+                <div class="input-group-create">
+                    <label class="input-label" style="color:var(--accent-yellow);">
+                        <i class="fas fa-user-friends"></i> Vagas Visitantes
+                    </label>
+                    <input type="number" name="vagas_visitantes" class="input-create" value="{{ evento.vagas_visitantes or 0 }}" min="0" max="{{ evento.total_vagas }}">
+                </div>
+            </div>
+            
+            <div style="display:flex;gap:12px;margin-top:12px;">
+                <button type="submit" class="btn-event btn-event-primary" style="flex:1;">
+                    <i class="fas fa-save"></i> Atualizar Configuração
+                </button>
+            </div>
+        </form>
+        
+        <div style="margin-top:16px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);border:1px solid var(--border-color);">
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                <span style="color:var(--text-muted);font-size:0.8em;">
+                    <i class="fas fa-users"></i> 
+                    <strong style="color:var(--text-primary);">{{ vagas_ocupadas }}</strong> inscritos
+                </span>
+                <span style="color:var(--text-muted);font-size:0.8em;">
+                    <i class="fas fa-clock"></i> 
+                    <strong style="color:var(--accent-yellow);">{{ vagas_disponiveis }}</strong> vagas disponíveis
+                </span>
+                {% if evento.usar_prioridades %}
+                <span style="color:var(--text-muted);font-size:0.8em;">
+                    <i class="fas fa-users-cog"></i> 
+                    <strong style="color:var(--accent-purple);">{{ evento.vagas_mensalistas or 0 }}</strong> Mensalistas | 
+                    <strong style="color:var(--accent-blue);">{{ evento.vagas_diaristas or 0 }}</strong> Diaristas | 
+                    <strong style="color:var(--accent-yellow);">{{ evento.vagas_visitantes or 0 }}</strong> Visitantes
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Lista de Inscritos -->
     <div class="table-container">
         <div class="table-header">
             <div class="table-title">
@@ -299,7 +423,7 @@
         {% endif %}
     </div>
 
-    <!-- Lista de Bloqueios (SEMPRE VISÍVEL) -->
+    <!-- Lista de Bloqueios -->
     <div class="table-container mt-4">
         <div class="table-header">
             <div class="table-title" style="color:#ef4444;">
@@ -335,7 +459,6 @@
         <div class="empty-state">
             <div class="empty-icon"><i class="fas fa-unlock"></i></div>
             <p class="empty-text">Nenhuma matrícula bloqueada</p>
-            <p class="text-muted mt-2" style="font-size:0.8em;">Use o botão "Bloquear" na navbar para restringir matrículas.</p>
         </div>
         {% endif %}
     </div>
@@ -397,7 +520,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     carregarInscricoes();
     autoRefreshInterval = setInterval(carregarInscricoes, 5000);
-    // Vincular botões da tabela original
     setTimeout(vincularBotoesExcluir, 500);
 });
 
@@ -415,7 +537,6 @@ function carregarInscricoes() {
 }
 
 function atualizarTabelaInscricoes(lista) {
-    // Pegar APENAS o tbody da tabela de INSCRITOS (primeira .table-container)
     var container = document.querySelector('.table-container');
     if (!container) return;
     var tbody = container.querySelector('.premium-table tbody');
@@ -448,7 +569,6 @@ function atualizarContadores(data) {
 }
 
 function vincularBotoesExcluir() {
-    // Vincular apenas botões DENTRO da primeira .table-container
     var container = document.querySelector('.table-container');
     if (!container) return;
     container.querySelectorAll('.btn-excluir-trigger').forEach(function(btn) {
@@ -501,7 +621,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Vincular botões originais
     setTimeout(function() {
         document.querySelectorAll('.btn-excluir-trigger').forEach(function(btn) {
             btn.addEventListener('click', function() {

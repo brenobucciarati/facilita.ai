@@ -16,7 +16,7 @@
         .orb-1 { width: 300px; height: 300px; background: #10b981; top: -100px; right: -100px; animation: orbFloat 8s ease-in-out infinite; }
         .orb-2 { width: 250px; height: 250px; background: #3b82f6; bottom: -80px; left: -80px; animation: orbFloat 10s ease-in-out infinite reverse; }
         @keyframes orbFloat { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(30px,-30px) scale(1.1)} }
-        .inscricao-wrapper { position: relative; z-index: 1; width: 100%; max-width: 420px; animation: cardEntry 0.6s cubic-bezier(0.16,1,0.3,1); }
+        .inscricao-wrapper { position: relative; z-index: 1; width: 100%; max-width: 480px; animation: cardEntry 0.6s cubic-bezier(0.16,1,0.3,1); }
         @keyframes cardEntry { from{opacity:0;transform:translateY(20px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
         .inscricao-card { background: #1a2332; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 32px 24px; box-shadow: 0 25px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
         .inscricao-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #10b981, #34d399, #10b981); }
@@ -34,30 +34,15 @@
         .vagas-barra { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 12px; overflow: hidden; }
         .vagas-barra-fill { height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 2px; transition: width 0.5s ease; }
         .vagas-counter.critico .vagas-barra-fill { background: linear-gradient(90deg, #ef4444, #f87171); }
-        
-        .vagas-mensagem { 
-            color: #f59e0b; 
-            font-size: 1em; 
-            font-weight: 600; 
-            margin-top: 8px;
-            animation: pulseText 1.5s ease-in-out infinite;
-        }
-        .vagas-counter.critico .vagas-mensagem { 
-            color: #ef4444;
-            animation: pulseText 0.8s ease-in-out infinite;
-        }
-        @keyframes pulseText { 
-            0%,100%{opacity:1} 
-            50%{opacity:0.6} 
-        }
-        
-        .vagas-sem-numero .vagas-numero { display: none; }
+        .vagas-mensagem { color: #f59e0b; font-size: 1em; font-weight: 600; margin-top: 8px; animation: pulseText 1.5s ease-in-out infinite; }
+        .vagas-counter.critico .vagas-mensagem { color: #ef4444; animation: pulseText 0.8s ease-in-out infinite; }
+        @keyframes pulseText { 0%,100%{opacity:1} 50%{opacity:0.6} }
         
         .input-label { display: flex; align-items: center; gap: 6px; color: #94a3b8; font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
         .input-wrapper { position: relative; }
-        .input-inscricao { width: 100%; padding: 16px 20px; background: #1e293b; border: 2px solid rgba(255,255,255,0.08); color: #e2e8f0; font-size: 1.3em; font-weight: 700; text-align: center; border-radius: 16px; font-family: 'Inter', sans-serif; transition: all 0.3s ease; outline: none; }
+        .input-inscricao { width: 100%; padding: 16px 20px; background: #1e293b; border: 2px solid rgba(255,255,255,0.08); color: #e2e8f0; font-size: 1.1em; font-weight: 600; border-radius: 16px; font-family: 'Inter', sans-serif; transition: all 0.3s ease; outline: none; }
         .input-inscricao:focus { border-color: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,0.1); }
-        .input-inscricao::placeholder { color: #3a4455; }
+        .input-inscricao::placeholder { color: #3a4455; font-weight: 400; }
         .input-inscricao.error { border-color: #ef4444; animation: shake 0.5s ease; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
         .input-status { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 1.2em; }
@@ -65,9 +50,33 @@
         .status-valid { color: #10b981; }
         .status-invalid { color: #ef4444; }
         @keyframes spin { from{transform:translateY(-50%) rotate(0deg)} to{transform:translateY(-50%) rotate(360deg)} }
-        .info-box { background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 16px; padding: 16px 20px; margin: 16px 0; display: none; text-align: center; }
+        
+        .suggestions-container { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #1a2332; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
+        .suggestions-container.show { display: block; }
+        .suggestion-item { padding: 12px 16px; cursor: pointer; transition: all 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; }
+        .suggestion-item:hover { background: rgba(16,185,129,0.08); }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item .sug-nome { color: #e2e8f0; font-weight: 600; }
+        .suggestion-item .sug-detalhes { color: #64748b; font-size: 0.75em; }
+        .suggestion-item .sug-status { font-size: 0.65em; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+        .sug-status-mensalista { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+        .sug-status-diarista { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .sug-status-visitante { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .sug-status-bloqueado { background: rgba(239,68,68,0.15); color: #ef4444; }
+        
+        .info-box { background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 16px; padding: 16px 20px; margin: 16px 0; display: none; }
+        .info-box.show { display: block; animation: fadeInUp 0.3s ease; }
         .info-nome { font-size: 1.3em; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
         .info-funcao { font-size: 0.9em; color: #10b981; font-weight: 600; }
+        .info-tipo { font-size: 0.8em; padding: 4px 12px; border-radius: 4px; font-weight: 600; margin-top: 8px; display: inline-block; }
+        .info-tipo-mensalista { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+        .info-tipo-diarista { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .info-tipo-visitante { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .info-mensalidade { font-size: 0.75em; padding: 6px 12px; border-radius: 4px; font-weight: 600; margin-top: 8px; display: inline-block; margin-left: 8px; }
+        .info-mensalidade-paga { background: rgba(16,185,129,0.15); color: #10b981; }
+        .info-mensalidade-pendente { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .info-mensalidade-vencida { background: rgba(239,68,68,0.15); color: #ef4444; }
+        
         .btn-inscrever { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 16px; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
         .btn-inscrever:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(16,185,129,0.4); }
         .btn-inscrever:disabled { background: #2a3444; color: #4a5568; cursor: not-allowed; }
@@ -80,7 +89,9 @@
         @keyframes fadeInUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         .mensagem-sucesso { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
         .mensagem-erro { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
+        .mensagem-alerta { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); color: #f59e0b; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; display: none; }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         .modal-sucesso { background: #1a2332; border: 1px solid rgba(16,185,129,0.3); border-radius: 24px; padding: 48px 32px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 25px 60px rgba(0,0,0,0.6); animation: scaleIn 0.5s cubic-bezier(0.16,1,0.3,1); }
         @keyframes scaleIn { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
@@ -96,7 +107,11 @@
         .esgotado-texto { color: #64748b; font-size: 0.9em; line-height: 1.5; }
         .inscricao-footer { text-align: center; margin-top: 16px; }
         .footer-text { color: #64748b; font-size: 0.75em; opacity: 0.6; }
-        @media (max-width: 480px) { .inscricao-card { padding: 24px 16px; } .input-inscricao { font-size: 1.1em; padding: 14px; } .vagas-numero { font-size: 2.2em; } .btn-inscrever { font-size: 1em; padding: 14px; } }
+        
+        .suggestions-container::-webkit-scrollbar { width: 4px; }
+        .suggestions-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        
+        @media (max-width: 480px) { .inscricao-card { padding: 24px 16px; } .input-inscricao { font-size: 1em; padding: 14px; } .vagas-numero { font-size: 2.2em; } .btn-inscrever { font-size: 1em; padding: 14px; } }
     </style>
 </head>
 <body>
@@ -130,25 +145,23 @@
             </div>
             
             <div id="form-area">
-                <!-- ✅ CAMPO DINÂMICO: NOME ou MATRÍCULA -->
-                {% if evento.tipo_inscricao == 'nome' %}
-                <label class="input-label"><i class="fas fa-user"></i>Digite seu Nome Completo</label>
+                <label class="input-label"><i class="fas fa-user"></i>Digite seu Nome ou Matrícula</label>
                 <div class="input-wrapper">
-                    <input type="text" class="input-inscricao" id="nome-input" placeholder="Ex: João Silva" autocomplete="off" autofocus>
-                </div>
-                {% else %}
-                <label class="input-label"><i class="fas fa-id-card"></i>Digite sua Matrícula</label>
-                <div class="input-wrapper">
-                    <input type="tel" class="input-inscricao" id="matricula-input" maxlength="6" placeholder="000000" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autofocus style="letter-spacing:8px;font-family:'Courier New',monospace;">
+                    <input type="text" class="input-inscricao" id="busca-input" placeholder="Digite seu nome ou matrícula..." autocomplete="off" autofocus>
                     <span class="input-status" id="input-status"></span>
+                    <div class="suggestions-container" id="suggestions-container"></div>
                 </div>
+                
                 <div class="info-box" id="info-box">
                     <div class="info-nome" id="info-nome"></div>
                     <div class="info-funcao" id="info-funcao"></div>
+                    <div>
+                        <span class="info-tipo" id="info-tipo"></span>
+                        <span class="info-mensalidade" id="info-mensalidade"></span>
+                    </div>
                 </div>
-                {% endif %}
                 
-                <button class="btn-inscrever" id="btn-inscrever" {% if evento.tipo_inscricao == 'matricula' %}disabled{% endif %}>
+                <button class="btn-inscrever" id="btn-inscrever" disabled>
                     <span class="btn-text"><i class="fas fa-check-circle"></i>CONFIRMAR INSCRIÇÃO</span>
                     <span class="spinner"><i class="fas fa-spinner fa-spin"></i></span>
                 </button>
@@ -168,7 +181,7 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="modal-sucesso" style="display:none;">
+    <div class="modal-overlay" id="modal-sucesso">
         <div class="modal-sucesso">
             <div class="modal-icone">🎉</div>
             <h2 class="modal-titulo" id="modal-titulo">Inscrição Confirmada!</h2>
@@ -178,162 +191,324 @@
     </div>
     
     <script>
+    // ==================== DADOS ====================
     var CODIGO_EVENTO = '{{ evento.codigo_link }}';
     var TOTAL_VAGAS = parseInt('{{ evento.total_vagas }}');
-    var TIPO_INSCRICAO = '{{ evento.tipo_inscricao }}';
-    var dadosValidacao = null;
-    var timeoutValidacao = null;
+    var JOGADORES = [];
+    var jogadorSelecionado = null;
+    var timeoutBusca = null;
     
+    // Carregar lista de jogadores do backend
+    async function carregarJogadores() {
+        try {
+            var r = await fetch('/api/jogadores/lista');
+            var data = await r.json();
+            if (data.jogadores) {
+                JOGADORES = data.jogadores;
+                console.log('✅ Jogadores carregados:', JOGADORES.length);
+            }
+        } catch(e) {
+            console.warn('⚠️ Erro ao carregar jogadores:', e);
+        }
+    }
+    
+    // ==================== NORMALIZAÇÃO DE TEXTO ====================
+    function normalizarTexto(texto) {
+        if (!texto) return '';
+        return texto.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-zA-Z0-9\s]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+    
+    function matchJogador(busca) {
+        var normalizado = normalizarTexto(busca);
+        if (!normalizado || normalizado.length < 2) return [];
+        
+        var resultados = [];
+        for (var i = 0; i < JOGADORES.length; i++) {
+            var j = JOGADORES[i];
+            var nomeNormalizado = normalizarTexto(j.nome + ' ' + (j.sobrenome || '') + ' ' + (j.apelido || ''));
+            var matriculaNormalizada = normalizarTexto(j.matricula || '');
+            
+            // Verificar se a busca está contida no nome
+            if (nomeNormalizado.includes(normalizado) || 
+                normalizado.includes(nomeNormalizado.substring(0, normalizado.length)) ||
+                matriculaNormalizada.includes(normalizado)) {
+                resultados.push(j);
+            }
+        }
+        
+        // Ordenar por relevância (priorizar quem começa com a busca)
+        resultados.sort(function(a, b) {
+            var aNome = normalizarTexto(a.nome);
+            var bNome = normalizarTexto(b.nome);
+            var aMatch = aNome.startsWith(normalizado);
+            var bMatch = bNome.startsWith(normalizado);
+            if (aMatch && !bMatch) return -1;
+            if (!aMatch && bMatch) return 1;
+            return aNome.length - bNome.length;
+        });
+        
+        return resultados.slice(0, 8);
+    }
+    
+    // ==================== SUGESTÕES ====================
+    var buscaInput = document.getElementById('busca-input');
+    var suggestionsContainer = document.getElementById('suggestions-container');
+    var infoBox = document.getElementById('info-box');
     var btnInscrever = document.getElementById('btn-inscrever');
     var mensagemArea = document.getElementById('mensagem-area');
-    var vagasDisponiveis = document.getElementById('vagas-disponiveis');
-    var vagasBarraFill = document.getElementById('vagas-barra-fill');
-    var vagasCounter = document.getElementById('vagas-counter');
-    var vagasMensagem = document.getElementById('vagas-mensagem');
-    var formArea = document.getElementById('form-area');
-    var esgotadoState = document.getElementById('esgotado-state');
-    var modalSucesso = document.getElementById('modal-sucesso');
+    var inputStatus = document.getElementById('input-status');
     
-    vagasBarraFill.style.width = '{{ porcentagem }}%';
+    buscaInput.addEventListener('input', function() {
+        clearTimeout(timeoutBusca);
+        var valor = this.value.trim();
+        
+        if (valor.length < 2) {
+            suggestionsContainer.classList.remove('show');
+            limparSelecao();
+            return;
+        }
+        
+        timeoutBusca = setTimeout(function() {
+            var resultados = matchJogador(valor);
+            mostrarSugestoes(resultados);
+        }, 200);
+    });
     
-    // ==================== FUNÇÃO PARA ATUALIZAR MENSAGEM ====================
-    function atualizarMensagemVagas(restantes) {
-        if (restantes <= 10) {
-            vagasMensagem.innerHTML = '🔥 Corra! Faltam ' + restantes + ' vagas!';
-            vagasCounter.classList.add('critico');
-            vagasDisponiveis.style.display = 'block';
+    buscaInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            var firstSuggestion = suggestionsContainer.querySelector('.suggestion-item');
+            if (firstSuggestion) {
+                firstSuggestion.click();
+            }
+        }
+        if (e.key === 'Escape') {
+            suggestionsContainer.classList.remove('show');
+        }
+    });
+    
+    function mostrarSugestoes(resultados) {
+        var container = suggestionsContainer;
+        container.innerHTML = '';
+        
+        if (!resultados || resultados.length === 0) {
+            container.classList.remove('show');
+            return;
+        }
+        
+        for (var i = 0; i < resultados.length; i++) {
+            var j = resultados[i];
+            var div = document.createElement('div');
+            div.className = 'suggestion-item';
+            
+            var statusClass = 'sug-status-visitante';
+            var statusText = '👤 Visitante';
+            if (j.tipo === 'mensalista') { statusClass = 'sug-status-mensalista'; statusText = '📦 Mensalista'; }
+            else if (j.tipo === 'diarista') { statusClass = 'sug-status-diarista'; statusText = '📅 Diarista'; }
+            
+            if (j.bloqueado || !j.ativo) {
+                statusClass = 'sug-status-bloqueado';
+                statusText = '🚫 Bloqueado';
+            }
+            
+            var nomeCompleto = j.nome;
+            if (j.sobrenome) nomeCompleto += ' ' + j.sobrenome;
+            if (j.apelido) nomeCompleto += ' (' + j.apelido + ')';
+            
+            div.innerHTML = `
+                <div>
+                    <div class="sug-nome">${nomeCompleto}</div>
+                    <div class="sug-detalhes">${j.funcao || 'GERAL'} ${j.matricula ? '• ' + j.matricula : ''}</div>
+                </div>
+                <span class="sug-status ${statusClass}">${statusText}</span>
+            `;
+            
+            div.addEventListener('click', function() {
+                selecionarJogador(j);
+            });
+            
+            container.appendChild(div);
+        }
+        
+        container.classList.add('show');
+    }
+    
+    function selecionarJogador(jogador) {
+        jogadorSelecionado = jogador;
+        suggestionsContainer.classList.remove('show');
+        
+        var nomeCompleto = jogador.nome;
+        if (jogador.sobrenome) nomeCompleto += ' ' + jogador.sobrenome;
+        buscaInput.value = nomeCompleto;
+        
+        // Mostrar informações
+        document.getElementById('info-nome').textContent = '👤 ' + nomeCompleto;
+        document.getElementById('info-funcao').textContent = '💼 ' + (jogador.funcao || 'GERAL');
+        
+        // Tipo
+        var tipoEl = document.getElementById('info-tipo');
+        if (jogador.tipo === 'mensalista') {
+            tipoEl.textContent = '📦 Mensalista';
+            tipoEl.className = 'info-tipo info-tipo-mensalista';
+        } else if (jogador.tipo === 'diarista') {
+            tipoEl.textContent = '📅 Diarista';
+            tipoEl.className = 'info-tipo info-tipo-diarista';
         } else {
-            vagasMensagem.innerHTML = '📝 Se inscreva, pois as vagas são limitadas!';
-            vagasCounter.classList.remove('critico');
-            vagasDisponiveis.style.display = 'none';
+            tipoEl.textContent = '👤 Visitante';
+            tipoEl.className = 'info-tipo info-tipo-visitante';
+        }
+        
+        // Mensalidade
+        var mensalidadeEl = document.getElementById('info-mensalidade');
+        if (jogador.tipo === 'mensalista') {
+            if (jogador.mensalidade_paga) {
+                mensalidadeEl.textContent = '✅ Mensalidade Paga';
+                mensalidadeEl.className = 'info-mensalidade info-mensalidade-paga';
+            } else if (jogador.mensalidade_vencida) {
+                mensalidadeEl.textContent = '❌ Mensalidade Vencida!';
+                mensalidadeEl.className = 'info-mensalidade info-mensalidade-vencida';
+            } else {
+                mensalidadeEl.textContent = '⏳ Mensalidade Pendente';
+                mensalidadeEl.className = 'info-mensalidade info-mensalidade-pendente';
+            }
+        } else {
+            mensalidadeEl.textContent = '';
+            mensalidadeEl.className = '';
+        }
+        
+        infoBox.classList.add('show');
+        inputStatus.className = 'input-status status-valid fas fa-check-circle';
+        
+        // Verificar se pode inscrever
+        if (jogador.bloqueado || !jogador.ativo) {
+            btnInscrever.disabled = true;
+            mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Este jogador está bloqueado ou inativo!</div>';
+        } else if (jogador.tipo === 'mensalista' && jogador.mensalidade_vencida) {
+            btnInscrever.disabled = true;
+            mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Mensalidade vencida! Regularize para se inscrever.</div>';
+        } else {
+            btnInscrever.disabled = false;
+            mensagemArea.innerHTML = '';
         }
     }
     
-    // ==================== INSCRIÇÃO POR NOME ====================
-    if (TIPO_INSCRICAO === 'nome') {
-        var nomeInput = document.getElementById('nome-input');
+    function limparSelecao() {
+        jogadorSelecionado = null;
+        infoBox.classList.remove('show');
+        btnInscrever.disabled = true;
+        inputStatus.className = 'input-status';
+        mensagemArea.innerHTML = '';
+    }
+    
+    // ==================== INSCREVER ====================
+    btnInscrever.addEventListener('click', async function() {
+        if (!jogadorSelecionado) return;
         
-        nomeInput.addEventListener('input', function() {
-            btnInscrever.disabled = this.value.trim().length < 3;
-        });
+        this.classList.add('loading');
         
-        btnInscrever.addEventListener('click', function() {
-            var nome = nomeInput.value.trim();
-            if (!nome || nome.length < 3) return;
-            
-            btnInscrever.classList.add('loading');
-            
-            fetch('/api/inscrever', {
+        try {
+            var r = await fetch('/api/inscrever', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({codigo_evento: CODIGO_EVENTO, nome: nome})
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                btnInscrever.classList.remove('loading');
-                if (data.sucesso) {
-                    mostrarModalSucesso(data.mensagem, data.vagas_restantes);
-                    if (data.vagas_restantes <= 0) { formArea.style.display = 'none'; esgotadoState.style.display = 'block'; vagasCounter.style.display = 'none'; }
-                    else { atualizarVagas(data.vagas_restantes); nomeInput.value = ''; nomeInput.focus(); }
-                } else {
-                    mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i>' + data.mensagem + '</div>';
-                }
+                body: JSON.stringify({
+                    codigo_evento: CODIGO_EVENTO,
+                    jogador_id: jogadorSelecionado.id
+                })
             });
-        });
-    }
-    
-    // ==================== INSCRIÇÃO POR MATRÍCULA ====================
-    else {
-        var matriculaInput = document.getElementById('matricula-input');
-        var inputStatus = document.getElementById('input-status');
-        var infoBox = document.getElementById('info-box');
-        
-        matriculaInput.addEventListener('input', function() {
-            clearTimeout(timeoutValidacao);
-            var digitado = this.value.replace(/\D/g, '');
-            if (digitado.length > 6) digitado = digitado.slice(0, 6);
-            this.value = digitado;
+            var data = await r.json();
+            this.classList.remove('loading');
             
-            if (digitado.length > 0 && digitado.length <= 6) {
-                inputStatus.className = 'input-status status-checking fas fa-spinner';
-                mensagemArea.innerHTML = '';
-                timeoutValidacao = setTimeout(function() { validarMatricula(digitado.padStart(6, '0')); }, 800);
-            } else { inputStatus.className = 'input-status'; mensagemArea.innerHTML = ''; limparFormulario(); }
-        });
-        
-        matriculaInput.addEventListener('keypress', function(e) { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
-        
-        async function validarMatricula(matricula) {
-            try {
-                var r = await fetch('/api/validar-matricula', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({codigo_evento:CODIGO_EVENTO, matricula:matricula}) });
-                var data = await r.json();
-                if (data.valido) {
-                    dadosValidacao = data;
-                    document.getElementById('info-nome').textContent = '👤 ' + data.nome;
-                    document.getElementById('info-funcao').textContent = '💼 ' + data.funcao;
-                    infoBox.style.display = 'block'; btnInscrever.disabled = false; mensagemArea.innerHTML = '';
-                    matriculaInput.classList.remove('error'); inputStatus.className = 'input-status status-valid fas fa-check-circle';
-                    atualizarVagas(data.vagas_restantes);
+            if (data.sucesso) {
+                mostrarModalSucesso(data.mensagem, data.vagas_restantes);
+                if (data.vagas_restantes <= 0) {
+                    document.getElementById('form-area').style.display = 'none';
+                    document.getElementById('esgotado-state').style.display = 'block';
+                    document.getElementById('vagas-counter').style.display = 'none';
                 } else {
-                    limparFormulario(); matriculaInput.classList.add('error'); inputStatus.className = 'input-status status-invalid fas fa-times-circle';
-                    var html = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i>' + data.mensagem + '</div>';
-                    if (data.pode_cancelar) html += '<button class="btn-cancelar" onclick="cancelarInscricao(' + data.inscricao_id + ')"><i class="fas fa-times-circle"></i>CANCELAR MINHA INSCRIÇÃO</button>';
-                    mensagemArea.innerHTML = html; setTimeout(function(){ matriculaInput.classList.remove('error'); }, 500);
+                    atualizarVagas(data.vagas_restantes);
+                    limparSelecao();
+                    buscaInput.value = '';
+                    buscaInput.focus();
                 }
-            } catch(e) { inputStatus.className = 'input-status status-invalid fas fa-exclamation-circle'; }
+            } else {
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> ' + data.mensagem + '</div>';
+            }
+        } catch(e) {
+            this.classList.remove('loading');
+            mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Erro ao processar inscrição.</div>';
         }
-        
-        btnInscrever.addEventListener('click', async function() {
-            if (!dadosValidacao) return;
-            this.classList.add('loading');
-            var matricula = matriculaInput.value.replace(/\D/g, '').padStart(6, '0');
-            try {
-                var r = await fetch('/api/inscrever', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({codigo_evento:CODIGO_EVENTO, matricula:matricula}) });
-                var data = await r.json();
-                this.classList.remove('loading');
-                if (data.sucesso) {
-                    mostrarModalSucesso(data.mensagem, data.vagas_restantes);
-                    if (data.vagas_restantes <= 0) { formArea.style.display = 'none'; esgotadoState.style.display = 'block'; vagasCounter.style.display = 'none'; }
-                    else { atualizarVagas(data.vagas_restantes); limparFormulario(); matriculaInput.value = ''; matriculaInput.focus(); }
-                } else { mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i>' + data.mensagem + '</div>'; }
-            } catch(e) { this.classList.remove('loading'); }
-        });
-        
-        function limparFormulario() { dadosValidacao = null; infoBox.style.display = 'none'; btnInscrever.disabled = true; inputStatus.className = 'input-status'; }
-    }
+    });
     
     // ==================== FUNÇÕES COMUNS ====================
     function mostrarModalSucesso(msg, restantes) {
         document.getElementById('modal-titulo').textContent = '✅ Inscrição Confirmada!';
         document.getElementById('modal-texto').textContent = msg + (restantes > 0 ? ' Ainda há ' + restantes + ' vaga(s).' : ' Todas as vagas foram preenchidas.');
-        modalSucesso.style.display = 'flex';
+        document.getElementById('modal-sucesso').style.display = 'flex';
         setTimeout(fecharModalSucesso, 6000);
     }
-    function fecharModalSucesso() { modalSucesso.style.display = 'none'; }
     
-    async function cancelarInscricao(id) {
-        if (!confirm('Cancelar sua inscrição?')) return;
-        var r = await fetch('/api/cancelar-inscricao', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({inscricao_id:id}) });
-        var d = await r.json(); if (d.sucesso) location.reload();
+    function fecharModalSucesso() {
+        document.getElementById('modal-sucesso').style.display = 'none';
     }
     
     function atualizarVagas(restantes) {
-        vagasDisponiveis.textContent = restantes;
-        vagasBarraFill.style.width = (restantes / TOTAL_VAGAS * 100) + '%';
-        atualizarMensagemVagas(restantes);
+        var vagasNumero = document.getElementById('vagas-disponiveis');
+        var vagasBarra = document.getElementById('vagas-barra-fill');
+        var vagasCounter = document.getElementById('vagas-counter');
+        var vagasMensagem = document.getElementById('vagas-mensagem');
+        
+        vagasNumero.textContent = restantes;
+        vagasBarra.style.width = (restantes / TOTAL_VAGAS * 100) + '%';
+        
+        if (restantes <= 10) {
+            vagasNumero.style.display = 'block';
+            vagasCounter.classList.add('critico');
+            vagasMensagem.textContent = '🔥 Corra! Faltam ' + restantes + ' vagas!';
+        } else {
+            vagasNumero.style.display = 'none';
+            vagasCounter.classList.remove('critico');
+            vagasMensagem.textContent = '📝 Se inscreva, pois as vagas são limitadas!';
+        }
     }
     
-    // Inicializar a mensagem e exibição correta
-    var vagasIniciais = parseInt('{{ vagas_disponiveis }}');
-    
-    // Configuração inicial: esconder número se tiver mais de 10
-    if (vagasIniciais > 10) {
-        vagasDisponiveis.style.display = 'none';
-    } else {
-        vagasDisponiveis.style.display = 'block';
+    // ==================== CANCELAR INSCRIÇÃO ====================
+    async function cancelarInscricao(id) {
+        if (!confirm('Cancelar sua inscrição?')) return;
+        try {
+            var r = await fetch('/api/cancelar-inscricao', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({inscricao_id: id})
+            });
+            var d = await r.json();
+            if (d.sucesso) location.reload();
+            else alert('Erro ao cancelar.');
+        } catch(e) {
+            alert('Erro ao cancelar.');
+        }
     }
     
-    atualizarMensagemVagas(vagasIniciais);
+    // ==================== INICIALIZAR ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        carregarJogadores();
+        
+        var vagasIniciais = parseInt('{{ vagas_disponiveis }}');
+        if (vagasIniciais > 10) {
+            document.getElementById('vagas-disponiveis').style.display = 'none';
+        } else {
+            document.getElementById('vagas-disponiveis').style.display = 'block';
+        }
+        
+        // Fechar sugestões ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.input-wrapper')) {
+                suggestionsContainer.classList.remove('show');
+            }
+        });
+    });
     </script>
 </body>
 </html>

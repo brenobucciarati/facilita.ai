@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Criar Evento - Pelada FC{% endblock %}
+{% block title %}Criar Evento - FACILITA.AI{% endblock %}
 
 {% block head %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -8,7 +8,8 @@
         --bg-primary: #0a0e14; --bg-secondary: #141b22; --bg-card: #1a2332; --bg-input: #1e293b;
         --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
         --accent-green: #10b981; --accent-green-dark: #059669; --accent-red: #ef4444;
-        --accent-blue: #3b82f6; --accent-purple: #8b5cf6; --border-color: rgba(255, 255, 255, 0.06);
+        --accent-blue: #3b82f6; --accent-purple: #8b5cf6; --accent-yellow: #f59e0b;
+        --border-color: rgba(255, 255, 255, 0.06);
         --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px;
     }
     body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; }
@@ -41,18 +42,65 @@
     .input-group-create { margin-bottom: 20px; }
     .input-label { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.85em; font-weight: 600; margin-bottom: 8px; }
     .input-label i { color: var(--accent-green); font-size: 0.9em; }
+    .input-label .info-icon { 
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 20px; height: 20px; border-radius: 50%; 
+        background: rgba(16,185,129,0.12); color: var(--accent-green);
+        font-size: 0.65em; cursor: pointer; transition: all 0.25s ease;
+        margin-left: 4px; border: none;
+    }
+    .input-label .info-icon:hover { background: var(--accent-green); color: #fff; transform: scale(1.15); }
+    
     .input-create { width: 100%; padding: 14px 18px; background: var(--bg-input); border: 2px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-size: 1em; font-family: 'Inter', sans-serif; transition: all 0.25s ease; outline: none; }
     .input-create:focus { border-color: var(--accent-green); box-shadow: 0 0 0 4px rgba(16,185,129,0.12); background: #1e2a3a; }
     .input-create::placeholder { color: var(--text-muted); }
     .input-create[type="number"] { font-weight: 700; font-size: 1.2em; text-align: center; }
     select.input-create { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8' fill='none'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
     .input-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .input-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
+    /* ==================== MODAL INFO ==================== */
+    .modal-info-overlay {
+        display: none; position: fixed; top:0;left:0;width:100%;height:100%;
+        background: rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;
+        backdrop-filter: blur(4px);
+    }
+    .modal-info-overlay.show { display: flex; }
+    .modal-info-card {
+        background: var(--bg-card); border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl); padding: 32px; max-width: 520px; width: 90%;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.6); animation: scaleIn 0.3s ease;
+    }
+    @keyframes scaleIn { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+    .modal-info-card .modal-title {
+        color: var(--text-primary); font-size: 1.2em; font-weight: 700;
+        display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+    }
+    .modal-info-card .modal-title i { color: var(--accent-green); font-size: 1.1em; }
+    .modal-info-card .modal-body { color: var(--text-secondary); font-size: 0.9em; line-height: 1.7; }
+    .modal-info-card .modal-body strong { color: var(--text-primary); }
+    .modal-info-card .modal-body .badge-info-modal {
+        display: inline-block; padding: 3px 12px; border-radius: 4px;
+        font-weight: 600; font-size: 0.7em; margin: 2px 0;
+    }
+    .modal-info-card .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; }
+    .modal-info-card .modal-footer button {
+        padding: 10px 24px; border-radius: var(--radius-md); font-weight: 600;
+        border: none; cursor: pointer; transition: all 0.25s ease;
+        background: var(--accent-green); color: #fff;
+    }
+    .modal-info-card .modal-footer button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,0.4); }
+
+    .badge-nome { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+    .badge-matricula { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+    .badge-jogador { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+
+    /* ==================== FUNÇÕES ==================== */
     .funcoes-section { margin-top: 32px; display: none; }
     .funcoes-section.show { display: block; animation: fadeInUp 0.35s ease both; }
     .funcoes-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .funcoes-count { background: rgba(16,185,129,0.1); color: var(--accent-green); padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; transition: all 0.25s ease; }
-    .funcoes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
+    .funcoes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
     .checkbox-card { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg-card); border: 2px solid transparent; border-radius: var(--radius-md); cursor: pointer; transition: all 0.25s cubic-bezier(.4,0,.2,1); user-select: none; }
     .checkbox-card:hover { border-color: var(--border-color); background: var(--bg-input); transform: translateY(-1px); }
     .checkbox-card input[type="checkbox"] { display: none; }
@@ -63,6 +111,73 @@
     .checkbox-text { color: var(--text-secondary); font-size: 0.85em; font-weight: 500; transition: all 0.25s ease; }
     .checkbox-card input:checked ~ .checkbox-text { color: var(--accent-red); font-weight: 700; }
     .checkbox-card.bloqueado { border-color: var(--accent-red); background: rgba(239,68,68,0.06); }
+
+    /* ==================== CONFIGURAÇÃO DE VAGAS ==================== */
+    .config-vagas-section { margin-top: 32px; display: none; }
+    .config-vagas-section.show { display: block; }
+    .config-vagas-toggle {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 18px; background: var(--bg-secondary);
+        border-radius: var(--radius-md); border: 1px solid var(--border-color);
+        margin-bottom: 16px; cursor: pointer; transition: all 0.25s ease;
+        position: relative;
+    }
+    .config-vagas-toggle:hover { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.03); }
+    .config-vagas-toggle input[type="checkbox"] {
+        width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-green);
+        flex-shrink: 0;
+    }
+    .config-vagas-toggle label {
+        color: var(--text-secondary); font-weight: 600; cursor: pointer; font-size: 0.9em;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .config-vagas-toggle label i { color: var(--accent-green); }
+    .config-vagas-toggle .badge-prioridade {
+        margin-left: auto; font-size: 0.65em; padding: 4px 12px;
+        border-radius: 20px; background: rgba(16,185,129,0.1); color: var(--accent-green);
+        display: flex; align-items: center; gap: 4px;
+        white-space: nowrap;
+    }
+    .config-vagas-toggle .info-icon-sm {
+        width: 22px; height: 22px; border-radius: 50%;
+        background: rgba(16,185,129,0.1); color: var(--accent-green);
+        border: none; font-size: 0.6em; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.25s ease; flex-shrink: 0;
+    }
+    .config-vagas-toggle .info-icon-sm:hover {
+        background: var(--accent-green); color: #fff; transform: scale(1.15);
+    }
+    
+    .vagas-config-box { display: none; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
+    .vagas-config-box.show { display: block; animation: fadeInUp 0.3s ease both; }
+    .vagas-config-box .info-text {
+        color: var(--text-muted); font-size: 0.8em; margin-bottom: 12px;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .vagas-config-box .info-text i { color: var(--accent-green); }
+    .vagas-config-box .info-text strong { color: var(--accent-green); }
+    
+    .vagas-summary {
+        margin-top: 12px; padding: 12px 16px;
+        background: var(--bg-input); border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+    }
+    .vagas-summary .summary-row {
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; gap: 8px;
+    }
+    .vagas-summary .total-reservado {
+        color: var(--accent-green); font-weight: 700; font-size: 1.1em;
+    }
+    .vagas-summary .total-reservado.excedido { color: var(--accent-red); }
+    .vagas-summary .aviso-vagas {
+        display: none; margin-top: 8px; padding: 8px 12px;
+        background: rgba(239,68,68,0.1); border-radius: var(--radius-sm);
+        color: var(--accent-red); font-size: 0.85em;
+        align-items: center; gap: 6px;
+    }
+    .vagas-summary .aviso-vagas.show { display: flex; }
 
     .btn-submit { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark)); color: #fff; border: none; border-radius: var(--radius-md); font-size: 1.05em; font-weight: 700; cursor: pointer; transition: all 0.25s cubic-bezier(.4,0,.2,1); display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 2px; margin-top: 32px; position: relative; overflow: hidden; }
     .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(16,185,129,0.4); }
@@ -75,7 +190,17 @@
     .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
     .alert-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
 
-    @media (max-width: 768px) { .form-card { padding: 24px; } .input-row { grid-template-columns: 1fr; } .form-header h2 { font-size: 1.3em; } .funcoes-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } .btn-back span { display: none; } }
+    @media (max-width: 768px) { 
+        .form-card { padding: 24px; } 
+        .input-row { grid-template-columns: 1fr; } 
+        .input-row-2 { grid-template-columns: 1fr; }
+        .form-header h2 { font-size: 1.3em; } 
+        .funcoes-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } 
+        .btn-back span { display: none; }
+        .modal-info-card { padding: 24px; margin: 16px; }
+        .config-vagas-toggle { flex-wrap: wrap; }
+        .config-vagas-toggle .badge-prioridade { margin-left: 0; width: 100%; justify-content: center; }
+    }
 </style>
 {% endblock %}
 
@@ -103,6 +228,7 @@
         <hr class="form-divider">
         
         <form method="POST" id="form-evento">
+            <!-- Informações Básicas -->
             <div class="form-section">
                 <div class="section-label"><i class="fas fa-info-circle"></i>Informações Básicas</div>
                 <div class="input-row">
@@ -116,18 +242,88 @@
                     </div>
                     <div class="input-group-create">
                         <label class="input-label"><i class="fas fa-users"></i>Total de Vagas</label>
-                        <input type="number" name="total_vagas" class="input-create" value="30" min="1" max="100" required>
+                        <input type="number" name="total_vagas" id="total_vagas" class="input-create" value="30" min="1" max="100" required>
                     </div>
                     <div class="input-group-create">
-                        <label class="input-label"><i class="fas fa-list"></i>Tipo de Inscrição</label>
-                        <select name="tipo_inscricao" class="input-create" id="tipo-inscricao" onchange="toggleFuncoes()">
-                            <option value="nome" selected>Lista por NOME</option>
-                            <option value="matricula">Lista por MATRÍCULA</option>
+                        <label class="input-label">
+                            <i class="fas fa-list"></i>Tipo de Inscrição
+                            <button type="button" class="info-icon" onclick="abrirModalInfo('tipo')" title="Clique para mais informações">
+                                <i class="fas fa-info"></i>
+                            </button>
+                        </label>
+                        <select name="tipo_inscricao" class="input-create" id="tipo-inscricao" onchange="toggleFuncoes(); toggleConfigVagas();">
+                            <option value="nome" selected>📝 Por Nome</option>
+                            <option value="matricula">📋 Por Matrícula</option>
+                            <option value="jogador">⚽ Por Jogador</option>
                         </select>
                     </div>
                 </div>
             </div>
             
+            <!-- Configuração de Vagas por Tipo (aparece só para Jogador) -->
+            <div class="form-section config-vagas-section" id="config-vagas-section">
+                <div class="section-label"><i class="fas fa-users-cog"></i>Configuração de Vagas por Tipo</div>
+                
+                <div class="config-vagas-toggle" onclick="document.getElementById('usar_prioridades').click()">
+                    <input type="checkbox" name="usar_prioridades" id="usar_prioridades" onchange="toggleVagasConfig()">
+                    <label for="usar_prioridades">
+                        <i class="fas fa-check-circle" style="color:var(--accent-green);"></i> 
+                        Ativar distribuição de vagas por tipo
+                    </label>
+                    <button type="button" class="info-icon-sm" onclick="event.stopPropagation(); abrirModalInfo('vagas')" title="Entenda como funciona">
+                        <i class="fas fa-info"></i>
+                    </button>
+                    <span class="badge-prioridade"><i class="fas fa-star"></i> Mensalistas têm prioridade</span>
+                </div>
+                
+                <div class="vagas-config-box" id="vagas-config">
+                    <div class="info-text">
+                        <i class="fas fa-lightbulb"></i> 
+                        <span>Defina as vagas por tipo. <strong>Mensalistas</strong> têm prioridade na ocupação.</span>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group-create">
+                            <label class="input-label" style="color:var(--accent-purple);">
+                                <i class="fas fa-user-clock"></i> Mensalistas
+                            </label>
+                            <input type="number" name="vagas_mensalistas" id="vagas_mensalistas" class="input-create" value="0" min="0" max="100" oninput="calcularVagasInteligente()">
+                        </div>
+                        <div class="input-group-create">
+                            <label class="input-label" style="color:var(--accent-blue);">
+                                <i class="fas fa-user-tag"></i> Diaristas
+                            </label>
+                            <input type="number" name="vagas_diaristas" id="vagas_diaristas" class="input-create" value="0" min="0" max="100" oninput="calcularVagasInteligente()">
+                        </div>
+                        <div class="input-group-create">
+                            <label class="input-label" style="color:var(--accent-yellow);">
+                                <i class="fas fa-user-friends"></i> Visitantes
+                            </label>
+                            <input type="number" name="vagas_visitantes" id="vagas_visitantes" class="input-create" value="0" min="0" max="100" oninput="calcularVagasInteligente()">
+                        </div>
+                    </div>
+                    
+                    <div class="vagas-summary">
+                        <div class="summary-row">
+                            <span style="color:var(--text-secondary);font-size:0.85em;display:flex;align-items:center;gap:6px;">
+                                <i class="fas fa-calculator"></i> Total reservado:
+                            </span>
+                            <span class="total-reservado" id="total_reservado">0</span>
+                            <span style="color:var(--text-muted);font-size:0.7em;">
+                                de <span id="total_vagas_display">30</span> vagas
+                            </span>
+                            <span style="color:var(--text-muted);font-size:0.7em;" id="status_vagas">
+                                <i class="fas fa-check-circle" style="color:var(--accent-green);"></i> OK
+                            </span>
+                        </div>
+                        <div class="aviso-vagas" id="aviso_vagas">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            A soma excede o total de vagas!
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Restrições de Funções -->
             <div class="form-section funcoes-section" id="funcoes-section">
                 <div class="section-label"><i class="fas fa-ban"></i>Restrições de Acesso</div>
                 <div class="funcoes-header">
@@ -151,7 +347,147 @@
     </div>
 </div>
 
+<!-- ==================== MODAL DE INFORMAÇÃO ==================== -->
+<div class="modal-info-overlay" id="modalInfo">
+    <div class="modal-info-card">
+        <div class="modal-title">
+            <i class="fas fa-lightbulb"></i>
+            <span id="modalInfoTitle">Informação</span>
+        </div>
+        <div class="modal-body" id="modalInfoBody">
+            <!-- Conteúdo dinâmico -->
+        </div>
+        <div class="modal-footer">
+            <button onclick="fecharModalInfo()">Entendi! <i class="fas fa-check"></i></button>
+        </div>
+    </div>
+</div>
+
 <script>
+// ==================== MODAL DE INFORMAÇÃO ====================
+function abrirModalInfo(tipo) {
+    var modal = document.getElementById('modalInfo');
+    var title = document.getElementById('modalInfoTitle');
+    var body = document.getElementById('modalInfoBody');
+    
+    var conteudos = {
+        'tipo': {
+            title: '📋 Tipos de Inscrição',
+            body: `
+                <p><strong>📝 Por Nome</strong><br>
+                <span class="badge-info-modal badge-nome"><i class="fas fa-user"></i> Qualquer pessoa</span><br>
+                Qualquer pessoa pode se inscrever informando apenas o nome.<br>
+                <strong>Vantagem:</strong> Rápido e simples, ideal para eventos abertos.<br>
+                <strong>Controle:</strong> Baixo - apenas lista de presença por nome.</p>
+                
+                <p><strong>📋 Por Matrícula</strong><br>
+                <span class="badge-info-modal badge-matricula"><i class="fas fa-id-card"></i> Funcionários</span><br>
+                Apenas funcionários com matrícula cadastrada podem se inscrever.<br>
+                <strong>Vantagem:</strong> Controle de acesso e restrição por função.<br>
+                <strong>Controle:</strong> Médio - permite bloquear funções específicas.</p>
+                
+                <p><strong>⚽ Por Jogador</strong><br>
+                <span class="badge-info-modal badge-jogador"><i class="fas fa-users"></i> Cadastro completo</span><br>
+                Apenas jogadores cadastrados no sistema podem se inscrever.<br>
+                <strong>Vantagem:</strong> Controle total com mensalidades e tipos.<br>
+                <strong>Controle:</strong> Alto - integração com financeiro e prioridade de vagas.</p>
+            `
+        },
+        'vagas': {
+            title: '🎯 Distribuição Inteligente de Vagas',
+            body: `
+                <p><strong>Como funciona?</strong><br>
+                Ao ativar esta opção, as vagas serão distribuídas de forma <strong>prioritária</strong>:</p>
+                
+                <p style="background:var(--bg-input);padding:12px;border-radius:8px;border-left:3px solid var(--accent-green);">
+                <strong>1️⃣ Mensalistas</strong> - Têm prioridade máxima<br>
+                <strong>2️⃣ Diaristas</strong> - Ocupam vagas após mensalistas<br>
+                <strong>3️⃣ Visitantes</strong> - Ocupam as vagas restantes</p>
+                
+                <p><strong>💡 Dica:</strong><br>
+                Se o número de mensalistas for menor que o reservado, as vagas sobram para os demais tipos.
+                O sistema gerencia isso automaticamente!</p>
+                
+                <p><strong>📊 Cálculo inteligente:</strong><br>
+                <span style="color:var(--accent-green);">✅</span> Mostra o total reservado<br>
+                <span style="color:var(--accent-yellow);">⚠️</span> Alerta se exceder o total de vagas<br>
+                <span style="color:var(--accent-blue);">ℹ️</span> Atualiza em tempo real</p>
+            `
+        }
+    };
+    
+    var conteudo = conteudos[tipo] || conteudos['tipo'];
+    title.textContent = conteudo.title;
+    body.innerHTML = conteudo.body;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharModalInfo() {
+    document.getElementById('modalInfo').classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('modalInfo').addEventListener('click', function(e) {
+    if (e.target === this) fecharModalInfo();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') fecharModalInfo();
+});
+
+// ==================== TOGGLE CONFIGURAÇÃO DE VAGAS ====================
+function toggleConfigVagas() {
+    var tipo = document.getElementById('tipo-inscricao').value;
+    var configSection = document.getElementById('config-vagas-section');
+    var usarPrioridades = document.getElementById('usar_prioridades');
+    
+    if (tipo === 'jogador') {
+        configSection.classList.add('show');
+    } else {
+        configSection.classList.remove('show');
+        if (usarPrioridades) {
+            usarPrioridades.checked = false;
+            toggleVagasConfig();
+        }
+    }
+}
+
+// ==================== CÁLCULO INTELIGENTE ====================
+function calcularVagasInteligente() {
+    var mensalistas = parseInt(document.getElementById('vagas_mensalistas').value) || 0;
+    var diaristas = parseInt(document.getElementById('vagas_diaristas').value) || 0;
+    var visitantes = parseInt(document.getElementById('vagas_visitantes').value) || 0;
+    var total = mensalistas + diaristas + visitantes;
+    var totalVagas = parseInt(document.getElementById('total_vagas').value) || 30;
+    
+    document.getElementById('total_reservado').textContent = total;
+    document.getElementById('total_vagas_display').textContent = totalVagas;
+    
+    var totalReservado = document.getElementById('total_reservado');
+    var aviso = document.getElementById('aviso_vagas');
+    var status = document.getElementById('status_vagas');
+    
+    if (total > totalVagas) {
+        aviso.classList.add('show');
+        totalReservado.classList.add('excedido');
+        status.innerHTML = '<i class="fas fa-times-circle" style="color:var(--accent-red);"></i> Excedido';
+        status.style.color = 'var(--accent-red)';
+    } else if (total === totalVagas) {
+        aviso.classList.remove('show');
+        totalReservado.classList.remove('excedido');
+        status.innerHTML = '<i class="fas fa-check-circle" style="color:var(--accent-yellow);"></i> Cheio';
+        status.style.color = 'var(--accent-yellow)';
+    } else {
+        aviso.classList.remove('show');
+        totalReservado.classList.remove('excedido');
+        var restante = totalVagas - total;
+        status.innerHTML = '<i class="fas fa-check-circle" style="color:var(--accent-green);"></i> ' + restante + ' vagas livres';
+        status.style.color = 'var(--accent-green)';
+    }
+}
+
+// ==================== TOGGLE FUNÇÕES ====================
 function toggleFuncoes() {
     var tipo = document.getElementById('tipo-inscricao').value;
     var secao = document.getElementById('funcoes-section');
@@ -160,6 +496,7 @@ function toggleFuncoes() {
 }
 toggleFuncoes();
 
+// ==================== CONTADOR DE BLOQUEIOS ====================
 const checkboxes = document.querySelectorAll('.checkbox-card input[type="checkbox"]');
 const contador = document.getElementById('contador-bloqueios');
 function atualizarContador() {
@@ -169,12 +506,53 @@ function atualizarContador() {
     contador.style.color = total > 0 ? '#ef4444' : '#10b981';
     contador.style.fontWeight = total > 0 ? '700' : '600';
 }
-checkboxes.forEach(cb => { cb.addEventListener('change', function() { this.closest('.checkbox-card').classList.toggle('bloqueado', this.checked); atualizarContador(); }); });
+checkboxes.forEach(cb => { 
+    cb.addEventListener('change', function() { 
+        this.closest('.checkbox-card').classList.toggle('bloqueado', this.checked); 
+        atualizarContador(); 
+    }); 
+});
 
-const dataInput = document.querySelector('[name="data_evento"]');
-const agora = new Date(); agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
-dataInput.min = agora.toISOString().slice(0, 16); dataInput.value = dataInput.min;
+// ==================== CONFIGURAÇÃO DE VAGAS ====================
+function toggleVagasConfig() {
+    var checkbox = document.getElementById('usar_prioridades');
+    var config = document.getElementById('vagas-config');
+    if (checkbox.checked) {
+        config.classList.add('show');
+        calcularVagasInteligente();
+    } else {
+        config.classList.remove('show');
+    }
+}
 
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') window.location.href = '{{ url_for("dashboard") }}'; });
+// ==================== INICIALIZAR ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // Data atual
+    const dataInput = document.querySelector('[name="data_evento"]');
+    const agora = new Date(); 
+    agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+    dataInput.min = agora.toISOString().slice(0, 16); 
+    dataInput.value = dataInput.min;
+    
+    // Calcular vagas
+    ['vagas_mensalistas', 'vagas_diaristas', 'vagas_visitantes', 'total_vagas'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', calcularVagasInteligente);
+            el.addEventListener('change', calcularVagasInteligente);
+        }
+    });
+    calcularVagasInteligente();
+    
+    // Inicializar visibilidade da config de vagas
+    toggleConfigVagas();
+});
+
+// ==================== ESC ====================
+document.addEventListener('keydown', function(e) { 
+    if (e.key === 'Escape' && !document.getElementById('modalInfo').classList.contains('show')) {
+        window.location.href = '{{ url_for("dashboard") }}'; 
+    }
+});
 </script>
 {% endblock %}

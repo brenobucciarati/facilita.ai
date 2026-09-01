@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% block title %}Financeiro - FACILITA.AI{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    :root {
+        --bg-primary: #0a0e14; --bg-secondary: #141b22; --bg-card: #1a2332; --bg-input: #1e293b;
+        --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
+        --accent-green: #10b981; --accent-red: #ef4444; --accent-purple: #8b5cf6;
+        --accent-blue: #3b82f6; --accent-yellow: #f59e0b; --accent-orange: #f97316;
+        --border-color: rgba(255,255,255,0.06); --radius-sm: 8px; --radius-md: 12px;
+        --radius-lg: 16px; --radius-xl: 20px;
+    }
+    body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    
+    .navbar-financeiro { background: rgba(20,27,34,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); padding: 12px 0; position: sticky; top: 0; z-index: 100; }
+    .container-financeiro { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
+    
+    .btn-back { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--text-secondary); border: 2px solid var(--border-color); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-back:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    .btn-jogadores { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--accent-green); border: 2px solid rgba(16,185,129,0.3); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-jogadores:hover { background: var(--accent-green); color: #fff; border-color: var(--accent-green); }
+    
+    .card-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 24px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .card-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 700; font-size: 1.1em; }
+    .card-title .icon-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; }
+    .icon-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+    .icon-green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+    .icon-blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+    .icon-yellow { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+    .icon-red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+    .icon-orange { background: rgba(249,115,22,0.15); color: var(--accent-orange); }
+    
+    .stats-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 16px 20px; transition: all 0.3s ease; }
+    .stat-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); }
+    .stat-card .stat-number { font-size: 2em; font-weight: 800; line-height: 1.2; }
+    .stat-card .stat-label { color: var(--text-muted); font-size: 0.75em; font-weight: 500; margin-top: 4px; }
+    .stat-card .stat-icon { font-size: 1.4em; opacity: 0.6; }
+    .stat-green .stat-number { color: var(--accent-green); }
+    .stat-blue .stat-number { color: var(--accent-blue); }
+    .stat-purple .stat-number { color: var(--accent-purple); }
+    .stat-yellow .stat-number { color: var(--accent-yellow); }
+    .stat-red .stat-number { color: var(--accent-red); }
+    .stat-orange .stat-number { color: var(--accent-orange); }
+    
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .chart-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; position: relative; }
+    .chart-container canvas { max-height: 250px; max-width: 100%; }
+    .chart-title { color: var(--text-secondary); font-size: 0.85em; font-weight: 600; margin-bottom: 12px; text-align: center; }
+    
+    .tabela-master { width: 100%; border-collapse: collapse; }
+    .tabela-master th { color: var(--text-muted); font-size: 0.65em; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .tabela-master td { padding: 8px; color: var(--text-primary); font-size: 0.82em; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .tabela-master tbody tr { transition: all 0.2s; }
+    .tabela-master tbody tr:hover { background: rgba(255,255,255,0.02); }
+    
+    .badge-status { padding: 4px 12px; border-radius: 20px; font-size: 0.6em; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .badge-pago { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-pendente { background: rgba(245,158,11,0.15); color: var(--accent-yellow); border: 1px solid rgba(245,158,11,0.3); }
+    .badge-vencido { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+    
+    .btn-action { padding: 5px 10px; border-radius: 6px; font-size: 0.65em; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; margin: 1px; }
+    .btn-amarelo { background: var(--accent-yellow); color: #000; }
+    .btn-amarelo:hover { transform: translateY(-1px); }
+    .btn-verde { background: var(--accent-green); color: #fff; }
+    .btn-verde:hover { transform: translateY(-1px); }
+    
+    .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    .empty-state i { font-size: 3em; display: block; margin-bottom: 12px; opacity: 0.3; }
+    
+    .loading-spinner { display: flex; align-items: center; justify-content: center; padding: 40px; }
+    .loading-spinner i { font-size: 2em; color: var(--accent-purple); animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    
+    @media (max-width: 768px) {
+        .stats-grid-4 { grid-template-columns: repeat(2, 1fr); }
+        .charts-row { grid-template-columns: 1fr; }
+        .stat-card .stat-number { font-size: 1.5em; }
+    }
+    @media (max-width: 400px) {
+        .stats-grid-4 { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar-financeiro">
+    <div class="container-financeiro d-flex justify-content-between align-items-center">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--text-primary);font-weight:700;">
+            <span style="font-size:1.2em;">💰</span>
+            <span>Financeiro</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <a href="{{ url_for('jogadores') }}" class="btn-jogadores"><i class="fas fa-users"></i> Jogadores</a>
+            <a href="{{ url_for('dashboard') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-financeiro">
+    <!-- Loading -->
+    <div id="loading" class="loading-spinner">
+        <i class="fas fa-spinner"></i>
+    </div>
+
+    <!-- Conteúdo -->
+    <div id="conteudo" style="display:none;">
+        <!-- Stats -->
+        <div class="stats-grid-4" id="statsGrid">
+            <div class="stat-card stat-green">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-number" id="totalJogadores">0</span>
+                    <span class="stat-icon">👥</span>
+                </div>
+                <div class="stat-label">Total de Jogadores</div>
+            </div>
+            <div class="stat-card stat-blue">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-number" id="totalMensalistas">0</span>
+                    <span class="stat-icon">📦</span>
+                </div>
+                <div class="stat-label">Mensalistas</div>
+            </div>
+            <div class="stat-card stat-yellow">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-number" id="totalDiaristas">0</span>
+                    <span class="stat-icon">📅</span>
+                </div>
+                <div class="stat-label">Diaristas</div>
+            </div>
+            <div class="stat-card stat-purple">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-number" id="totalVisitantes">0</span>
+                    <span class="stat-icon">👤</span>
+                </div>
+                <div class="stat-label">Visitantes</div>
+            </div>
+        </div>
+
+        <!-- Stats de Mensalidade -->
+        <div class="stats-grid-4">
+            <div class="stat-card stat-green">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-number" id="mensalidadesPagas">0</span>
+                    <span class="stat-icon">✅</span>
+                </div>
+                <div class="stat-label">Mensalidades Pagas</div>
+            </div>
+            <div class="stat-card stat-yellow">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-number" id="mensalidadesPendentes">0</span>
+                    <span class="stat-icon">⏳</span>
+                </div>
+                <div class="stat-label">Pendentes</div>
+            </div>
+            <div class="stat-card stat-red">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-number" id="mensalidadesVencidas">0</span>
+                    <span class="stat-icon">⚠️</span>
+                </div>
+                <div class="stat-label">Vencidas</div>
+            </div>
+            <div class="stat-card stat-orange">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="stat-number" id="valorTotal">R$ 0,00</span>
+                    <span class="stat-icon">💰</span>
+                </div>
+                <div class="stat-label">Total Arrecadado</div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-row">
+            <div class="chart-container">
+                <div class="chart-title">📊 Distribuição por Tipo</div>
+                <canvas id="chartTipo"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">📊 Status das Mensalidades</div>
+                <canvas id="chartMensalidade"></canvas>
+            </div>
+        </div>
+
+        <!-- Pendentes -->
+        <div class="card-panel">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="icon-circle icon-red"><i class="fas fa-exclamation-triangle"></i></span>
+                    Mensalidades Pendentes / Vencidas
+                    <span id="contadorPendentes" style="color:var(--text-muted);font-size:0.7em;font-weight:400;"></span>
+                </div>
+                <button onclick="carregarDados()" class="btn-action btn-verde" style="padding:6px 14px;font-size:0.75em;">
+                    <i class="fas fa-sync"></i> Atualizar
+                </button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="tabela-master">
+                    <thead>
+                        <tr>
+                            <th>Jogador</th>
+                            <th>Valor</th>
+                            <th>Vencimento</th>
+                            <th>Status</th>
+                            <th style="text-align:center;">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaPendentes">
+                        <tr>
+                            <td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">
+                                <i class="fas fa-check-circle" style="color:var(--accent-green);"></i> Nenhuma mensalidade pendente!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== GRÁFICOS ====================
+var chartTipo = null;
+var chartMensalidade = null;
+
+function criarGraficos(data) {
+    // Gráfico de Tipos
+    var ctxTipo = document.getElementById('chartTipo').getContext('2d');
+    if (chartTipo) chartTipo.destroy();
+    chartTipo = new Chart(ctxTipo, {
+        type: 'doughnut',
+        data: {
+            labels: ['Mensalistas', 'Diaristas', 'Visitantes'],
+            datasets: [{
+                data: [data.total_mensalistas, data.total_diaristas, data.total_visitantes],
+                backgroundColor: ['#8b5cf6', '#3b82f6', '#f59e0b'],
+                borderColor: ['#1a2332', '#1a2332', '#1a2332'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { size: 11 } }
+                }
+            }
+        }
+    });
+
+    // Gráfico de Mensalidades
+    var ctxMens = document.getElementById('chartMensalidade').getContext('2d');
+    if (chartMensalidade) chartMensalidade.destroy();
+    chartMensalidade = new Chart(ctxMens, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pagas', 'Pendentes', 'Vencidas'],
+            datasets: [{
+                data: [data.mensalidades_pagas, data.mensalidades_pendentes, data.mensalidades_vencidas],
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                borderColor: ['#1a2332', '#1a2332', '#1a2332'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { size: 11 } }
+                }
+            }
+        }
+    });
+}
+
+// ==================== CARREGAR DADOS ====================
+function carregarDados() {
+    var loading = document.getElementById('loading');
+    var conteudo = document.getElementById('conteudo');
+    
+    loading.style.display = 'flex';
+    conteudo.style.display = 'none';
+    
+    fetch('/admin/api/financeiro')
+        .then(response => response.json())
+        .then(data => {
+            // Stats
+            document.getElementById('totalJogadores').textContent = data.total_jogadores;
+            document.getElementById('totalMensalistas').textContent = data.total_mensalistas;
+            document.getElementById('totalDiaristas').textContent = data.total_diaristas;
+            document.getElementById('totalVisitantes').textContent = data.total_visitantes;
+            
+            document.getElementById('mensalidadesPagas').textContent = data.mensalidades_pagas;
+            document.getElementById('mensalidadesPendentes').textContent = data.mensalidades_pendentes;
+            document.getElementById('mensalidadesVencidas').textContent = data.mensalidades_vencidas;
+            document.getElementById('valorTotal').textContent = 'R$ ' + data.valor_total.toFixed(2).replace('.', ',');
+            
+            // Contador de pendentes
+            var contador = document.getElementById('contadorPendentes');
+            if (data.pendentes.length > 0) {
+                contador.textContent = '(' + data.pendentes.length + ' pendente(s))';
+            } else {
+                contador.textContent = '(✅ tudo em dia!)';
+            }
+            
+            // Tabela de pendentes
+            var tabela = document.getElementById('tabelaPendentes');
+            if (data.pendentes.length === 0) {
+                tabela.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">
+                            <i class="fas fa-check-circle" style="color:var(--accent-green);"></i> Nenhuma mensalidade pendente!
+                        </td>
+                    </tr>
+                `;
+            } else {
+                var html = '';
+                data.pendentes.forEach(function(p) {
+                    var statusClass = p.status === 'vencido' ? 'badge-vencido' : 'badge-pendente';
+                    var statusIcon = p.status === 'vencido' ? 'fa-times-circle' : 'fa-clock';
+                    var statusText = p.status === 'vencido' ? 'Vencido' : 'Pendente';
+                    var actionText = p.status === 'vencido' ? '📌 Cobrar' : '✅ Pagar';
+                    
+                    html += `
+                        <tr>
+                            <td><strong>${p.nome}</strong></td>
+                            <td>R$ ${p.valor.toFixed(2).replace('.', ',')}</td>
+                            <td>${p.vencimento}</td>
+                            <td><span class="badge-status ${statusClass}"><i class="fas ${statusIcon}"></i> ${statusText}</span></td>
+                            <td style="text-align:center;">
+                                <button onclick="marcarPago(${p.id})" class="btn-action btn-verde" title="Marcar como pago">
+                                    <i class="fas fa-check"></i> ${actionText}
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tabela.innerHTML = html;
+            }
+            
+            // Gráficos
+            criarGraficos(data);
+            
+            loading.style.display = 'none';
+            conteudo.style.display = 'block';
+        })
+        .catch(function(err) {
+            loading.style.display = 'none';
+            document.getElementById('conteudo').innerHTML = `
+                <div class="card-panel" style="text-align:center;padding:40px;color:var(--text-muted);">
+                    <i class="fas fa-exclamation-triangle" style="font-size:3em;color:var(--accent-red);display:block;margin-bottom:12px;"></i>
+                    <p>Erro ao carregar dados financeiros.</p>
+                    <button onclick="carregarDados()" class="btn-action btn-verde" style="padding:8px 20px;font-size:0.85em;margin-top:12px;">
+                        <i class="fas fa-sync"></i> Tentar novamente
+                    </button>
+                </div>
+            `;
+            console.error(err);
+        });
+}
+
+// ==================== MARCAR PAGO ====================
+function marcarPago(id) {
+    if (!confirm('Marcar esta mensalidade como PAGA?')) return;
+    
+    fetch('/admin/api/jogador/' + id + '/pagar-mensalidade', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso) {
+            alert('✅ Mensalidade marcada como paga!');
+            carregarDados();
+        } else {
+            alert('❌ Erro: ' + data.mensagem);
+        }
+    })
+    .catch(function(err) {
+        alert('❌ Erro ao processar!');
+        console.error(err);
+    });
+}
+
+// ==================== INICIALIZAR ====================
+document.addEventListener('DOMContentLoaded', function() {
+    carregarDados();
+});
+</script>
+{% endblock %}

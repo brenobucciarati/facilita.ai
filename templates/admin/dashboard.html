@@ -23,7 +23,7 @@
     }
     .container { position: relative; z-index: 1; }
 
-    /* ===== Navbar (moderna) ===== */
+    /* ===== Navbar ===== */
     .navbar-dashboard {
         background: rgba(13,18,26,0.72); backdrop-filter: blur(24px) saturate(140%); -webkit-backdrop-filter: blur(24px) saturate(140%);
         border-bottom: 1px solid var(--border-color); padding: 0; position: sticky; top: 0; z-index: 200;
@@ -47,10 +47,7 @@
     .btn-dash-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,0.4); color: #fff; }
     .btn-dash-outline { background: transparent; color: var(--accent-green); border: 2px solid var(--accent-green); }
     .btn-dash-outline:hover { background: var(--accent-green); color: #fff; transform: translateY(-2px); }
-    .btn-dash-admin { background: transparent; color: var(--accent-purple); border: 2px solid rgba(139,92,246,0.3); }
-    .btn-dash-admin:hover { background: var(--accent-purple); color: #fff; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139,92,246,0.4); }
 
-    /* user menu */
     .user-menu { position: relative; }
     .user-chip { display: flex; align-items: center; gap: 9px; padding: 6px 12px 6px 6px; border-radius: 999px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); cursor: pointer; transition: all 0.25s ease; }
     .user-chip:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
@@ -65,11 +62,6 @@
     .user-dropdown-item.danger:hover { background: rgba(239,68,68,0.12); color: #ef4444; }
     .user-dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 4px; }
 
-    .btn-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); color: var(--text-secondary); border: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s ease; text-decoration: none; flex-shrink: 0; }
-    .btn-icon:hover { background: rgba(16,185,129,0.12); color: var(--accent-green); border-color: rgba(16,185,129,0.3); }
-
-    .navbar-mobile-toggle { display: none; width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-primary); align-items: center; justify-content: center; cursor: pointer; }
-
     /* ===== Welcome ===== */
     .welcome-section { padding: 36px 0 22px; display: flex; align-items: center; gap: 14px; animation: fadeInUp 0.5s ease both; }
     .welcome-icon { width: 52px; height: 52px; border-radius: var(--radius-lg); background: linear-gradient(135deg, rgba(16,185,129,0.18), rgba(16,185,129,0.05)); border: 1px solid rgba(16,185,129,0.25); display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-size: 1.4em; animation: wave 2.2s ease-in-out infinite; flex-shrink: 0; }
@@ -77,11 +69,11 @@
     .welcome-subtitle { color: var(--text-muted); font-size: 0.95em; }
     @keyframes wave { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-12deg)} 75%{transform:rotate(12deg)} }
 
-    /* ===== Destaque da semana + Notas de atualização (linha superior) ===== */
+    /* ===== Destaque + Notas ===== */
     .highlight-row { display: grid; grid-template-columns: 1.7fr 1fr; gap: 16px; margin-bottom: 24px; align-items: stretch; }
 
     .highlight-card { position: relative; border-radius: var(--radius-xl); overflow: hidden; border: 1px solid var(--border-color); min-height: 260px; display: flex; align-items: flex-end; animation: fadeInUp 0.5s ease both; background: var(--bg-card); }
-    .highlight-card .highlight-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
+    .highlight-card .highlight-bg { position: absolute; inset: 0; background-size: cover; background-position: center; background-color: #0f172a; }
     .highlight-card .highlight-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(10,14,20,0.95) 5%, rgba(10,14,20,0.55) 55%, rgba(10,14,20,0.15) 100%); }
     .highlight-card .highlight-content { position: relative; z-index: 2; padding: 26px; width: 100%; }
     .highlight-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.35); color: var(--accent-green); font-size: 0.72em; font-weight: 700; padding: 5px 12px; border-radius: 999px; margin-bottom: 12px; }
@@ -91,32 +83,30 @@
     .highlight-link { display: inline-flex; align-items: center; gap: 7px; color: #fff; font-weight: 600; font-size: 0.85em; text-decoration: none; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); padding: 9px 16px; border-radius: var(--radius-md); transition: all 0.25s ease; }
     .highlight-link:hover { background: var(--accent-green); border-color: var(--accent-green); color: #fff; transform: translateY(-1px); }
 
-    .highlight-empty { border: 1.5px dashed rgba(255,255,255,0.12); border-radius: var(--radius-xl); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; min-height: 260px; color: var(--text-muted); }
-    .highlight-empty i { font-size: 1.8em; color: var(--accent-green); margin-bottom: 10px; opacity: 0.7; }
-    .highlight-empty p { font-size: 0.85em; margin-bottom: 14px; max-width: 260px; }
+    .highlight-empty { border: 1.5px dashed rgba(255,255,255,0.12); border-radius: var(--radius-xl); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; min-height: 260px; color: var(--text-muted); background: var(--bg-card); }
+    .highlight-empty i { font-size: 3em; color: var(--accent-green); margin-bottom: 10px; opacity: 0.5; }
+    .highlight-empty p { font-size: 0.85em; max-width: 260px; }
 
     .updates-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 20px; display: flex; flex-direction: column; animation: fadeInUp 0.5s ease 0.05s both; }
     .updates-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .updates-title { display: flex; align-items: center; gap: 9px; color: var(--text-primary); font-weight: 700; font-size: 0.95em; }
-    .updates-title .icon-bg-sm { width: 30px; height: 30px; background: linear-gradient(135deg, var(--accent-purple), #6d28d9); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8em; flex-shrink: 0; }
-    .updates-list { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; max-height: 210px; padding-right: 4px; }
-    .update-item { display: flex; gap: 11px; padding: 10px 4px; border-bottom: 1px solid var(--border-color); }
-    .update-item:last-child { border-bottom: none; }
-    .update-dot-col { display: flex; flex-direction: column; align-items: center; padding-top: 3px; }
-    .update-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); flex-shrink: 0; }
-    .update-line { flex: 1; width: 1px; background: var(--border-color); margin-top: 4px; }
-    .update-item:last-child .update-line { display: none; }
-    .update-body { flex: 1; }
-    .update-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-    .update-date { font-size: 0.68em; color: var(--text-muted); font-weight: 600; }
-    .update-version { font-size: 0.65em; color: var(--accent-green); background: rgba(16,185,129,0.1); padding: 1px 7px; border-radius: 999px; font-weight: 700; }
-    .update-title { font-size: 0.83em; color: var(--text-primary); font-weight: 600; margin-bottom: 2px; }
-    .update-desc { font-size: 0.78em; color: var(--text-secondary); line-height: 1.4; }
-    .updates-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--text-muted); padding: 20px 10px; }
-    .updates-empty i { font-size: 1.5em; color: var(--accent-purple); opacity: 0.6; margin-bottom: 8px; }
-    .updates-empty p { font-size: 0.8em; }
-    .updates-list::-webkit-scrollbar { width: 5px; }
+    .updates-title .icon-bg-sm { width: 30px; height: 30px; background: linear-gradient(135deg, var(--accent-yellow), #d97706); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: #000; font-size: 0.8em; flex-shrink: 0; }
+    .updates-list { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; max-height: 220px; padding-right: 4px; }
+    .updates-list::-webkit-scrollbar { width: 4px; }
     .updates-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+    .update-item { display: flex; gap: 12px; padding: 10px 4px; border-radius: var(--radius-sm); transition: all 0.3s ease; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .update-item:last-child { border-bottom: none; }
+    .update-item:hover { background: rgba(255,255,255,0.02); transform: translateX(4px); }
+    .update-emoji { font-size: 1.2em; flex-shrink: 0; padding-top: 2px; }
+    .update-body { flex: 1; }
+    .update-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
+    .update-date { font-size: 0.65em; color: var(--text-muted); font-weight: 600; }
+    .update-version { font-size: 0.6em; color: var(--accent-green); background: rgba(16,185,129,0.12); padding: 1px 8px; border-radius: 999px; font-weight: 700; }
+    .update-title { font-size: 0.85em; color: var(--text-primary); font-weight: 600; margin-bottom: 2px; }
+    .update-title i { color: var(--accent-yellow); margin-right: 4px; }
+    .update-desc { font-size: 0.78em; color: var(--text-secondary); line-height: 1.4; }
+    .updates-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--text-muted); padding: 30px 10px; }
+    .updates-empty i { font-size: 2em; color: var(--accent-purple); opacity: 0.5; margin-bottom: 10px; }
 
     /* ===== Stats grid ===== */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
@@ -243,6 +233,9 @@
             <a href="{{ url_for('dashboard') }}" class="nav-link-pill active"><i class="fas fa-grip"></i> Dashboard</a>
             <a href="{{ url_for('criar_evento') }}" class="nav-link-pill"><i class="fas fa-calendar-plus"></i> Eventos</a>
             <a href="{{ url_for('cadastrar_funcionarios') }}" class="nav-link-pill"><i class="fas fa-upload"></i> Upload</a>
+            <a href="{{ url_for('jogadores') }}" class="nav-link-pill">
+    <i class="fas fa-users"></i> Jogadores
+</a>
             {% if current_user.role == 'admin' %}
             <a href="{{ url_for('admin_usuarios') }}" class="nav-link-pill"><i class="fas fa-user-shield"></i> Admin</a>
             {% endif %}
@@ -274,7 +267,7 @@
     <div class="welcome-section">
         <div class="welcome-icon"><i class="fas fa-hand-sparkles"></i></div>
         <div>
-            <h1 class="welcome-title">Bem-vindo de volta!</h1>
+            <h1 class="welcome-title">⚽ Bora jogar!</h1>
             <p class="welcome-subtitle">Gerencie seus eventos e acompanhe as inscrições</p>
         </div>
     </div>
@@ -282,45 +275,60 @@
         {% if messages %}{% for category, message in messages %}<div class="alert-premium alert-{{ category }} mb-4"><i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i><span>{{ message|safe }}</span></div>{% endfor %}{% endif %}
     {% endwith %}
 
-    <!-- ===== Destaque da Semana + Notas de Atualização =====
-         Passe `destaque` (objeto: imagem_url, titulo, descricao, link) e
-         `notas_atualizacao` (lista: data, versao, titulo, descricao) na rota do dashboard. -->
+    <!-- ===== Destaque + Notas ===== -->
     <div class="highlight-row">
+        <!-- Destaque -->
         {% if destaque %}
         <div class="highlight-card">
+            {% if destaque.imagem_url and destaque.imagem_url != '' %}
             <div class="highlight-bg" style="background-image:url('{{ destaque.imagem_url }}');"></div>
+            {% else %}
+            <div class="highlight-bg" style="background: linear-gradient(135deg, #0f172a, #1a2332);"></div>
+            {% endif %}
             <div class="highlight-overlay"></div>
             <div class="highlight-content">
                 <span class="highlight-tag"><i class="fas fa-circle"></i>Destaque da semana</span>
                 <div class="highlight-title">{{ destaque.titulo }}</div>
                 <p class="highlight-text">{{ destaque.descricao }}</p>
-                {% if destaque.link %}
+                {% if destaque.link and destaque.link != '' %}
                 <a href="{{ destaque.link }}" class="highlight-link">Ver mais <i class="fas fa-arrow-right"></i></a>
                 {% endif %}
             </div>
         </div>
         {% else %}
         <div class="highlight-empty">
-            <i class="fas fa-image"></i>
-            <p>Nenhum destaque publicado ainda. Adicione uma imagem e uma notícia para dar vida ao dashboard.</p>
-            {% if current_user.role == 'admin' %}
-            <a href="#" class="btn-dash btn-dash-outline"><i class="fas fa-plus"></i> Adicionar destaque</a>
-            {% endif %}
+            <i class="fas fa-futbol"></i>
+            <p>Nenhum destaque publicado ainda.</p>
+            <p style="font-size:0.75em;color:var(--text-muted);">Configure um destaque no painel Admin</p>
         </div>
         {% endif %}
 
+        <!-- Notas -->
         <div class="updates-card">
             <div class="updates-header">
-                <div class="updates-title"><span class="icon-bg-sm"><i class="fas fa-bolt"></i></span>Notas de Atualização</div>
+                <div class="updates-title">
+                    <span class="icon-bg-sm"><i class="fas fa-bolt"></i></span>
+                    Novidades e Atualizações
+                </div>
+                <span style="color:var(--text-muted);font-size:0.7em;">🔥 em alta</span>
             </div>
             {% if notas_atualizacao %}
             <div class="updates-list">
                 {% for nota in notas_atualizacao %}
                 <div class="update-item">
-                    <div class="update-dot-col"><div class="update-dot"></div><div class="update-line"></div></div>
+                    <div class="update-emoji">
+                        {% if loop.index == 1 %}🚀
+                        {% elif loop.index == 2 %}⚡
+                        {% elif loop.index == 3 %}🎯
+                        {% elif loop.index == 4 %}💡
+                        {% else %}✨{% endif %}
+                    </div>
                     <div class="update-body">
-                        <div class="update-meta"><span class="update-date">{{ nota.data }}</span>{% if nota.versao %}<span class="update-version">{{ nota.versao }}</span>{% endif %}</div>
-                        <div class="update-title">{{ nota.titulo }}</div>
+                        <div class="update-meta">
+                            <span class="update-date">{{ nota.data }}</span>
+                            {% if nota.versao %}<span class="update-version">v{{ nota.versao }}</span>{% endif %}
+                        </div>
+                        <div class="update-title"><i class="fas fa-circle" style="font-size:0.5em;color:var(--accent-green);"></i> {{ nota.titulo }}</div>
                         <div class="update-desc">{{ nota.descricao }}</div>
                     </div>
                 </div>
@@ -329,12 +337,13 @@
             {% else %}
             <div class="updates-empty">
                 <i class="fas fa-clock-rotate-left"></i>
-                <p>Sem novidades registradas ainda.</p>
+                <p>Sem novidades por aqui... <br>Volte em breve! 🏃</p>
             </div>
             {% endif %}
         </div>
     </div>
 
+    <!-- Stats -->
     <div class="stats-grid">
         <div class="stat-card-dash stat-card-green">
             <div class="stat-header"><div class="stat-icon-circle stat-icon-green"><i class="fas fa-users"></i></div><span class="stat-trend stat-trend-up"><i class="fas fa-arrow-up me-1"></i>Total</span></div>
@@ -360,12 +369,13 @@
         {% endif %}
     </div>
 
+    <!-- Eventos -->
     <div class="events-section">
         <div class="section-header"><div class="section-title"><span class="icon-bg"><i class="fas fa-calendar-check"></i></span>Seus Eventos{% if eventos %}<span class="event-count-badge">{{ eventos|length }} evento(s)</span>{% endif %}</div></div>
         {% if eventos %}
         <div class="events-grid">
             {% for evento in eventos %}
-            <div class="event-card" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
+            <div class="event-card">
                 <div class="event-card-header">
                     <div><div class="event-name">{{ evento.nome }}</div><span class="event-code"><i class="fas fa-hashtag"></i>{{ evento.codigo_link }}</span></div>
                     <span class="event-status {{ 'status-aberto' if evento.status == 'aberto' else 'status-fechado' }}">
@@ -397,6 +407,7 @@
     </div>
 </div>
 
+<!-- Modal Excluir -->
 <div class="modal fade modal-excluir" id="modalExcluir" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title"><i class="fas fa-exclamation-triangle" style="color:#f59e0b;margin-right:8px;"></i>Confirmar Exclusão</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
@@ -410,10 +421,37 @@
 
 <script>
 function copiarLink(url, botao) {
-    if (navigator.clipboard) { navigator.clipboard.writeText(url).then(function(){ botao.classList.add('copiado'); botao.innerHTML='<i class="fas fa-check"></i> Copiado!'; setTimeout(function(){ botao.classList.remove('copiado'); botao.innerHTML='<i class="fas fa-link"></i> Copiar Link'; },2000); }); }
-    else { var t=document.createElement('textarea'); t.value=url; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); try{document.execCommand('copy'); botao.classList.add('copiado'); botao.innerHTML='<i class="fas fa-check"></i> Copiado!'; setTimeout(function(){ botao.classList.remove('copiado'); botao.innerHTML='<i class="fas fa-link"></i> Copiar Link'; },2000); }catch(e){} document.body.removeChild(t); }
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() {
+            botao.classList.add('copiado');
+            botao.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            setTimeout(function() {
+                botao.classList.remove('copiado');
+                botao.innerHTML = '<i class="fas fa-link"></i> Copiar Link';
+            }, 2000);
+        });
+    } else {
+        var t = document.createElement('textarea');
+        t.value = url;
+        t.style.position = 'fixed';
+        t.style.opacity = '0';
+        document.body.appendChild(t);
+        t.select();
+        try {
+            document.execCommand('copy');
+            botao.classList.add('copiado');
+            botao.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            setTimeout(function() {
+                botao.classList.remove('copiado');
+                botao.innerHTML = '<i class="fas fa-link"></i> Copiar Link';
+            }, 2000);
+        } catch(e) {}
+        document.body.removeChild(t);
+    }
 }
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Excluir evento
     document.querySelectorAll('.btn-excluir-trigger').forEach(function(btn) {
         btn.addEventListener('click', function() {
             document.getElementById('modalNomeEvento').textContent = this.getAttribute('data-evento-nome');
@@ -421,14 +459,26 @@ document.addEventListener('DOMContentLoaded', function() {
             new bootstrap.Modal(document.getElementById('modalExcluir')).show();
         });
     });
-    var adminCard = document.querySelector('.admin-card-click');
-    if (adminCard) { adminCard.addEventListener('click', function() { window.location.href = this.getAttribute('data-url'); }); }
 
+    // Card Admin
+    var adminCard = document.querySelector('.admin-card-click');
+    if (adminCard) {
+        adminCard.addEventListener('click', function() {
+            window.location.href = this.getAttribute('data-url');
+        });
+    }
+
+    // User Menu
     var userMenu = document.getElementById('userMenu');
     var userChip = document.getElementById('userChipToggle');
     if (userChip) {
-        userChip.addEventListener('click', function(e) { e.stopPropagation(); userMenu.classList.toggle('open'); });
-        document.addEventListener('click', function() { userMenu.classList.remove('open'); });
+        userChip.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userMenu.classList.toggle('open');
+        });
+        document.addEventListener('click', function() {
+            userMenu.classList.remove('open');
+        });
     }
 });
 </script>

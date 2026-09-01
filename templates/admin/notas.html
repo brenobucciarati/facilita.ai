@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+{% block title %}Notas de Atualização - FACILITA.AI{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-primary: #0a0e14; --bg-card: #1a2332; --bg-input: #1e293b;
+        --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
+        --accent-green: #10b981; --accent-red: #ef4444; --accent-purple: #8b5cf6;
+        --accent-blue: #3b82f6; --accent-yellow: #f59e0b; --accent-orange: #f97316;
+        --border-color: rgba(255,255,255,0.06); --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px;
+    }
+    body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    .navbar-master { background: rgba(20,27,34,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); padding: 12px 0; position: sticky; top: 0; z-index: 100; }
+    .container-master { max-width: 1000px; margin: 20px auto; padding: 0 16px; }
+    
+    .btn-back { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--text-secondary); border: 2px solid var(--border-color); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-back:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    .btn-destaques { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--accent-yellow); border: 2px solid rgba(245,158,11,0.3); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-destaques:hover { background: var(--accent-yellow); color: #000; border-color: var(--accent-yellow); }
+    
+    .card-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 24px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .card-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 700; font-size: 1.1em; }
+    .card-title .icon-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; }
+    .icon-yellow { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+    .icon-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+    .icon-green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+    .icon-blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+    
+    .count-badge { background: rgba(139,92,246,0.1); color: var(--accent-purple); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8em; }
+    
+    .input-master { background: var(--bg-input); border: 2px solid var(--border-color); color: var(--text-primary); padding: 10px 14px; border-radius: 10px; width: 100%; margin-bottom: 8px; font-family: 'Inter', sans-serif; font-size: 0.9em; transition: all 0.2s; }
+    .input-master:focus { border-color: var(--accent-yellow); outline: none; box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
+    .input-master::placeholder { color: var(--text-muted); }
+    .input-master[type="date"] { color-scheme: dark; cursor: pointer; }
+    textarea.input-master { min-height: 60px; resize: vertical; }
+    select.input-master { cursor: pointer; }
+    
+    .grid-criar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-criar-full { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .grid-criar-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    
+    .btn-criar { width: 100%; margin-top: 8px; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9em; cursor: pointer; border: none; background: linear-gradient(135deg, var(--accent-yellow), #d97706); color: #000; transition: all 0.2s; }
+    .btn-criar:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(245,158,11,0.4); }
+    
+    .btn-action { padding: 5px 10px; border-radius: 6px; font-size: 0.65em; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; margin: 1px; }
+    .btn-verde { background: var(--accent-green); color: #fff; }
+    .btn-verde:hover { transform: translateY(-1px); }
+    .btn-vermelho { background: var(--accent-red); color: #fff; }
+    .btn-vermelho:hover { transform: translateY(-1px); }
+    .btn-amarelo { background: var(--accent-yellow); color: #000; }
+    .btn-amarelo:hover { transform: translateY(-1px); }
+    
+    .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.65em; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .badge-ativo { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-inativo { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+    .badge-versao { background: rgba(139,92,246,0.15); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
+    .badge-novidade { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
+    
+    .tabela-master { width: 100%; border-collapse: collapse; }
+    .tabela-master th { color: var(--text-muted); font-size: 0.7em; text-transform: uppercase; letter-spacing: 1px; padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .tabela-master td { padding: 10px 8px; color: var(--text-primary); font-size: 0.82em; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .tabela-master tbody tr { transition: all 0.2s; }
+    .tabela-master tbody tr:hover { background: rgba(255,255,255,0.02); }
+    
+    .alert-modern { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-lg); font-weight: 500; font-size: 0.85em; margin-bottom: 12px; animation: slideDown 0.4s ease; }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-15px)} to{opacity:1;transform:translateY(0)} }
+    .alert-success { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); color: var(--accent-green); }
+    .alert-danger { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: var(--accent-red); }
+    
+    .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    .empty-state i { font-size: 3em; display: block; margin-bottom: 12px; opacity: 0.3; }
+    
+    .version-tag { background: rgba(139,92,246,0.15); color: var(--accent-purple); padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75em; }
+    .tipo-tag { padding: 2px 10px; border-radius: 4px; font-weight: 600; font-size: 0.65em; }
+    .tipo-versao { background: rgba(139,92,246,0.15); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
+    .tipo-novidade { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
+    
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center; }
+    .modal-overlay.show { display: flex; }
+    .modal-card { background: var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-xl); padding:24px; max-width:500px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,0.6); animation:scaleIn 0.3s ease; }
+    @keyframes scaleIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+    .modal-title { color:var(--text-primary); font-weight:700; font-size:1em; margin-bottom:8px; text-align:center; }
+    .modal-actions { display:flex; gap:8px; margin-top:12px; }
+    .modal-actions button { flex:1; padding:10px; border-radius:8px; font-weight:600; font-size:0.85em; cursor:pointer; border:none; }
+    .btn-modal-cancel { background:transparent; color:var(--text-secondary); border:2px solid var(--border-color)!important; }
+    .btn-modal-confirm { background:linear-gradient(135deg, var(--accent-yellow), #d97706); color:#000; }
+    
+    .sugestao-versao { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2); border-radius: 6px; padding: 4px 10px; color: var(--accent-purple); font-size: 0.75em; cursor: pointer; transition: all 0.2s; }
+    .sugestao-versao:hover { background: rgba(139,92,246,0.2); border-color: rgba(139,92,246,0.4); }
+    
+    @media (max-width: 768px) { 
+        .grid-criar { grid-template-columns: 1fr; }
+        .grid-criar-3 { grid-template-columns: 1fr; }
+        .tabela-master { font-size: 0.75em; }
+        .tabela-master th, .tabela-master td { padding: 6px 4px; }
+        .btn-action { padding: 4px 6px; font-size: 0.6em; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar-master">
+    <div class="container-master d-flex justify-content-between align-items-center">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--text-primary);font-weight:700;">
+            <span style="font-size:1.2em;">📢</span>
+            <span>Notas de Atualização</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <a href="{{ url_for('admin_usuarios') }}" class="btn-back"><i class="fas fa-users"></i> Usuários</a>
+            <a href="{{ url_for('admin_destaques') }}" class="btn-destaques"><i class="fas fa-star"></i> Destaques</a>
+            <a href="{{ url_for('dashboard') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-master">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}<div class="alert-modern alert-{{ cat }}"><i class="fas fa-{{ 'check-circle' if cat=='success' else 'exclamation-circle' }}"></i>{{ msg|safe }}</div>{% endfor %}{% endif %}
+    {% endwith %}
+
+    <!-- Criar Nota -->
+    <div class="card-panel">
+        <div class="card-header">
+            <div class="card-title">
+                <span class="icon-circle icon-yellow"><i class="fas fa-plus-circle"></i></span>
+                Nova Nota
+            </div>
+            <span style="color:var(--text-muted);font-size:0.8em;">
+                <i class="fas fa-info-circle"></i> Aparecem no Dashboard
+            </span>
+        </div>
+        <form method="POST" action="{{ url_for('admin_criar_nota') }}" id="formCriarNota">
+            <div class="grid-criar-full">
+                <div class="grid-criar-3">
+                    <input type="date" name="data" id="data_nota" class="input-master" required>
+                    <select name="tipo" id="tipo_nota" class="input-master" onchange="toggleVersao()">
+                        <option value="versao">📦 Versão</option>
+                        <option value="novidade">🎉 Novidade</option>
+                    </select>
+                    <div id="campo_versao">
+                        <input type="text" name="versao" id="versao_nota" class="input-master" placeholder="Versão (ex: 2.1.0)">
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+                            <span class="sugestao-versao" onclick="aplicarVersao('1.0')">v1.0</span>
+                            <span class="sugestao-versao" onclick="aplicarVersao('1.1')">v1.1</span>
+                            <span class="sugestao-versao" onclick="aplicarVersao('2.0')">v2.0</span>
+                            <span class="sugestao-versao" onclick="aplicarVersao('2.1')">v2.1</span>
+                            <span class="sugestao-versao" onclick="aplicarVersao('3.0')">v3.0</span>
+                            <span class="sugestao-versao" onclick="buscarProximaVersao()">🔍 Sugerir</span>
+                        </div>
+                    </div>
+                </div>
+                <input type="text" name="titulo" class="input-master" placeholder="Título da Nota *" required>
+                <textarea name="descricao" class="input-master" placeholder="Descrição da Atualização *" required></textarea>
+                <div class="grid-criar">
+                    <input type="number" name="ordem" class="input-master" placeholder="Ordem (0 = primeiro)" value="0">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--bg-input);border-radius:10px;">
+                        <input type="checkbox" name="ativo" id="ativo" checked style="width:18px;height:18px;cursor:pointer;">
+                        <label for="ativo" style="color:var(--text-secondary);font-weight:500;cursor:pointer;">Ativo</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn-criar"><i class="fas fa-save"></i> Criar Nota</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Notas -->
+    <div class="card-panel">
+        <div class="card-header">
+            <div class="card-title">
+                <span class="icon-circle icon-green"><i class="fas fa-list"></i></span>
+                Notas Cadastradas
+            </div>
+            <span class="count-badge">{{ notas|length }} nota(s)</span>
+        </div>
+        {% if notas %}
+        <div style="overflow-x:auto;">
+            <table class="tabela-master">
+                <thead>
+                    <tr>
+                        <th>Ordem</th>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Versão</th>
+                        <th>Título</th>
+                        <th>Status</th>
+                        <th style="text-align:center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for n in notas %}
+                    <tr>
+                        <td><code style="background:var(--bg-input);padding:2px 8px;border-radius:4px;">{{ n.ordem }}</code></td>
+                        <td>{{ n.data }}</td>
+                        <td>
+                            <span class="tipo-tag {% if n.tipo == 'versao' %}tipo-versao{% else %}tipo-novidade{% endif %}">
+                                {% if n.tipo == 'versao' %}📦 Versão{% else %}🎉 Novidade{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if n.versao %}
+                            <span class="version-tag">v{{ n.versao }}</span>
+                            {% else %}
+                            <span style="color:var(--text-muted);font-size:0.7em;">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ n.titulo }}</strong>
+                            <div style="font-size:0.7em;color:var(--text-muted);">{{ n.descricao|truncate(50) }}</div>
+                        </td>
+                        <td>
+                            <span class="badge {% if n.ativo %}badge-ativo{% else %}badge-inativo{% endif %}">
+                                <i class="fas fa-{{ 'check-circle' if n.ativo else 'times-circle' }}"></i>
+                                {{ 'Ativo' if n.ativo else 'Inativo' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:4px;justify-content:center;">
+                                <button data-id="{{ n.id }}" class="btn-action btn-amarelo btn-editar-nota" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form method="POST" action="{{ url_for('admin_excluir_nota', nota_id=n.id) }}" style="display:inline;" onsubmit="return confirm('Excluir esta nota?')">
+                                    <button type="submit" class="btn-action btn-vermelho" title="Excluir">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-bullhorn"></i>
+            <p>Nenhuma nota cadastrada</p>
+            <span style="font-size:0.8em;">Crie uma nota para informar os usuários sobre novidades</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal-overlay" id="modalEditar">
+    <div class="modal-card">
+        <div class="modal-title">
+            <i class="fas fa-edit" style="color:var(--accent-yellow);"></i> Editar Nota
+        </div>
+        <form method="POST" id="formEditar" action="">
+            <input type="date" name="data" id="edit_data" class="input-master" required>
+            <select name="tipo" id="edit_tipo" class="input-master" onchange="toggleVersaoEdit()">
+                <option value="versao">📦 Versão</option>
+                <option value="novidade">🎉 Novidade</option>
+            </select>
+            <div id="edit_campo_versao">
+                <input type="text" name="versao" id="edit_versao" class="input-master" placeholder="Versão (ex: 2.1.0)">
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+                    <span class="sugestao-versao" onclick="aplicarVersaoEdit('1.0')">v1.0</span>
+                    <span class="sugestao-versao" onclick="aplicarVersaoEdit('1.1')">v1.1</span>
+                    <span class="sugestao-versao" onclick="aplicarVersaoEdit('2.0')">v2.0</span>
+                    <span class="sugestao-versao" onclick="aplicarVersaoEdit('2.1')">v2.1</span>
+                    <span class="sugestao-versao" onclick="aplicarVersaoEdit('3.0')">v3.0</span>
+                </div>
+            </div>
+            <input type="text" name="titulo" id="edit_titulo" class="input-master" placeholder="Título" required>
+            <textarea name="descricao" id="edit_descricao" class="input-master" placeholder="Descrição" required></textarea>
+            <div class="grid-criar">
+                <input type="number" name="ordem" id="edit_ordem" class="input-master" placeholder="Ordem">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--bg-input);border-radius:10px;">
+                    <input type="checkbox" name="ativo" id="edit_ativo" style="width:18px;height:18px;cursor:pointer;">
+                    <label for="edit_ativo" style="color:var(--text-secondary);font-weight:500;cursor:pointer;">Ativo</label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" onclick="fecharModalEditar()" class="btn-modal-cancel">Cancelar</button>
+                <button type="submit" class="btn-modal-confirm">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// ==================== FUNÇÕES DE VERSÃO ====================
+function aplicarVersao(versao) {
+    document.getElementById('versao_nota').value = versao;
+}
+
+function aplicarVersaoEdit(versao) {
+    document.getElementById('edit_versao').value = versao;
+}
+
+function toggleVersao() {
+    var tipo = document.getElementById('tipo_nota').value;
+    var campo = document.getElementById('campo_versao');
+    if (tipo === 'novidade') {
+        campo.style.display = 'none';
+        document.getElementById('versao_nota').value = '';
+        document.getElementById('versao_nota').removeAttribute('required');
+    } else {
+        campo.style.display = 'block';
+        document.getElementById('versao_nota').setAttribute('required', 'required');
+    }
+}
+
+function toggleVersaoEdit() {
+    var tipo = document.getElementById('edit_tipo').value;
+    var campo = document.getElementById('edit_campo_versao');
+    if (tipo === 'novidade') {
+        campo.style.display = 'none';
+        document.getElementById('edit_versao').value = '';
+        document.getElementById('edit_versao').removeAttribute('required');
+    } else {
+        campo.style.display = 'block';
+        document.getElementById('edit_versao').setAttribute('required', 'required');
+    }
+}
+
+function buscarProximaVersao() {
+    // Buscar a maior versão existente da tabela
+    var versoes = [];
+    var linhas = document.querySelectorAll('.tabela-master tbody tr');
+    
+    for (var i = 0; i < linhas.length; i++) {
+        var celulas = linhas[i].querySelectorAll('td');
+        if (celulas.length >= 4) {
+            var textoVersao = celulas[3].textContent.trim();
+            // Verificar se tem versão (não é "—" ou vazio)
+            if (textoVersao && textoVersao !== '—' && textoVersao !== '' && textoVersao.includes('v')) {
+                var versaoLimpa = textoVersao.replace('v', '').trim();
+                if (versaoLimpa) {
+                    versoes.push(versaoLimpa);
+                }
+            }
+        }
+    }
+    
+    if (versoes.length === 0) {
+        document.getElementById('versao_nota').value = '1.0';
+        return;
+    }
+    
+    // Extrair números das versões
+    var numeros = [];
+    for (var i = 0; i < versoes.length; i++) {
+        var v = versoes[i].split('.');
+        if (v.length >= 2) {
+            var major = parseInt(v[0]) || 0;
+            var minor = parseInt(v[1]) || 0;
+            numeros.push({ major: major, minor: minor });
+        }
+    }
+    
+    if (numeros.length === 0) {
+        document.getElementById('versao_nota').value = '1.0';
+        return;
+    }
+    
+    // Ordenar por major e minor (decrescente)
+    numeros.sort(function(a, b) {
+        if (a.major !== b.major) return b.major - a.major;
+        return b.minor - a.minor;
+    });
+    
+    var ultima = numeros[0];
+    var novaVersao = ultima.major + '.' + (ultima.minor + 1);
+    document.getElementById('versao_nota').value = novaVersao;
+}
+
+// ==================== DADOS DAS NOTAS ====================
+var notasData = [];
+
+try {
+    notasData = JSON.parse('{{ notas|tojson|safe }}');
+} catch(e) {
+    notasData = [];
+    console.warn('Erro ao carregar notas:', e);
+}
+
+if (!Array.isArray(notasData)) notasData = [];
+
+// ==================== EDITAR NOTA ====================
+function editarNota(id) {
+    var n = null;
+    for (var i = 0; i < notasData.length; i++) {
+        if (notasData[i].id === id) {
+            n = notasData[i];
+            break;
+        }
+    }
+    
+    if (!n) {
+        alert('Nota não encontrada!');
+        return;
+    }
+    
+    document.getElementById('formEditar').action = '/admin/notas/' + id + '/editar';
+    document.getElementById('edit_data').value = n.data || '';
+    document.getElementById('edit_tipo').value = n.tipo || 'versao';
+    document.getElementById('edit_versao').value = n.versao || '';
+    document.getElementById('edit_titulo').value = n.titulo || '';
+    document.getElementById('edit_descricao').value = n.descricao || '';
+    document.getElementById('edit_ordem').value = n.ordem || 0;
+    document.getElementById('edit_ativo').checked = (n.ativo === true || n.ativo === 'true');
+    
+    // Ajustar visibilidade do campo versão
+    toggleVersaoEdit();
+    
+    document.getElementById('modalEditar').classList.add('show');
+}
+
+function fecharModalEditar() {
+    document.getElementById('modalEditar').classList.remove('show');
+}
+
+// ==================== EVENT LISTENERS ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // Data atual no campo de data
+    var hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data_nota').value = hoje;
+    
+    // Botões de editar nota
+    var botoes = document.querySelectorAll('.btn-editar-nota');
+    for (var i = 0; i < botoes.length; i++) {
+        botoes[i].addEventListener('click', function() {
+            var id = parseInt(this.getAttribute('data-id'));
+            editarNota(id);
+        });
+    }
+    
+    // Inicializar campo versão
+    toggleVersao();
+});
+
+// ==================== FECHAR MODAL CLICANDO FORA ====================
+document.getElementById('modalEditar').addEventListener('click', function(e) {
+    if (e.target === this) fecharModalEditar();
+});
+</script>
+{% endblock %}

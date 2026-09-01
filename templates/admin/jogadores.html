@@ -1,0 +1,510 @@
+{% extends "base.html" %}
+{% block title %}Jogadores - FACILITA.AI{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-primary: #0a0e14; --bg-secondary: #141b22; --bg-card: #1a2332; --bg-input: #1e293b;
+        --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
+        --accent-green: #10b981; --accent-red: #ef4444; --accent-purple: #8b5cf6;
+        --accent-blue: #3b82f6; --accent-yellow: #f59e0b; --accent-orange: #f97316;
+        --border-color: rgba(255,255,255,0.06); --radius-sm: 8px; --radius-md: 12px;
+        --radius-lg: 16px; --radius-xl: 20px;
+    }
+    body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    
+    .navbar-jogadores { background: rgba(20,27,34,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); padding: 12px 0; position: sticky; top: 0; z-index: 100; }
+    .container-jogadores { max-width: 1000px; margin: 20px auto; padding: 0 16px; }
+    
+    .btn-back { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--text-secondary); border: 2px solid var(--border-color); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-back:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    .btn-upload { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--accent-blue); border: 2px solid rgba(59,130,246,0.3); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-upload:hover { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+    
+    .card-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 24px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .card-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 700; font-size: 1.1em; }
+    .card-title .icon-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; }
+    .icon-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+    .icon-green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+    .icon-blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+    .icon-yellow { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+    .icon-red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+    
+    .input-master { background: var(--bg-input); border: 2px solid var(--border-color); color: var(--text-primary); padding: 10px 14px; border-radius: 10px; width: 100%; margin-bottom: 8px; font-family: 'Inter', sans-serif; font-size: 0.9em; transition: all 0.2s; }
+    .input-master:focus { border-color: var(--accent-purple); outline: none; box-shadow: 0 0 0 3px rgba(139,92,246,0.1); }
+    .input-master::placeholder { color: var(--text-muted); }
+    .input-master[type="date"] { color-scheme: dark; cursor: pointer; }
+    select.input-master { cursor: pointer; }
+    
+    .grid-criar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-criar-full { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    
+    .btn-criar { width: 100%; margin-top: 8px; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9em; cursor: pointer; border: none; background: linear-gradient(135deg, var(--accent-purple), #7c3aed); color: #fff; transition: all 0.2s; }
+    .btn-criar:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(139,92,246,0.4); }
+    .btn-criar-green { background: linear-gradient(135deg, var(--accent-green), #059669); }
+    .btn-criar-green:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(16,185,129,0.4); }
+    
+    .tipo-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
+    .tipo-option { position: relative; cursor: pointer; }
+    .tipo-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+    .tipo-option .tipo-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-input); transition: all 0.3s ease; text-align: center; }
+    .tipo-option .tipo-card i { font-size: 1.2em; color: var(--text-muted); transition: all 0.3s ease; }
+    .tipo-option .tipo-card .tipo-name { font-size: 0.75em; font-weight: 600; color: var(--text-secondary); transition: all 0.3s ease; }
+    .tipo-option .tipo-card .tipo-desc { font-size: 0.6em; color: var(--text-muted); }
+    .tipo-option input[type="radio"]:checked + .tipo-card { border-color: var(--accent-green); background: rgba(16,185,129,0.08); }
+    .tipo-option input[type="radio"]:checked + .tipo-card i { color: var(--accent-green); }
+    .tipo-option input[type="radio"]:checked + .tipo-card .tipo-name { color: var(--accent-green); }
+    
+    .mensalidade-section { display: none; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-top: 8px; border: 1px solid var(--border-color); }
+    .mensalidade-section.show { display: block; }
+    .mensalidade-section .info-text { font-size: 0.75em; color: var(--text-muted); margin-bottom: 8px; }
+    
+    .badge-status { padding: 4px 12px; border-radius: 20px; font-size: 0.6em; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .badge-pago { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-pendente { background: rgba(245,158,11,0.15); color: var(--accent-yellow); border: 1px solid rgba(245,158,11,0.3); }
+    .badge-vencido { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+    .badge-ativo { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-inativo { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+    .badge-bloqueado { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+    
+    .btn-action { padding: 5px 10px; border-radius: 6px; font-size: 0.65em; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; margin: 1px; }
+    .btn-amarelo { background: var(--accent-yellow); color: #000; }
+    .btn-amarelo:hover { transform: translateY(-1px); }
+    .btn-verde { background: var(--accent-green); color: #fff; }
+    .btn-verde:hover { transform: translateY(-1px); }
+    .btn-vermelho { background: var(--accent-red); color: #fff; }
+    .btn-vermelho:hover { transform: translateY(-1px); }
+    .btn-azul { background: var(--accent-blue); color: #fff; }
+    .btn-azul:hover { transform: translateY(-1px); }
+    
+    .tabela-master { width: 100%; border-collapse: collapse; }
+    .tabela-master th { color: var(--text-muted); font-size: 0.65em; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .tabela-master td { padding: 8px; color: var(--text-primary); font-size: 0.82em; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .tabela-master tbody tr { transition: all 0.2s; }
+    .tabela-master tbody tr:hover { background: rgba(255,255,255,0.02); }
+    
+    .alert-modern { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-lg); font-weight: 500; font-size: 0.85em; margin-bottom: 12px; animation: slideDown 0.4s ease; }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-15px)} to{opacity:1;transform:translateY(0)} }
+    .alert-success { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); color: var(--accent-green); }
+    .alert-danger { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: var(--accent-red); }
+    .alert-info { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); color: var(--accent-blue); }
+    
+    .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    .empty-state i { font-size: 3em; display: block; margin-bottom: 12px; opacity: 0.3; }
+    
+    /* TABS */
+    .tabs-container { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); overflow-x: auto; }
+    .tab-btn { padding: 12px 20px; background: transparent; border: none; color: var(--text-muted); font-weight: 600; font-size: 0.85em; cursor: pointer; transition: all 0.2s; border-bottom: 3px solid transparent; font-family: 'Inter', sans-serif; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .tab-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.02); }
+    .tab-btn.active { color: var(--accent-purple); border-bottom-color: var(--accent-purple); }
+    .tab-btn i { margin-right: 6px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    
+    .modal-overlay { display: none; position: fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center; }
+    .modal-overlay.show { display: flex; }
+    .modal-card { background: var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-xl); padding:24px; max-width:500px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,0.6); animation:scaleIn 0.3s ease; }
+    @keyframes scaleIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+    .modal-title { color:var(--text-primary); font-weight:700; font-size:1em; margin-bottom:8px; text-align:center; }
+    .modal-actions { display:flex; gap:8px; margin-top:12px; }
+    .modal-actions button { flex:1; padding:10px; border-radius:8px; font-weight:600; font-size:0.85em; cursor:pointer; border:none; }
+    .btn-modal-cancel { background:transparent; color:var(--text-secondary); border:2px solid var(--border-color)!important; }
+    .btn-modal-confirm { background:var(--accent-yellow); color:#000; }
+    
+    @media (max-width: 768px) { 
+        .grid-criar { grid-template-columns: 1fr; }
+        .grid-3 { grid-template-columns: 1fr; }
+        .tipo-options { grid-template-columns: 1fr 1fr; }
+        .tabela-master { font-size: 0.7em; }
+        .tabela-master th, .tabela-master td { padding: 4px; }
+        .btn-action { padding: 4px 6px; font-size: 0.55em; }
+    }
+    @media (max-width: 400px) { .tipo-options { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar-jogadores">
+    <div class="container-jogadores d-flex justify-content-between align-items-center">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--text-primary);font-weight:700;">
+            <span style="font-size:1.2em;">⚽</span>
+            <span>Jogadores</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <a href="{{ url_for('cadastrar_funcionarios') }}" class="btn-upload"><i class="fas fa-upload"></i> Upload</a>
+            <a href="{{ url_for('dashboard') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-jogadores">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat, msg in messages %}<div class="alert-modern alert-{{ cat }}"><i class="fas fa-{{ 'check-circle' if cat=='success' else 'exclamation-circle' }}"></i>{{ msg|safe }}</div>{% endfor %}{% endif %}
+    {% endwith %}
+
+    <!-- TABS -->
+<div class="tabs-container">
+    <button class="tab-btn active" onclick="abrirTab('cadastrar')">
+        <i class="fas fa-user-plus"></i> Cadastrar
+    </button>
+    <button class="tab-btn" onclick="abrirTab('listar')">
+        <i class="fas fa-list"></i> Lista de Jogadores
+    </button>
+    <a href="{{ url_for('financeiro') }}" class="tab-btn" style="text-decoration:none;">
+        <i class="fas fa-coins"></i> Financeiro
+    </a>
+</div>
+
+    <!-- ==================== TAB 1: CADASTRAR ==================== -->
+    <div class="tab-content active" id="tab-cadastrar">
+        <div class="card-panel">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="icon-circle icon-purple"><i class="fas fa-user-plus"></i></span>
+                    Novo Jogador
+                </div>
+                <span style="color:var(--text-muted);font-size:0.75em;">
+                    <i class="fas fa-info-circle"></i> Cadastro manual com controle de mensalidade
+                </span>
+            </div>
+            
+            <form method="POST" action="{{ url_for('cadastrar_jogador') }}">
+                <div class="grid-3">
+                    <input type="text" name="nome" class="input-master" placeholder="Nome *" required>
+                    <input type="text" name="sobrenome" class="input-master" placeholder="Sobrenome">
+                    <input type="text" name="apelido" class="input-master" placeholder="Apelido">
+                </div>
+                
+                <div class="grid-3">
+                    <input type="text" name="funcao" class="input-master" placeholder="Função (ex: Atacante, Goleiro...)" value="GERAL">
+                    <input type="text" name="telefone" class="input-master" placeholder="Telefone (opcional)">
+                    <input type="email" name="email" class="input-master" placeholder="E-mail (opcional)">
+                </div>
+                
+                <!-- Tipo de Jogador -->
+                <div class="tipo-options">
+                    <label class="tipo-option">
+                        <input type="radio" name="tipo" value="mensalista" checked onchange="toggleMensalidade()">
+                        <div class="tipo-card">
+                            <i class="fas fa-user-clock"></i>
+                            <span class="tipo-name">Mensalista</span>
+                            <span class="tipo-desc">Com mensalidade</span>
+                        </div>
+                    </label>
+                    <label class="tipo-option">
+                        <input type="radio" name="tipo" value="diarista" onchange="toggleMensalidade()">
+                        <div class="tipo-card">
+                            <i class="fas fa-user-tag"></i>
+                            <span class="tipo-name">Diarista</span>
+                            <span class="tipo-desc">Por dia</span>
+                        </div>
+                    </label>
+                    <label class="tipo-option">
+                        <input type="radio" name="tipo" value="visitante" onchange="toggleMensalidade()">
+                        <div class="tipo-card">
+                            <i class="fas fa-user-friends"></i>
+                            <span class="tipo-name">Visitante</span>
+                            <span class="tipo-desc">Convidado</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- Seção de Mensalidade -->
+                <div class="mensalidade-section show" id="mensalidadeSection">
+                    <div class="info-text">
+                        <i class="fas fa-info-circle"></i> 
+                        Configure o controle de mensalidade para este jogador
+                    </div>
+                    <div class="grid-3">
+                        <div>
+                            <label style="color:var(--text-muted);font-size:0.7em;font-weight:600;display:block;margin-bottom:4px;">
+                                <i class="fas fa-calendar-alt"></i> Data de Vencimento
+                            </label>
+                            <input type="date" name="data_vencimento" id="data_vencimento" class="input-master">
+                        </div>
+                        <div>
+                            <label style="color:var(--text-muted);font-size:0.7em;font-weight:600;display:block;margin-bottom:4px;">
+                                <i class="fas fa-money-bill-wave"></i> Valor (R$)
+                            </label>
+                            <input type="number" name="valor_mensalidade" id="valor_mensalidade" class="input-master" placeholder="0,00" step="0.01">
+                        </div>
+                        <div>
+                            <label style="color:var(--text-muted);font-size:0.7em;font-weight:600;display:block;margin-bottom:4px;">
+                                <i class="fas fa-calendar"></i> Mês Referência
+                            </label>
+                            <input type="month" name="mes_referencia" id="mes_referencia" class="input-master">
+                        </div>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 14px;background:var(--bg-input);border-radius:10px;">
+                            <input type="checkbox" name="mensalidade_paga" id="mensalidade_paga" style="width:18px;height:18px;cursor:pointer;">
+                            <span style="color:var(--text-secondary);font-weight:500;">✅ Marcar como pago</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-criar btn-criar-green"><i class="fas fa-save"></i> Cadastrar Jogador</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== TAB 2: LISTA DE JOGADORES ==================== -->
+    <div class="tab-content" id="tab-listar">
+        <div class="card-panel">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="icon-circle icon-blue"><i class="fas fa-users"></i></span>
+                    Todos os Jogadores
+                </div>
+                <span style="color:var(--text-muted);font-size:0.8em;">{{ jogadores|length }} jogador(es)</span>
+            </div>
+            {% if jogadores %}
+            <div style="overflow-x:auto;">
+                <table class="tabela-master">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Função</th>
+                            <th>Tipo</th>
+                            <th>Mensalidade</th>
+                            <th>Status</th>
+                            <th style="text-align:center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for j in jogadores %}
+                        <tr>
+                            <td>
+                                <strong>{{ j.nome }}</strong>
+                                {% if j.sobrenome %}<span style="color:var(--text-secondary);">{{ j.sobrenome }}</span>{% endif %}
+                                {% if j.apelido %}<span style="color:var(--text-muted);font-size:0.7em;"> ({{ j.apelido }})</span>{% endif %}
+                            </td>
+                            <td style="color:var(--text-secondary);font-size:0.8em;">{{ j.funcao or 'GERAL' }}</td>
+                            <td>
+                                {% if j.tipo == 'mensalista' %}
+                                <span style="color:var(--accent-purple);font-weight:600;">📦 Mensalista</span>
+                                {% elif j.tipo == 'diarista' %}
+                                <span style="color:var(--accent-blue);font-weight:600;">📅 Diarista</span>
+                                {% else %}
+                                <span style="color:var(--accent-yellow);font-weight:600;">👤 Visitante</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if j.tipo == 'mensalista' %}
+                                    {% if j.mensalidade_paga %}
+                                    <span class="badge-status badge-pago"><i class="fas fa-check-circle"></i> Pago</span>
+                                    {% elif j.data_vencimento and j.data_vencimento < now %}
+                                    <span class="badge-status badge-vencido"><i class="fas fa-times-circle"></i> Vencido</span>
+                                    {% else %}
+                                    <span class="badge-status badge-pendente"><i class="fas fa-clock"></i> Pendente</span>
+                                    {% endif %}
+                                    {% if j.data_vencimento %}
+                                    <div style="font-size:0.6em;color:var(--text-muted);">Vence: {{ j.data_vencimento.strftime('%d/%m/%Y') }}</div>
+                                    {% endif %}
+                                    {% if j.valor_mensalidade %}
+                                    <div style="font-size:0.6em;color:var(--accent-green);">R$ {{ "%.2f"|format(j.valor_mensalidade) }}</div>
+                                    {% endif %}
+                                {% else %}
+                                <span style="color:var(--text-muted);font-size:0.7em;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if j.bloqueado %}
+                                <span class="badge-status badge-bloqueado"><i class="fas fa-lock"></i> Bloqueado</span>
+                                {% elif not j.ativo %}
+                                <span class="badge-status badge-inativo"><i class="fas fa-user-slash"></i> Inativo</span>
+                                {% else %}
+                                <span class="badge-status badge-ativo"><i class="fas fa-check-circle"></i> Ativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                            <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
+    <button onclick="abrirModalEditar('{{ j.id }}')" class="btn-action btn-amarelo" title="Editar">
+        <i class="fas fa-edit"></i>
+    </button>
+    <button onclick="toggleStatus(this)" data-id="{{ j.id }}" data-ativo="{{ 'true' if j.ativo else 'false' }}" class="btn-action btn-verde" title="{{ 'Desativar' if j.ativo else 'Ativar' }}">
+        <i class="fas fa-{{ 'user-slash' if j.ativo else 'user-check' }}"></i>
+    </button>
+    <button onclick="toggleBloqueio(this)" data-id="{{ j.id }}" data-bloqueado="{{ 'true' if j.bloqueado else 'false' }}" class="btn-action btn-azul" title="{{ 'Desbloquear' if j.bloqueado else 'Bloquear' }}">
+        <i class="fas fa-{{ 'lock-open' if j.bloqueado else 'lock' }}"></i>
+    </button>
+    <form method="POST" action="{{ url_for('excluir_jogador', jogador_id=j.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este jogador?')">
+        <button type="submit" class="btn-action btn-vermelho" title="Excluir">
+            <i class="fas fa-trash-alt"></i>
+        </button>
+    </form>
+</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users-slash"></i>
+                <p>Nenhum jogador cadastrado ainda.</p>
+                <span style="font-size:0.8em;">Cadastre jogadores na aba "Cadastrar"</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL EDITAR ==================== -->
+<div class="modal-overlay" id="modalEditar">
+    <div class="modal-card">
+        <div class="modal-title"><i class="fas fa-edit" style="color:var(--accent-yellow);"></i> Editar Jogador</div>
+        <form method="POST" id="formEditar" action="">
+            <input type="hidden" name="_method" value="PUT">
+            <div class="grid-3">
+                <input type="text" name="nome" id="edit_nome" class="input-master" placeholder="Nome" required>
+                <input type="text" name="sobrenome" id="edit_sobrenome" class="input-master" placeholder="Sobrenome">
+                <input type="text" name="apelido" id="edit_apelido" class="input-master" placeholder="Apelido">
+            </div>
+            <div class="grid-3">
+                <input type="text" name="funcao" id="edit_funcao" class="input-master" placeholder="Função">
+                <input type="text" name="telefone" id="edit_telefone" class="input-master" placeholder="Telefone">
+                <input type="email" name="email" id="edit_email" class="input-master" placeholder="E-mail">
+            </div>
+            <div class="grid-3">
+                <select name="tipo" id="edit_tipo" class="input-master" onchange="toggleMensalidadeEdit()">
+                    <option value="mensalista">📦 Mensalista</option>
+                    <option value="diarista">📅 Diarista</option>
+                    <option value="visitante">👤 Visitante</option>
+                </select>
+                <input type="date" name="data_vencimento" id="edit_data_vencimento" class="input-master">
+                <input type="number" name="valor_mensalidade" id="edit_valor_mensalidade" class="input-master" placeholder="Valor (R$)" step="0.01">
+            </div>
+            <div style="display:flex;gap:16px;margin-top:8px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 14px;background:var(--bg-input);border-radius:10px;">
+                    <input type="checkbox" name="mensalidade_paga" id="edit_mensalidade_paga" style="width:18px;height:18px;cursor:pointer;">
+                    <span style="color:var(--text-secondary);font-size:0.85em;">✅ Pago</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 14px;background:var(--bg-input);border-radius:10px;">
+                    <input type="checkbox" name="ativo" id="edit_ativo" style="width:18px;height:18px;cursor:pointer;">
+                    <span style="color:var(--text-secondary);font-size:0.85em;">👤 Ativo</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 14px;background:var(--bg-input);border-radius:10px;">
+                    <input type="checkbox" name="bloqueado" id="edit_bloqueado" style="width:18px;height:18px;cursor:pointer;">
+                    <span style="color:var(--text-secondary);font-size:0.85em;">🔒 Bloqueado</span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="button" onclick="fecharModalEditar()" class="btn-modal-cancel">Cancelar</button>
+                <button type="submit" class="btn-modal-confirm">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// ==================== TABS ====================
+function abrirTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.querySelector('.tab-btn[onclick*="' + tab + '"]').classList.add('active');
+}
+
+// ==================== MENSALIDADE ====================
+function toggleMensalidade() {
+    var tipo = document.querySelector('input[name="tipo"]:checked');
+    var section = document.getElementById('mensalidadeSection');
+    if (tipo && tipo.value === 'mensalista') {
+        section.classList.add('show');
+    } else {
+        section.classList.remove('show');
+    }
+}
+
+function toggleMensalidadeEdit() {
+    var tipo = document.getElementById('edit_tipo').value;
+    var fields = document.querySelectorAll('#edit_data_vencimento, #edit_valor_mensalidade, #edit_mensalidade_paga');
+    fields.forEach(function(el) {
+        el.disabled = (tipo !== 'mensalista');
+        if (tipo !== 'mensalista') {
+            el.value = '';
+        }
+    });
+}
+
+// ==================== MODAL EDITAR ====================
+function abrirModalEditar(id) {
+    fetch('/admin/api/jogador/' + id)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('formEditar').action = '/admin/jogador/' + id + '/editar';
+            document.getElementById('edit_nome').value = data.nome || '';
+            document.getElementById('edit_sobrenome').value = data.sobrenome || '';
+            document.getElementById('edit_apelido').value = data.apelido || '';
+            document.getElementById('edit_funcao').value = data.funcao || '';
+            document.getElementById('edit_telefone').value = data.telefone || '';
+            document.getElementById('edit_email').value = data.email || '';
+            document.getElementById('edit_tipo').value = data.tipo || 'mensalista';
+            document.getElementById('edit_data_vencimento').value = data.data_vencimento || '';
+            document.getElementById('edit_valor_mensalidade').value = data.valor_mensalidade || '';
+            document.getElementById('edit_mensalidade_paga').checked = data.mensalidade_paga || false;
+            document.getElementById('edit_ativo').checked = data.ativo !== undefined ? data.ativo : true;
+            document.getElementById('edit_bloqueado').checked = data.bloqueado || false;
+            toggleMensalidadeEdit();
+            document.getElementById('modalEditar').classList.add('show');
+        })
+        .catch(function(err) {
+            alert('Erro ao carregar dados do jogador!');
+            console.error(err);
+        });
+}
+
+function fecharModalEditar() {
+    document.getElementById('modalEditar').classList.remove('show');
+}
+
+// ==================== TOGGLES ====================
+function toggleStatus(btn) {
+    var id = btn.getAttribute('data-id');
+    var ativo = btn.getAttribute('data-ativo') === 'true';
+    var msg = ativo ? 'Desativar' : 'Ativar';
+    if (!confirm('Tem certeza que deseja ' + msg + ' este jogador?')) return;
+    
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/jogador/' + id + '/toggle-status';
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function toggleBloqueio(btn) {
+    var id = btn.getAttribute('data-id');
+    var bloqueado = btn.getAttribute('data-bloqueado') === 'true';
+    var msg = bloqueado ? 'Desbloquear' : 'Bloquear';
+    if (!confirm('Tem certeza que deseja ' + msg + ' este jogador?')) return;
+    
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/jogador/' + id + '/toggle-bloqueio';
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// ==================== FECHAR MODAL CLICANDO FORA ====================
+document.getElementById('modalEditar').addEventListener('click', function(e) {
+    if (e.target === this) fecharModalEditar();
+});
+
+// ==================== INICIALIZAR ====================
+document.addEventListener('DOMContentLoaded', function() {
+    toggleMensalidade();
+    
+    // Data atual no campo mês referência
+    var hoje = new Date();
+    var mesRef = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+    var campoMes = document.getElementById('mes_referencia');
+    if (campoMes) campoMes.value = mesRef;
+});
+</script>
+{% endblock %}
