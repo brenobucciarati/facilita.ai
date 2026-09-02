@@ -13,7 +13,7 @@
     }
     body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
-    /* ===== Ambient glow (mesma linguagem do dashboard) ===== */
+    /* ===== Ambient glow ===== */
     body::before {
         content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
         background:
@@ -22,7 +22,7 @@
     }
     .container-master { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto 40px; padding: 0 16px; }
 
-    /* ===== Navbar (glass, alinhada ao dashboard) ===== */
+    /* ===== Navbar ===== */
     .navbar-master {
         background: rgba(13,18,26,0.72); backdrop-filter: blur(24px) saturate(140%); -webkit-backdrop-filter: blur(24px) saturate(140%);
         border-bottom: 1px solid var(--border-color); padding: 0; position: sticky; top: 0; z-index: 200; margin-bottom: 24px;
@@ -121,7 +121,7 @@
     .btn-modal-cancel { background:transparent; color:var(--text-secondary); border:2px solid var(--border-color)!important; }
     .btn-modal-confirm { background:var(--accent-yellow); color:#000; }
 
-    /* ===== TABS (estilo pill, alinhado ao dashboard) ===== */
+    /* ===== TABS ===== */
     .tabs-container { display: inline-flex; gap: 4px; margin-bottom: 20px; padding: 5px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 999px; max-width: 100%; overflow-x: auto; }
     .tab-btn { padding: 10px 18px; background: transparent; border: none; color: var(--text-muted); font-weight: 600; font-size: 0.85em; cursor: pointer; transition: all 0.25s ease; border-radius: 999px; font-family: 'Inter', sans-serif; white-space: nowrap; }
     .tab-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
@@ -202,12 +202,37 @@
                     <input type="text" name="username" class="input-master" placeholder="Nome de usuário" required>
                     <input type="text" name="nome" class="input-master" placeholder="Nome completo" required>
                     <input type="password" name="password" class="input-master" placeholder="Senha" required>
-                    <select name="role" class="input-master">
-                        <option value="operador">👤 Operador</option>
-                        <option value="admin">🔐 Administrador</option>
-                    </select>
                 </div>
-                <button type="submit" class="btn-criar"><i class="fas fa-plus-circle"></i> Criar Usuário</button>
+                
+                <!-- ============ PERMISSÕES ============ -->
+                <div style="margin-top:12px;padding:16px;background:var(--bg-secondary);border-radius:var(--radius-lg);border:1px solid var(--border-color);">
+                    <label style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:0.8em;font-weight:600;margin-bottom:12px;">
+                        <i class="fas fa-shield-alt" style="color:var(--accent-purple);"></i>
+                        Permissões do Usuário
+                    </label>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                        <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-input);border-radius:8px;border:2px solid var(--border-color);cursor:pointer;transition:all 0.2s ease;" 
+                               onclick="this.querySelector('input[type=radio]').click()">
+                            <input type="radio" name="role" value="operador" checked style="width:18px;height:18px;accent-color:var(--accent-blue);cursor:pointer;">
+                            <div>
+                                <div style="color:var(--text-primary);font-weight:600;font-size:0.9em;">👤 Operador</div>
+                                <div style="color:var(--text-muted);font-size:0.7em;">Acesso a Eventos, Jogadores e Financeiro</div>
+                            </div>
+                        </label>
+                        
+                        <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-input);border-radius:8px;border:2px solid var(--border-color);cursor:pointer;transition:all 0.2s ease;"
+                               onclick="this.querySelector('input[type=radio]').click()">
+                            <input type="radio" name="role" value="admin" style="width:18px;height:18px;accent-color:var(--accent-purple);cursor:pointer;">
+                            <div>
+                                <div style="color:var(--text-primary);font-weight:600;font-size:0.9em;">🔐 Administrador</div>
+                                <div style="color:var(--text-muted);font-size:0.7em;">Acesso total (Usuários, Destaques, Notas, Logs)</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-criar" style="margin-top:12px;"><i class="fas fa-plus-circle"></i> Criar Usuário</button>
             </form>
         </div>
 
@@ -227,7 +252,12 @@
                             <td><code style="background:var(--bg-input);padding:2px 8px;border-radius:4px;">{{ user.id }}</code></td>
                             <td><strong>{{ user.username }}</strong></td>
                             <td>{{ user.nome }}</td>
-                            <td><span class="badge {% if user.role=='admin' %}badge-admin{% else %}badge-operador{% endif %}"><i class="fas fa-{{ 'crown' if user.role=='admin' else 'user' }}"></i>{{ user.role }}</span></td>
+                            <td>
+                                <span class="badge {% if user.role=='admin' %}badge-admin{% else %}badge-operador{% endif %}">
+                                    <i class="fas fa-{{ 'crown' if user.role=='admin' else 'user' }}"></i>
+                                    {{ user.role }}
+                                </span>
+                            </td>
                             <td><span class="badge {% if user.ativo %}badge-ativo{% else %}badge-inativo{% endif %}"><i class="fas fa-{{ 'check-circle' if user.ativo else 'times-circle' }}"></i>{{ 'Ativo' if user.ativo else 'Inativo' }}</span></td>
                             <td style="font-size:0.7em;color:var(--text-muted);">{{ user.ultimo_acesso.strftime('%d/%m/%Y %H:%M') if user.ultimo_acesso else 'Nunca' }}</td>
                             <td>
@@ -309,12 +339,12 @@
                             <td><span class="badge {% if d.ativo %}badge-ativo{% else %}badge-inativo{% endif %}"><i class="fas fa-{{ 'check-circle' if d.ativo else 'times-circle' }}"></i>{{ 'Ativo' if d.ativo else 'Inativo' }}</span></td>
                             <td>
                                 <div style="display:flex;gap:4px;justify-content:center;">
-                                   <button onclick="editarDestaque('{{ d.id }}')" class="btn-action btn-amarelo" title="Editar">
+                                    <button onclick="editarDestaque('{{ d.id }}')" class="btn-action btn-amarelo" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <form method="POST" action="{{ url_for('admin_excluir_destaque', destaque_id=d.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este destaque?')">
-                                        <button type="submit" class="btn-action btn-vermelho" title="Excluir"><i class="fas fa-trash-alt"></i></button>
-                                    </form>
+                                    <button onclick="abrirModalExcluirDestaque('{{ d.id }}', '{{ d.titulo|safe }}')" class="btn-action btn-vermelho" title="Excluir">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -430,11 +460,9 @@
                                     <button data-id="{{ n.id }}" class="btn-action btn-amarelo btn-editar-nota-tab" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <form method="POST" action="{{ url_for('admin_excluir_nota', nota_id=n.id) }}" style="display:inline;" onsubmit="return confirm('Excluir esta nota?')">
-                                        <button type="submit" class="btn-action btn-vermelho" title="Excluir">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
+                                    <button onclick="abrirModalExcluirNota('{{ n.id }}', '{{ n.titulo|safe }}')" class="btn-action btn-vermelho" title="Excluir">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -546,6 +574,46 @@
                 <button type="submit" class="btn-modal-confirm" style="background:linear-gradient(135deg, var(--accent-green), #059669);color:#fff;">Salvar</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- ==================== MODAIS DE CONFIRMAÇÃO DE EXCLUSÃO ==================== -->
+
+<!-- Modal Excluir Destaque -->
+<div class="modal-overlay" id="modalExcluirDestaque">
+    <div class="modal-card">
+        <div class="modal-title" style="color:var(--accent-red);">
+            <i class="fas fa-exclamation-triangle" style="color:var(--accent-red);"></i> Confirmar Exclusão
+        </div>
+        <div class="modal-subtitle" id="modalExcluirDestaqueTexto">
+            Tem certeza que deseja excluir este destaque?
+        </div>
+        <div style="text-align:center;margin-bottom:16px;font-weight:700;color:var(--text-primary);font-size:1.1em;" id="modalExcluirDestaqueNome"></div>
+        <div class="modal-actions">
+            <button onclick="fecharModalExcluirDestaque()" class="btn-modal-cancel">Cancelar</button>
+            <button onclick="confirmarExcluirDestaque()" class="btn-modal-confirm" style="background:var(--accent-red);color:#fff;border-color:var(--accent-red);">
+                <i class="fas fa-trash-alt"></i> Excluir
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Excluir Nota -->
+<div class="modal-overlay" id="modalExcluirNota">
+    <div class="modal-card">
+        <div class="modal-title" style="color:var(--accent-red);">
+            <i class="fas fa-exclamation-triangle" style="color:var(--accent-red);"></i> Confirmar Exclusão
+        </div>
+        <div class="modal-subtitle" id="modalExcluirNotaTexto">
+            Tem certeza que deseja excluir esta nota?
+        </div>
+        <div style="text-align:center;margin-bottom:16px;font-weight:700;color:var(--text-primary);font-size:1.1em;" id="modalExcluirNotaNome"></div>
+        <div class="modal-actions">
+            <button onclick="fecharModalExcluirNota()" class="btn-modal-cancel">Cancelar</button>
+            <button onclick="confirmarExcluirNota()" class="btn-modal-confirm" style="background:var(--accent-red);color:#fff;border-color:var(--accent-red);">
+                <i class="fas fa-trash-alt"></i> Excluir
+            </button>
+        </div>
     </div>
 </div>
 
@@ -742,11 +810,12 @@ function excluirUsuario() {
 function editarDestaque(id) {
     var d = null;
     for (var i = 0; i < destaquesData.length; i++) {
-        if (destaquesData[i].id === id) {
+        if (String(destaquesData[i].id) === String(id)) {
             d = destaquesData[i];
             break;
         }
     }
+    
 
     if (!d) {
         alert('Destaque não encontrado!');
@@ -797,6 +866,54 @@ function editarNota(id) {
 
 function fecharModalEditarNota() {
     document.getElementById('modalEditarNota').classList.remove('show');
+}
+
+// ==================== EXCLUIR DESTAQUE ====================
+var destaqueExcluirId = null;
+
+function abrirModalExcluirDestaque(id, nome) {
+    destaqueExcluirId = id;
+    document.getElementById('modalExcluirDestaqueNome').textContent = '📌 ' + nome;
+    document.getElementById('modalExcluirDestaque').classList.add('show');
+}
+
+function fecharModalExcluirDestaque() {
+    document.getElementById('modalExcluirDestaque').classList.remove('show');
+    destaqueExcluirId = null;
+}
+
+function confirmarExcluirDestaque() {
+    if (!destaqueExcluirId) return;
+    
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/destaques/' + destaqueExcluirId + '/excluir';
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// ==================== EXCLUIR NOTA ====================
+var notaExcluirId = null;
+
+function abrirModalExcluirNota(id, nome) {
+    notaExcluirId = id;
+    document.getElementById('modalExcluirNotaNome').textContent = '📝 ' + nome;
+    document.getElementById('modalExcluirNota').classList.add('show');
+}
+
+function fecharModalExcluirNota() {
+    document.getElementById('modalExcluirNota').classList.remove('show');
+    notaExcluirId = null;
+}
+
+function confirmarExcluirNota() {
+    if (!notaExcluirId) return;
+    
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/notas/' + notaExcluirId + '/excluir';
+    document.body.appendChild(form);
+    form.submit();
 }
 
 // ==================== EVENT LISTENERS ====================

@@ -225,11 +225,15 @@ def dashboard():
     destaque = Destaque.query.filter_by(ativo=True).order_by(Destaque.ordem).first()
     notas_atualizacao = NotaAtualizacao.query.filter_by(ativo=True).order_by(NotaAtualizacao.ordem).all()
     
+    # ✅ NOVO: Total de jogadores
+    total_jogadores = Jogador.query.filter_by(criado_por=current_user.id).count()
+    
     return render_template('admin/dashboard.html', 
                           eventos=eventos, 
                           total_cadastrados=total_cadastrados,
                           destaque=destaque,
-                          notas_atualizacao=notas_atualizacao)
+                          notas_atualizacao=notas_atualizacao,
+                          total_jogadores=total_jogadores)  # ✅ ADICIONADO
 
 @app.route('/admin/usuarios')
 @login_required
@@ -465,6 +469,73 @@ def api_financeiro():
         'pendentes': pendentes
     })
 
+@app.route('/api/time/sortear-automatico', methods=['POST'])
+@login_required
+def sortear_automatico():
+    data = request.json
+    evento_id = data.get('evento_id')
+    evento = Evento.query.get_or_404(evento_id)
+    
+    try:
+        # Buscar todos os jogadores presentes
+        inscricoes = Inscricao.query.filter_by(
+            evento_id=evento_id,
+            presente=True,
+            data_cancelamento=None
+        ).all()
+        
+        if not inscricoes:
+            return jsonify({'sucesso': False, 'mensagem': 'Nenhum jogador presente!'})
+        
+        # Buscar times
+        times = Time.query.filter_by(evento_id=evento_id).all()
+        if not times:
+            return jsonify({'sucesso': False, 'mensagem': 'Nenhum time criado!'})
+        
+        # Limpar todos os times
+        TimeJogador.query.join(Time).filter(Time.evento_id == evento_id).delete()
+        db.session.commit()
+        
+        # Embaralhar jogadores
+        import random
+        random.shuffle(inscricoes)
+        
+        # Distribuir jogadores nos times
+        vagas_por_time = 5  # Pode ser ajustado
+        for i, insc in enumerate(inscricoes):
+            time_idx = i % len(times)
+            time = times[time_idx]
+            
+            tj = TimeJogador(
+                time_id=time.id,
+                inscricao_id=insc.id,
+                ordem=TimeJogador.query.filter_by(time_id=time.id).count() + 1
+            )
+            db.session.add(tj)
+        
+        db.session.commit()
+        return jsonify({'sucesso': True, 'mensagem': 'Times sorteados com sucesso!'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'sucesso': False, 'mensagem': str(e)})
+
+@app.route('/admin/usuarios/<int:user_id>/alterar-permissao', methods=['POST'])
+@login_required
+@admin_required
+def admin_alterar_permissao(user_id):
+    user = Admin.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash('❌ Não pode alterar sua própria permissão!', 'danger')
+        return redirect(url_for('admin_usuarios'))
+    
+    novo_role = request.form.get('role', 'operador')
+    user.role = novo_role
+    db.session.commit()
+    registrar_log('alterar_permissao', f'Alterou permissão de {user.username} para {novo_role}')
+    flash(f'✅ Permissão de {user.username} alterada para {novo_role}!', 'success')
+    return redirect(url_for('admin_usuarios'))
+
 @app.route('/admin/usuarios/<int:user_id>/toggle', methods=['POST'])
 @login_required
 @admin_required
@@ -519,11 +590,12 @@ def jogadores():
 def cadastrar_jogador():
     try:
         nome = request.form.get('nome', '').strip().upper()
-        if not nome:
-            flash('❌ Nome é obrigatório!', 'danger')
+        sobrenome = request.form.get('sobrenome', '').strip().upper()
+        
+        if not nome or not sobrenome:
+            flash('❌ Nome e Sobrenome são obrigatórios!', 'danger')
             return redirect(url_for('jogadores'))
         
-        sobrenome = request.form.get('sobrenome', '').strip().upper()
         apelido = request.form.get('apelido', '').strip()
         funcao = request.form.get('funcao', 'GERAL').strip().upper()
         telefone = request.form.get('telefone', '').strip()

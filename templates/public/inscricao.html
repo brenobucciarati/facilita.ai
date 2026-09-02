@@ -91,6 +91,102 @@
         .mensagem-erro { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
         .mensagem-alerta { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); color: #f59e0b; }
         
+        /* ==================== ANIMAÇÃO DA BOLA ==================== */
+        .ball-animation-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9999; pointer-events: none; display: none;
+        }
+        .ball-animation-overlay.active { display: block; pointer-events: none; }
+        
+        .ball-field {
+            position: absolute; width: 100%; height: 100%; overflow: hidden;
+        }
+        .ball-container {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+        }
+        .ball {
+            position: absolute; bottom: 25%; left: -80px;
+            font-size: 3.5em; transition: none;
+            filter: drop-shadow(0 0 20px rgba(16,185,129,0.5));
+            z-index: 10;
+        }
+        .ball .fa-futbol { display: block; animation: spinBall 0.5s linear infinite; }
+        @keyframes spinBall { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        
+        .ball.shooting {
+            animation: shootGoal 1.2s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+        }
+        .ball.canceling {
+            animation: shootOut 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        @keyframes shootGoal {
+            0% { left: -80px; bottom: 25%; transform: rotate(0deg) scale(1); }
+            30% { left: 20%; bottom: 45%; transform: rotate(200deg) scale(1.2); }
+            60% { left: 55%; bottom: 65%; transform: rotate(400deg) scale(1.1); }
+            80% { left: 75%; bottom: 55%; transform: rotate(500deg) scale(1.05); }
+            100% { left: 105%; bottom: 40%; transform: rotate(720deg) scale(1); }
+        }
+        
+        @keyframes shootOut {
+            0% { left: -80px; bottom: 25%; transform: rotate(0deg) scale(1); }
+            40% { left: 20%; bottom: 35%; transform: rotate(180deg) scale(1.1); }
+            70% { left: 60%; bottom: 20%; transform: rotate(360deg) scale(0.9); }
+            100% { left: 110%; bottom: 70%; transform: rotate(540deg) scale(0.8); opacity: 0.5; }
+        }
+        
+        
+        .celebration-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 3em; font-weight: 900; color: #10b981;
+            text-shadow: 0 0 40px rgba(16,185,129,0.4), 0 0 80px rgba(16,185,129,0.2);
+            opacity: 0; z-index: 20; text-align: center; pointer-events: none;
+        }
+        .celebration-text.show {
+            animation: celebrateText 2s ease forwards;
+        }
+        @keyframes celebrateText {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            30% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+            60% { transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .celebration-emojis {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 15; overflow: hidden;
+        }
+        .celebration-emojis .emoji {
+            position: absolute; font-size: 2em; opacity: 0;
+        }
+        .celebration-emojis .emoji.show {
+            animation: emojiExplode 2s ease forwards;
+        }
+        @keyframes emojiExplode {
+            0% { opacity: 0; transform: translate(0, 0) scale(0); }
+            20% { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1.2); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translate(calc(var(--tx)*1.8), calc(var(--ty)*1.8)) scale(0.5); }
+        }
+        
+        .cancel-message {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: #1a2332; border: 2px solid rgba(239,68,68,0.3);
+            padding: 20px 32px; border-radius: 16px; color: #e2e8f0;
+            font-weight: 600; font-size: 1.1em; z-index: 10000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            opacity: 0; transform: translateX(-50%) translateY(20px);
+            transition: all 0.4s ease; pointer-events: none;
+            text-align: center;
+        }
+        .cancel-message.show {
+            opacity: 1; transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .cancel-message .cancel-emoji { font-size: 2em; display: block; margin-bottom: 8px; }
+        .cancel-message .cancel-title { color: #ef4444; font-size: 1.2em; }
+        .cancel-message .cancel-sub { color: #94a3b8; font-size: 0.85em; font-weight: 400; margin-top: 4px; }
+        
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; display: none; }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         .modal-sucesso { background: #1a2332; border: 1px solid rgba(16,185,129,0.3); border-radius: 24px; padding: 48px 32px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 25px 60px rgba(0,0,0,0.6); animation: scaleIn 0.5s cubic-bezier(0.16,1,0.3,1); }
@@ -111,12 +207,35 @@
         .suggestions-container::-webkit-scrollbar { width: 4px; }
         .suggestions-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
         
-        @media (max-width: 480px) { .inscricao-card { padding: 24px 16px; } .input-inscricao { font-size: 1em; padding: 14px; } .vagas-numero { font-size: 2.2em; } .btn-inscrever { font-size: 1em; padding: 14px; } }
+        @media (max-width: 480px) { .inscricao-card { padding: 24px 16px; } .input-inscricao { font-size: 1em; padding: 14px; } .vagas-numero { font-size: 2.2em; } .btn-inscrever { font-size: 1em; padding: 14px; } .ball { font-size: 2.5em; } .celebration-text { font-size: 2em; } .cancel-message { padding: 16px 20px; font-size: 0.95em; width: 90%; } }
     </style>
 </head>
 <body>
     <div class="bg-orb orb-1"></div>
     <div class="bg-orb orb-2"></div>
+    
+    <!-- ==================== ANIMAÇÃO DA BOLA ==================== -->
+    <div class="ball-animation-overlay" id="ballAnimation">
+        <div class="ball-field">
+            <div class="ball-container">
+                <div class="ball" id="ball">
+                    <i class="fas fa-futbol"></i>
+                </div>
+                <div class="celebration-text" id="celebrationText">
+                    ⚽ GOL! <br>
+                    <span style="font-size:0.5em;color:#94a3b8;">Inscrição confirmada!</span>
+                </div>
+                <div class="celebration-emojis" id="celebrationEmojis"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MENSAGEM DE CANCELAMENTO ==================== -->
+    <div class="cancel-message" id="cancelMessage">
+        <span class="cancel-emoji">😢</span>
+        <div class="cancel-title">Ah não! Você cancelou sua inscrição.</div>
+        <div class="cancel-sub">Esperamos ver você no próximo jogo! ⚽</div>
+    </div>
     
     <div class="inscricao-wrapper">
         <div class="inscricao-card">
@@ -145,9 +264,9 @@
             </div>
             
             <div id="form-area">
-                <label class="input-label"><i class="fas fa-user"></i>Digite seu Nome ou Matrícula</label>
+                <label class="input-label" id="label-busca"><i class="fas fa-user"></i>Digite seu Nome e Sobrenome</label>
                 <div class="input-wrapper">
-                    <input type="text" class="input-inscricao" id="busca-input" placeholder="Digite seu nome ou matrícula..." autocomplete="off" autofocus>
+                    <input type="text" class="input-inscricao" id="busca-input" placeholder="Digite seu nome completo..." autocomplete="off" autofocus>
                     <span class="input-status" id="input-status"></span>
                     <div class="suggestions-container" id="suggestions-container"></div>
                 </div>
@@ -176,7 +295,7 @@
             </div>
             
             <div class="inscricao-footer">
-                <span class="footer-text"><i class="fas fa-shield-alt"></i>Desenvolvido por Breno Vinicius</span>
+                <span class="footer-text"><i class="fas fa-shield-alt"></i>⚽ FACILITA.AI</span>
             </div>
         </div>
     </div>
@@ -194,24 +313,107 @@
     // ==================== DADOS ====================
     var CODIGO_EVENTO = '{{ evento.codigo_link }}';
     var TOTAL_VAGAS = parseInt('{{ evento.total_vagas }}');
+    var TIPO_INSCRICAO = '{{ evento.tipo_inscricao }}';
     var JOGADORES = [];
     var jogadorSelecionado = null;
     var timeoutBusca = null;
-    
-    // Carregar lista de jogadores do backend
-    async function carregarJogadores() {
-        try {
-            var r = await fetch('/api/jogadores/lista');
-            var data = await r.json();
-            if (data.jogadores) {
-                JOGADORES = data.jogadores;
-                console.log('✅ Jogadores carregados:', JOGADORES.length);
+    var buscaInput = document.getElementById('busca-input');
+    var suggestionsContainer = document.getElementById('suggestions-container');
+    var infoBox = document.getElementById('info-box');
+    var btnInscrever = document.getElementById('btn-inscrever');
+    var mensagemArea = document.getElementById('mensagem-area');
+    var inputStatus = document.getElementById('input-status');
+    var ballAnimation = document.getElementById('ballAnimation');
+    var ball = document.getElementById('ball');
+    var celebrationText = document.getElementById('celebrationText');
+    var celebrationEmojis = document.getElementById('celebrationEmojis');
+    var cancelMessage = document.getElementById('cancelMessage');
+    var cancelTimeout = null;
+
+    // ==================== ANIMAÇÃO DA BOLA ====================
+    function animarBola(tipo, callback) {
+        ballAnimation.classList.add('active');
+        ball.className = 'ball';
+        celebrationText.classList.remove('show');
+        celebrationEmojis.innerHTML = '';
+        
+        setTimeout(function() {
+            if (tipo === 'gol') {
+                ball.classList.add('shooting');
+                
+                var emojis = ['🎉', '⚽', '🎊', '🥳', '🔥', '💪', '🙌', '🏆'];
+                for (var i = 0; i < 15; i++) {
+                    var emoji = document.createElement('span');
+                    emoji.className = 'emoji';
+                    emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    emoji.style.left = (10 + Math.random() * 80) + '%';
+                    emoji.style.top = (10 + Math.random() * 80) + '%';
+                    emoji.style.setProperty('--tx', (Math.random() * 400 - 200) + 'px');
+                    emoji.style.setProperty('--ty', (Math.random() * 400 - 200) + 'px');
+                    emoji.style.fontSize = (1.5 + Math.random() * 2) + 'em';
+                    celebrationEmojis.appendChild(emoji);
+                    
+                    setTimeout(function(el) {
+                        el.classList.add('show');
+                    }, 200 + i * 50, emoji);
+                }
+                
+                setTimeout(function() {
+                    celebrationText.classList.add('show');
+                }, 800);
+                
+                setTimeout(function() {
+                    ballAnimation.classList.remove('active');
+                    if (callback) callback();
+                }, 2500);
+                
+            } else if (tipo === 'cancelar') {
+                ball.classList.add('canceling');
+                
+                setTimeout(function() {
+                    ballAnimation.classList.remove('active');
+                    if (callback) callback();
+                }, 1200);
             }
-        } catch(e) {
-            console.warn('⚠️ Erro ao carregar jogadores:', e);
-        }
+        }, 100);
     }
     
+    function mostrarMensagemCancelamento() {
+        cancelMessage.classList.add('show');
+        clearTimeout(cancelTimeout);
+        cancelTimeout = setTimeout(function() {
+            cancelMessage.classList.remove('show');
+        }, 4000);
+    }
+
+    // ==================== CARREGAR JOGADORES ====================
+    async function carregarJogadores() {
+        // Se for 'nome', habilita o botão e não carrega jogadores
+        if (TIPO_INSCRICAO === 'nome') {
+            console.log('ℹ️ Tipo: NOME - Busca de jogadores desativada');
+            btnInscrever.disabled = false;
+            return;
+        }
+        
+        // Se for 'jogador', carrega jogadores
+        if (TIPO_INSCRICAO === 'jogador') {
+            try {
+                var r = await fetch('/api/jogadores/lista');
+                var data = await r.json();
+                if (data.jogadores) {
+                    JOGADORES = data.jogadores;
+                    console.log('✅ Jogadores carregados:', JOGADORES.length);
+                }
+            } catch(e) {
+                console.warn('⚠️ Erro ao carregar jogadores:', e);
+            }
+            return;
+        }
+        
+        // Outros tipos (matricula, etc)
+        btnInscrever.disabled = false;
+    }
+
     // ==================== NORMALIZAÇÃO DE TEXTO ====================
     function normalizarTexto(texto) {
         if (!texto) return '';
@@ -221,7 +423,7 @@
             .toLowerCase()
             .trim();
     }
-    
+
     function matchJogador(busca) {
         var normalizado = normalizarTexto(busca);
         if (!normalizado || normalizado.length < 2) return [];
@@ -230,17 +432,13 @@
         for (var i = 0; i < JOGADORES.length; i++) {
             var j = JOGADORES[i];
             var nomeNormalizado = normalizarTexto(j.nome + ' ' + (j.sobrenome || '') + ' ' + (j.apelido || ''));
-            var matriculaNormalizada = normalizarTexto(j.matricula || '');
             
-            // Verificar se a busca está contida no nome
             if (nomeNormalizado.includes(normalizado) || 
-                normalizado.includes(nomeNormalizado.substring(0, normalizado.length)) ||
-                matriculaNormalizada.includes(normalizado)) {
+                normalizado.includes(nomeNormalizado.substring(0, normalizado.length))) {
                 resultados.push(j);
             }
         }
         
-        // Ordenar por relevância (priorizar quem começa com a busca)
         resultados.sort(function(a, b) {
             var aNome = normalizarTexto(a.nome);
             var bNome = normalizarTexto(b.nome);
@@ -253,16 +451,13 @@
         
         return resultados.slice(0, 8);
     }
-    
+
     // ==================== SUGESTÕES ====================
-    var buscaInput = document.getElementById('busca-input');
-    var suggestionsContainer = document.getElementById('suggestions-container');
-    var infoBox = document.getElementById('info-box');
-    var btnInscrever = document.getElementById('btn-inscrever');
-    var mensagemArea = document.getElementById('mensagem-area');
-    var inputStatus = document.getElementById('input-status');
-    
     buscaInput.addEventListener('input', function() {
+        if (TIPO_INSCRICAO !== 'jogador') {
+            return;
+        }
+        
         clearTimeout(timeoutBusca);
         var valor = this.value.trim();
         
@@ -277,7 +472,7 @@
             mostrarSugestoes(resultados);
         }, 200);
     });
-    
+
     buscaInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             var firstSuggestion = suggestionsContainer.querySelector('.suggestion-item');
@@ -289,8 +484,12 @@
             suggestionsContainer.classList.remove('show');
         }
     });
-    
+
     function mostrarSugestoes(resultados) {
+        if (TIPO_INSCRICAO !== 'jogador') {
+            return;
+        }
+        
         var container = suggestionsContainer;
         container.innerHTML = '';
         
@@ -321,7 +520,7 @@
             div.innerHTML = `
                 <div>
                     <div class="sug-nome">${nomeCompleto}</div>
-                    <div class="sug-detalhes">${j.funcao || 'GERAL'} ${j.matricula ? '• ' + j.matricula : ''}</div>
+                    <div class="sug-detalhes">${j.funcao || 'GERAL'}</div>
                 </div>
                 <span class="sug-status ${statusClass}">${statusText}</span>
             `;
@@ -335,8 +534,12 @@
         
         container.classList.add('show');
     }
-    
+
     function selecionarJogador(jogador) {
+        if (TIPO_INSCRICAO !== 'jogador') {
+            return;
+        }
+        
         jogadorSelecionado = jogador;
         suggestionsContainer.classList.remove('show');
         
@@ -344,11 +547,9 @@
         if (jogador.sobrenome) nomeCompleto += ' ' + jogador.sobrenome;
         buscaInput.value = nomeCompleto;
         
-        // Mostrar informações
         document.getElementById('info-nome').textContent = '👤 ' + nomeCompleto;
         document.getElementById('info-funcao').textContent = '💼 ' + (jogador.funcao || 'GERAL');
         
-        // Tipo
         var tipoEl = document.getElementById('info-tipo');
         if (jogador.tipo === 'mensalista') {
             tipoEl.textContent = '📦 Mensalista';
@@ -361,7 +562,6 @@
             tipoEl.className = 'info-tipo info-tipo-visitante';
         }
         
-        // Mensalidade
         var mensalidadeEl = document.getElementById('info-mensalidade');
         if (jogador.tipo === 'mensalista') {
             if (jogador.mensalidade_paga) {
@@ -382,7 +582,6 @@
         infoBox.classList.add('show');
         inputStatus.className = 'input-status status-valid fas fa-check-circle';
         
-        // Verificar se pode inscrever
         if (jogador.bloqueado || !jogador.ativo) {
             btnInscrever.disabled = true;
             mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Este jogador está bloqueado ou inativo!</div>';
@@ -394,7 +593,7 @@
             mensagemArea.innerHTML = '';
         }
     }
-    
+
     function limparSelecao() {
         jogadorSelecionado = null;
         infoBox.classList.remove('show');
@@ -402,58 +601,218 @@
         inputStatus.className = 'input-status';
         mensagemArea.innerHTML = '';
     }
-    
+
     // ==================== INSCREVER ====================
     btnInscrever.addEventListener('click', async function() {
-        if (!jogadorSelecionado) return;
-        
-        this.classList.add('loading');
-        
-        try {
-            var r = await fetch('/api/inscrever', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    codigo_evento: CODIGO_EVENTO,
-                    jogador_id: jogadorSelecionado.id
-                })
-            });
-            var data = await r.json();
-            this.classList.remove('loading');
-            
-            if (data.sucesso) {
-                mostrarModalSucesso(data.mensagem, data.vagas_restantes);
-                if (data.vagas_restantes <= 0) {
-                    document.getElementById('form-area').style.display = 'none';
-                    document.getElementById('esgotado-state').style.display = 'block';
-                    document.getElementById('vagas-counter').style.display = 'none';
-                } else {
-                    atualizarVagas(data.vagas_restantes);
-                    limparSelecao();
-                    buscaInput.value = '';
-                    buscaInput.focus();
-                }
-            } else {
-                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> ' + data.mensagem + '</div>';
+        // ============ INSCRIÇÃO POR NOME ============
+        if (TIPO_INSCRICAO === 'nome') {
+            var nome = buscaInput.value.trim();
+            if (!nome || nome.length < 3) {
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Digite seu nome completo (mínimo 3 caracteres)!</div>';
+                return;
             }
-        } catch(e) {
-            this.classList.remove('loading');
-            mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Erro ao processar inscrição.</div>';
+            
+            this.classList.add('loading');
+            this.disabled = true;
+            
+            try {
+                var r = await fetch('/api/inscrever', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        codigo_evento: CODIGO_EVENTO,
+                        nome: nome
+                    })
+                });
+                var data = await r.json();
+                this.classList.remove('loading');
+                this.disabled = false;
+                
+                if (data.sucesso) {
+                    animarBola('gol', function() {
+                        mostrarModalSucesso(data.mensagem, data.vagas_restantes);
+                    });
+                    
+                    if (data.vagas_restantes <= 0) {
+                        setTimeout(function() {
+                            document.getElementById('form-area').style.display = 'none';
+                            document.getElementById('esgotado-state').style.display = 'block';
+                            document.getElementById('vagas-counter').style.display = 'none';
+                        }, 2500);
+                    } else {
+                        setTimeout(function() {
+                            atualizarVagas(data.vagas_restantes);
+                            buscaInput.value = '';
+                            buscaInput.focus();
+                            mensagemArea.innerHTML = '';
+                        }, 2500);
+                    }
+                } else {
+                    mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> ' + data.mensagem + '</div>';
+                    this.classList.remove('loading');
+                    this.disabled = false;
+                }
+            } catch(e) {
+                this.classList.remove('loading');
+                this.disabled = false;
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Erro ao processar inscrição. Tente novamente.</div>';
+                console.error(e);
+            }
+            return;
+        }
+        
+        // ============ INSCRIÇÃO POR JOGADOR ============
+        if (TIPO_INSCRICAO === 'jogador') {
+            if (!jogadorSelecionado) {
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-alerta"><i class="fas fa-info-circle"></i> Selecione um jogador da lista de sugestões.</div>';
+                return;
+            }
+            
+            this.classList.add('loading');
+            this.disabled = true;
+            
+            try {
+                var r = await fetch('/api/inscrever', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        codigo_evento: CODIGO_EVENTO,
+                        jogador_id: jogadorSelecionado.id
+                    })
+                });
+                var data = await r.json();
+                this.classList.remove('loading');
+                this.disabled = false;
+                
+                if (data.sucesso) {
+                    animarBola('gol', function() {
+                        mostrarModalSucesso(data.mensagem, data.vagas_restantes);
+                    });
+                    
+                    if (data.vagas_restantes <= 0) {
+                        setTimeout(function() {
+                            document.getElementById('form-area').style.display = 'none';
+                            document.getElementById('esgotado-state').style.display = 'block';
+                            document.getElementById('vagas-counter').style.display = 'none';
+                        }, 2500);
+                    } else {
+                        setTimeout(function() {
+                            atualizarVagas(data.vagas_restantes);
+                            limparSelecao();
+                            buscaInput.value = '';
+                            buscaInput.focus();
+                        }, 2500);
+                    }
+                } else {
+                    mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> ' + data.mensagem + '</div>';
+                    this.classList.remove('loading');
+                    this.disabled = false;
+                }
+            } catch(e) {
+                this.classList.remove('loading');
+                this.disabled = false;
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Erro ao processar inscrição. Tente novamente.</div>';
+                console.error(e);
+            }
+            return;
+        }
+        
+        // ============ INSCRIÇÃO POR MATRÍCULA ============
+        if (TIPO_INSCRICAO === 'matricula') {
+            var matricula = buscaInput.value.trim();
+            if (!matricula || matricula.length < 3) {
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Digite sua matrícula!</div>';
+                return;
+            }
+            
+            this.classList.add('loading');
+            this.disabled = true;
+            
+            try {
+                var r = await fetch('/api/inscrever', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        codigo_evento: CODIGO_EVENTO,
+                        matricula: matricula
+                    })
+                });
+                var data = await r.json();
+                this.classList.remove('loading');
+                this.disabled = false;
+                
+                if (data.sucesso) {
+                    animarBola('gol', function() {
+                        mostrarModalSucesso(data.mensagem, data.vagas_restantes);
+                    });
+                    
+                    if (data.vagas_restantes <= 0) {
+                        setTimeout(function() {
+                            document.getElementById('form-area').style.display = 'none';
+                            document.getElementById('esgotado-state').style.display = 'block';
+                            document.getElementById('vagas-counter').style.display = 'none';
+                        }, 2500);
+                    } else {
+                        setTimeout(function() {
+                            atualizarVagas(data.vagas_restantes);
+                            buscaInput.value = '';
+                            buscaInput.focus();
+                            mensagemArea.innerHTML = '';
+                        }, 2500);
+                    }
+                } else {
+                    mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> ' + data.mensagem + '</div>';
+                    this.classList.remove('loading');
+                    this.disabled = false;
+                }
+            } catch(e) {
+                this.classList.remove('loading');
+                this.disabled = false;
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Erro ao processar inscrição. Tente novamente.</div>';
+                console.error(e);
+            }
+            return;
         }
     });
-    
+
+    // ==================== CANCELAR INSCRIÇÃO ====================
+    async function cancelarInscricao(id) {
+        if (!confirm('Cancelar sua inscrição?')) return;
+        
+        try {
+            var r = await fetch('/api/cancelar-inscricao', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({inscricao_id: id})
+            });
+            var d = await r.json();
+            if (d.sucesso) {
+                animarBola('cancelar', function() {
+                    mostrarMensagemCancelamento();
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                });
+            } else {
+                alert('Erro ao cancelar.');
+            }
+        } catch(e) {
+            alert('Erro ao cancelar.');
+        }
+    }
+
     // ==================== FUNÇÕES COMUNS ====================
     function mostrarModalSucesso(msg, restantes) {
-        document.getElementById('modal-titulo').textContent = '✅ Inscrição Confirmada!';
+        document.getElementById('modal-titulo').textContent = '⚽ GOL! Inscrição Confirmada!';
         document.getElementById('modal-texto').textContent = msg + (restantes > 0 ? ' Ainda há ' + restantes + ' vaga(s).' : ' Todas as vagas foram preenchidas.');
         document.getElementById('modal-sucesso').style.display = 'flex';
         setTimeout(fecharModalSucesso, 6000);
     }
-    
+
     function fecharModalSucesso() {
         document.getElementById('modal-sucesso').style.display = 'none';
     }
-    
+
     function atualizarVagas(restantes) {
         var vagasNumero = document.getElementById('vagas-disponiveis');
         var vagasBarra = document.getElementById('vagas-barra-fill');
@@ -473,27 +832,22 @@
             vagasMensagem.textContent = '📝 Se inscreva, pois as vagas são limitadas!';
         }
     }
-    
-    // ==================== CANCELAR INSCRIÇÃO ====================
-    async function cancelarInscricao(id) {
-        if (!confirm('Cancelar sua inscrição?')) return;
-        try {
-            var r = await fetch('/api/cancelar-inscricao', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({inscricao_id: id})
-            });
-            var d = await r.json();
-            if (d.sucesso) location.reload();
-            else alert('Erro ao cancelar.');
-        } catch(e) {
-            alert('Erro ao cancelar.');
-        }
-    }
-    
+
     // ==================== INICIALIZAR ====================
     document.addEventListener('DOMContentLoaded', function() {
         carregarJogadores();
+        
+        var label = document.getElementById('label-busca');
+        if (TIPO_INSCRICAO === 'nome') {
+            buscaInput.placeholder = 'Digite seu nome completo...';
+            label.innerHTML = '<i class="fas fa-user"></i>Digite seu Nome Completo';
+        } else if (TIPO_INSCRICAO === 'jogador') {
+            buscaInput.placeholder = 'Digite seu nome ou apelido...';
+            label.innerHTML = '<i class="fas fa-users"></i>Buscar Jogador';
+        } else if (TIPO_INSCRICAO === 'matricula') {
+            buscaInput.placeholder = 'Digite sua matrícula...';
+            label.innerHTML = '<i class="fas fa-id-card"></i>Digite sua Matrícula';
+        }
         
         var vagasIniciais = parseInt('{{ vagas_disponiveis }}');
         if (vagasIniciais > 10) {
@@ -502,7 +856,6 @@
             document.getElementById('vagas-disponiveis').style.display = 'block';
         }
         
-        // Fechar sugestões ao clicar fora
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.input-wrapper')) {
                 suggestionsContainer.classList.remove('show');

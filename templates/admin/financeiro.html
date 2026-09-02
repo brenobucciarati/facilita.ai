@@ -13,73 +13,119 @@
         --border-color: rgba(255,255,255,0.06); --radius-sm: 8px; --radius-md: 12px;
         --radius-lg: 16px; --radius-xl: 20px;
     }
-    body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; }
-    
-    .navbar-financeiro { background: rgba(20,27,34,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); padding: 12px 0; position: sticky; top: 0; z-index: 100; }
-    .container-financeiro { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
-    
-    .btn-back { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--text-secondary); border: 2px solid var(--border-color); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
-    .btn-back:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
-    .btn-jogadores { padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--accent-green); border: 2px solid rgba(16,185,129,0.3); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
-    .btn-jogadores:hover { background: var(--accent-green); color: #fff; border-color: var(--accent-green); }
-    
-    .card-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 24px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    body { background: var(--bg-primary) !important; font-family: 'Inter', 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+
+    /* ===== Ambient glow (mesma linguagem das outras telas) ===== */
+    body::before {
+        content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background:
+            radial-gradient(600px circle at 92% 0%, rgba(249,115,22,0.07), transparent 40%),
+            radial-gradient(500px circle at 4% 30%, rgba(16,185,129,0.05), transparent 40%);
+    }
+    .container-financeiro { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto 40px; padding: 0 16px; }
+
+    /* ===== Navbar (glass, alinhada ao restante do sistema) ===== */
+    .navbar-financeiro {
+        background: rgba(13,18,26,0.72); backdrop-filter: blur(24px) saturate(140%); -webkit-backdrop-filter: blur(24px) saturate(140%);
+        border-bottom: 1px solid var(--border-color); padding: 0; position: sticky; top: 0; z-index: 200; margin-bottom: 24px;
+    }
+    .navbar-financeiro .navbar-inner { max-width: 1100px; margin: 0 auto; padding: 0 16px; height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .financeiro-brand { display: flex; align-items: center; gap: 12px; color: var(--text-primary); }
+    .financeiro-brand-icon { width: 42px; height: 42px; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--accent-orange), #ea580c); display: flex; align-items: center; justify-content: center; font-size: 1.05em; box-shadow: 0 8px 25px rgba(249,115,22,0.3); flex-shrink: 0; color: #fff; }
+    .financeiro-brand-text { line-height: 1.15; }
+    .financeiro-brand-title { font-weight: 800; font-size: 1.05em; letter-spacing: -0.3px; }
+    .financeiro-brand-subtitle { font-size: 0.7em; color: var(--accent-orange); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+    .navbar-financeiro-actions { display: flex; gap: 10px; flex-shrink: 0; }
+    .btn-back { padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--text-secondary); border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); display: inline-flex; align-items: center; gap: 7px; transition: all 0.25s ease; }
+    .btn-back:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); transform: translateY(-1px); }
+    .btn-jogadores { padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 0.85em; text-decoration: none; color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); background: rgba(16,185,129,0.06); display: inline-flex; align-items: center; gap: 7px; transition: all 0.25s ease; }
+    .btn-jogadores:hover { background: var(--accent-green); color: #fff; border-color: var(--accent-green); transform: translateY(-1px); }
+
+    /* ===== Cards ===== */
+    .card-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 24px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; overflow: hidden; }
+    .card-panel::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, var(--accent-red), #dc2626); opacity: 0.7; }
     .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-    .card-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 700; font-size: 1.1em; }
-    .card-title .icon-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; }
+    .card-title { display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 700; font-size: 1.1em; letter-spacing: -0.2px; }
+    .card-title .icon-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; flex-shrink: 0; }
     .icon-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
     .icon-green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
     .icon-blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
     .icon-yellow { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
     .icon-red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
     .icon-orange { background: rgba(249,115,22,0.15); color: var(--accent-orange); }
-    
+
+    /* ===== Stat cards (ícones FA em vez de emoji, hierarquia mais forte) ===== */
     .stats-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
-    .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 16px 20px; transition: all 0.3s ease; }
-    .stat-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); }
-    .stat-card .stat-number { font-size: 2em; font-weight: 800; line-height: 1.2; }
-    .stat-card .stat-label { color: var(--text-muted); font-size: 0.75em; font-weight: 500; margin-top: 4px; }
-    .stat-card .stat-icon { font-size: 1.4em; opacity: 0.6; }
+    .stat-card {
+        background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+        padding: 18px 20px; position: relative; overflow: hidden;
+        transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease, border-color 0.3s ease;
+        animation: fadeInUp 0.4s ease both;
+    }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; }
+    .stat-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); box-shadow: 0 15px 35px rgba(0,0,0,0.35); }
+    .stat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .stat-card .stat-number { font-size: 1.9em; font-weight: 800; line-height: 1.15; letter-spacing: -0.5px; }
+    .stat-card .stat-label { color: var(--text-muted); font-size: 0.72em; font-weight: 600; margin-top: 2px; letter-spacing: 0.2px; }
+    .stat-icon-circle { width: 34px; height: 34px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 0.95em; flex-shrink: 0; transition: transform 0.3s ease; }
+    .stat-card:hover .stat-icon-circle { transform: scale(1.08) rotate(-5deg); }
+    .stat-green::before { background: linear-gradient(90deg, var(--accent-green), #059669); }
     .stat-green .stat-number { color: var(--accent-green); }
+    .stat-green .stat-icon-circle { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+    .stat-blue::before { background: linear-gradient(90deg, var(--accent-blue), #2563eb); }
     .stat-blue .stat-number { color: var(--accent-blue); }
+    .stat-blue .stat-icon-circle { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+    .stat-purple::before { background: linear-gradient(90deg, var(--accent-purple), #7c3aed); }
     .stat-purple .stat-number { color: var(--accent-purple); }
+    .stat-purple .stat-icon-circle { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+    .stat-yellow::before { background: linear-gradient(90deg, var(--accent-yellow), #d97706); }
     .stat-yellow .stat-number { color: var(--accent-yellow); }
+    .stat-yellow .stat-icon-circle { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+    .stat-red::before { background: linear-gradient(90deg, var(--accent-red), #dc2626); }
     .stat-red .stat-number { color: var(--accent-red); }
-    .stat-orange .stat-number { color: var(--accent-orange); }
-    
+    .stat-red .stat-icon-circle { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+    .stat-orange::before { background: linear-gradient(90deg, var(--accent-orange), #ea580c); }
+    .stat-orange .stat-number { color: var(--accent-orange); font-size: 1.55em; }
+    .stat-orange .stat-icon-circle { background: rgba(249,115,22,0.15); color: var(--accent-orange); }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
     .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     .chart-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; position: relative; }
     .chart-container canvas { max-height: 250px; max-width: 100%; }
-    .chart-title { color: var(--text-secondary); font-size: 0.85em; font-weight: 600; margin-bottom: 12px; text-align: center; }
-    
+    .chart-title { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-secondary); font-size: 0.85em; font-weight: 700; margin-bottom: 14px; text-align: center; letter-spacing: 0.2px; }
+    .chart-title i { color: var(--accent-purple); font-size: 0.95em; }
+
     .tabela-master { width: 100%; border-collapse: collapse; }
-    .tabela-master th { color: var(--text-muted); font-size: 0.65em; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border-color); }
-    .tabela-master td { padding: 8px; color: var(--text-primary); font-size: 0.82em; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .tabela-master tbody tr { transition: all 0.2s; }
-    .tabela-master tbody tr:hover { background: rgba(255,255,255,0.02); }
-    
-    .badge-status { padding: 4px 12px; border-radius: 20px; font-size: 0.6em; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .tabela-master th { color: var(--text-muted); font-size: 0.65em; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .tabela-master td { padding: 9px 8px; color: var(--text-primary); font-size: 0.82em; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .tabela-master tbody tr { transition: all 0.2s ease; }
+    .tabela-master tbody tr:hover { background: rgba(255,255,255,0.025); }
+
+    .badge-status { padding: 4px 12px; border-radius: 20px; font-size: 0.6em; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; letter-spacing: 0.2px; }
     .badge-pago { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
     .badge-pendente { background: rgba(245,158,11,0.15); color: var(--accent-yellow); border: 1px solid rgba(245,158,11,0.3); }
     .badge-vencido { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
-    
-    .btn-action { padding: 5px 10px; border-radius: 6px; font-size: 0.65em; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; margin: 1px; }
+
+    .btn-action { padding: 6px 12px; border-radius: 8px; font-size: 0.68em; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; margin: 1px; }
     .btn-amarelo { background: var(--accent-yellow); color: #000; }
-    .btn-amarelo:hover { transform: translateY(-1px); }
+    .btn-amarelo:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(245,158,11,0.35); }
     .btn-verde { background: var(--accent-green); color: #fff; }
-    .btn-verde:hover { transform: translateY(-1px); }
-    
+    .btn-verde:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16,185,129,0.35); }
+
     .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
     .empty-state i { font-size: 3em; display: block; margin-bottom: 12px; opacity: 0.3; }
-    
-    .loading-spinner { display: flex; align-items: center; justify-content: center; padding: 40px; }
-    .loading-spinner i { font-size: 2em; color: var(--accent-purple); animation: spin 1s linear infinite; }
+
+    .loading-spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; gap: 14px; }
+    .loading-spinner i { font-size: 2.2em; color: var(--accent-purple); animation: spin 1s linear infinite; }
+    .loading-spinner span { color: var(--text-muted); font-size: 0.85em; font-weight: 500; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    
+
     @media (max-width: 768px) {
         .stats-grid-4 { grid-template-columns: repeat(2, 1fr); }
         .charts-row { grid-template-columns: 1fr; }
         .stat-card .stat-number { font-size: 1.5em; }
+        .navbar-financeiro .navbar-inner { height: auto; padding: 12px 16px; flex-wrap: wrap; }
+        .financeiro-brand-subtitle { display: none; }
     }
     @media (max-width: 400px) {
         .stats-grid-4 { grid-template-columns: 1fr; }
@@ -89,12 +135,15 @@
 
 {% block content %}
 <nav class="navbar-financeiro">
-    <div class="container-financeiro d-flex justify-content-between align-items-center">
-        <div style="display:flex;align-items:center;gap:10px;color:var(--text-primary);font-weight:700;">
-            <span style="font-size:1.2em;">💰</span>
-            <span>Financeiro</span>
+    <div class="navbar-inner">
+        <div class="financeiro-brand">
+            <div class="financeiro-brand-icon"><i class="fas fa-sack-dollar"></i></div>
+            <div class="financeiro-brand-text">
+                <div class="financeiro-brand-title">Financeiro</div>
+                <div class="financeiro-brand-subtitle">FACILITA.AI</div>
+            </div>
         </div>
-        <div style="display:flex;gap:8px;">
+        <div class="navbar-financeiro-actions">
             <a href="{{ url_for('jogadores') }}" class="btn-jogadores"><i class="fas fa-users"></i> Jogadores</a>
             <a href="{{ url_for('dashboard') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
         </div>
@@ -104,38 +153,39 @@
 <div class="container-financeiro">
     <!-- Loading -->
     <div id="loading" class="loading-spinner">
-        <i class="fas fa-spinner"></i>
+        <i class="fas fa-circle-notch"></i>
+        <span>Carregando dados financeiros...</span>
     </div>
 
     <!-- Conteúdo -->
     <div id="conteudo" style="display:none;">
         <!-- Stats -->
         <div class="stats-grid-4" id="statsGrid">
-            <div class="stat-card stat-green">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="stat-card stat-green" style="animation-delay:.02s;">
+                <div class="stat-card-header">
                     <span class="stat-number" id="totalJogadores">0</span>
-                    <span class="stat-icon">👥</span>
+                    <span class="stat-icon-circle"><i class="fas fa-users"></i></span>
                 </div>
                 <div class="stat-label">Total de Jogadores</div>
             </div>
-            <div class="stat-card stat-blue">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="stat-card stat-blue" style="animation-delay:.05s;">
+                <div class="stat-card-header">
                     <span class="stat-number" id="totalMensalistas">0</span>
-                    <span class="stat-icon">📦</span>
+                    <span class="stat-icon-circle"><i class="fas fa-box-archive"></i></span>
                 </div>
                 <div class="stat-label">Mensalistas</div>
             </div>
-            <div class="stat-card stat-yellow">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="stat-card stat-yellow" style="animation-delay:.08s;">
+                <div class="stat-card-header">
                     <span class="stat-number" id="totalDiaristas">0</span>
-                    <span class="stat-icon">📅</span>
+                    <span class="stat-icon-circle"><i class="fas fa-calendar-day"></i></span>
                 </div>
                 <div class="stat-label">Diaristas</div>
             </div>
-            <div class="stat-card stat-purple">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="stat-card stat-purple" style="animation-delay:.11s;">
+                <div class="stat-card-header">
                     <span class="stat-number" id="totalVisitantes">0</span>
-                    <span class="stat-icon">👤</span>
+                    <span class="stat-icon-circle"><i class="fas fa-user-group"></i></span>
                 </div>
                 <div class="stat-label">Visitantes</div>
             </div>
@@ -143,31 +193,31 @@
 
         <!-- Stats de Mensalidade -->
         <div class="stats-grid-4">
-            <div class="stat-card stat-green">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="stat-card stat-green" style="animation-delay:.14s;">
+                <div class="stat-card-header">
                     <span class="stat-number" id="mensalidadesPagas">0</span>
-                    <span class="stat-icon">✅</span>
+                    <span class="stat-icon-circle"><i class="fas fa-circle-check"></i></span>
                 </div>
                 <div class="stat-label">Mensalidades Pagas</div>
             </div>
-            <div class="stat-card stat-yellow">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="stat-card stat-yellow" style="animation-delay:.17s;">
+                <div class="stat-card-header">
                     <span class="stat-number" id="mensalidadesPendentes">0</span>
-                    <span class="stat-icon">⏳</span>
+                    <span class="stat-icon-circle"><i class="fas fa-hourglass-half"></i></span>
                 </div>
                 <div class="stat-label">Pendentes</div>
             </div>
-            <div class="stat-card stat-red">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="stat-card stat-red" style="animation-delay:.2s;">
+                <div class="stat-card-header">
                     <span class="stat-number" id="mensalidadesVencidas">0</span>
-                    <span class="stat-icon">⚠️</span>
+                    <span class="stat-icon-circle"><i class="fas fa-triangle-exclamation"></i></span>
                 </div>
                 <div class="stat-label">Vencidas</div>
             </div>
-            <div class="stat-card stat-orange">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="stat-card stat-orange" style="animation-delay:.23s;">
+                <div class="stat-card-header">
                     <span class="stat-number" id="valorTotal">R$ 0,00</span>
-                    <span class="stat-icon">💰</span>
+                    <span class="stat-icon-circle"><i class="fas fa-sack-dollar"></i></span>
                 </div>
                 <div class="stat-label">Total Arrecadado</div>
             </div>
@@ -176,11 +226,11 @@
         <!-- Gráficos -->
         <div class="charts-row">
             <div class="chart-container">
-                <div class="chart-title">📊 Distribuição por Tipo</div>
+                <div class="chart-title"><i class="fas fa-chart-pie"></i> Distribuição por Tipo</div>
                 <canvas id="chartTipo"></canvas>
             </div>
             <div class="chart-container">
-                <div class="chart-title">📊 Status das Mensalidades</div>
+                <div class="chart-title"><i class="fas fa-chart-pie"></i> Status das Mensalidades</div>
                 <canvas id="chartMensalidade"></canvas>
             </div>
         </div>
@@ -189,12 +239,12 @@
         <div class="card-panel">
             <div class="card-header">
                 <div class="card-title">
-                    <span class="icon-circle icon-red"><i class="fas fa-exclamation-triangle"></i></span>
+                    <span class="icon-circle icon-red"><i class="fas fa-triangle-exclamation"></i></span>
                     Mensalidades Pendentes / Vencidas
                     <span id="contadorPendentes" style="color:var(--text-muted);font-size:0.7em;font-weight:400;"></span>
                 </div>
-                <button onclick="carregarDados()" class="btn-action btn-verde" style="padding:6px 14px;font-size:0.75em;">
-                    <i class="fas fa-sync"></i> Atualizar
+                <button onclick="carregarDados()" class="btn-action btn-verde" style="padding:7px 16px;font-size:0.75em;">
+                    <i class="fas fa-arrows-rotate"></i> Atualizar
                 </button>
             </div>
             <div style="overflow-x:auto;">
@@ -211,7 +261,7 @@
                     <tbody id="tabelaPendentes">
                         <tr>
                             <td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">
-                                <i class="fas fa-check-circle" style="color:var(--accent-green);"></i> Nenhuma mensalidade pendente!
+                                <i class="fas fa-circle-check" style="color:var(--accent-green);"></i> Nenhuma mensalidade pendente!
                             </td>
                         </tr>
                     </tbody>
@@ -246,7 +296,7 @@ function criarGraficos(data) {
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: { color: '#94a3b8', font: { size: 11 } }
+                    labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } }
                 }
             }
         }
@@ -271,7 +321,7 @@ function criarGraficos(data) {
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: { color: '#94a3b8', font: { size: 11 } }
+                    labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } }
                 }
             }
         }
@@ -282,10 +332,10 @@ function criarGraficos(data) {
 function carregarDados() {
     var loading = document.getElementById('loading');
     var conteudo = document.getElementById('conteudo');
-    
+
     loading.style.display = 'flex';
     conteudo.style.display = 'none';
-    
+
     fetch('/admin/api/financeiro')
         .then(response => response.json())
         .then(data => {
@@ -294,27 +344,27 @@ function carregarDados() {
             document.getElementById('totalMensalistas').textContent = data.total_mensalistas;
             document.getElementById('totalDiaristas').textContent = data.total_diaristas;
             document.getElementById('totalVisitantes').textContent = data.total_visitantes;
-            
+
             document.getElementById('mensalidadesPagas').textContent = data.mensalidades_pagas;
             document.getElementById('mensalidadesPendentes').textContent = data.mensalidades_pendentes;
             document.getElementById('mensalidadesVencidas').textContent = data.mensalidades_vencidas;
             document.getElementById('valorTotal').textContent = 'R$ ' + data.valor_total.toFixed(2).replace('.', ',');
-            
+
             // Contador de pendentes
             var contador = document.getElementById('contadorPendentes');
             if (data.pendentes.length > 0) {
                 contador.textContent = '(' + data.pendentes.length + ' pendente(s))';
             } else {
-                contador.textContent = '(✅ tudo em dia!)';
+                contador.innerHTML = '(tudo em dia)';
             }
-            
+
             // Tabela de pendentes
             var tabela = document.getElementById('tabelaPendentes');
             if (data.pendentes.length === 0) {
                 tabela.innerHTML = `
                     <tr>
                         <td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">
-                            <i class="fas fa-check-circle" style="color:var(--accent-green);"></i> Nenhuma mensalidade pendente!
+                            <i class="fas fa-circle-check" style="color:var(--accent-green);"></i> Nenhuma mensalidade pendente!
                         </td>
                     </tr>
                 `;
@@ -322,10 +372,11 @@ function carregarDados() {
                 var html = '';
                 data.pendentes.forEach(function(p) {
                     var statusClass = p.status === 'vencido' ? 'badge-vencido' : 'badge-pendente';
-                    var statusIcon = p.status === 'vencido' ? 'fa-times-circle' : 'fa-clock';
+                    var statusIcon = p.status === 'vencido' ? 'fa-circle-xmark' : 'fa-clock';
                     var statusText = p.status === 'vencido' ? 'Vencido' : 'Pendente';
-                    var actionText = p.status === 'vencido' ? '📌 Cobrar' : '✅ Pagar';
-                    
+                    var actionIcon = p.status === 'vencido' ? 'fa-bell' : 'fa-check';
+                    var actionText = p.status === 'vencido' ? 'Cobrar' : 'Pagar';
+
                     html += `
                         <tr>
                             <td><strong>${p.nome}</strong></td>
@@ -334,7 +385,7 @@ function carregarDados() {
                             <td><span class="badge-status ${statusClass}"><i class="fas ${statusIcon}"></i> ${statusText}</span></td>
                             <td style="text-align:center;">
                                 <button onclick="marcarPago(${p.id})" class="btn-action btn-verde" title="Marcar como pago">
-                                    <i class="fas fa-check"></i> ${actionText}
+                                    <i class="fas ${actionIcon}"></i> ${actionText}
                                 </button>
                             </td>
                         </tr>
@@ -342,10 +393,10 @@ function carregarDados() {
                 });
                 tabela.innerHTML = html;
             }
-            
+
             // Gráficos
             criarGraficos(data);
-            
+
             loading.style.display = 'none';
             conteudo.style.display = 'block';
         })
@@ -353,10 +404,10 @@ function carregarDados() {
             loading.style.display = 'none';
             document.getElementById('conteudo').innerHTML = `
                 <div class="card-panel" style="text-align:center;padding:40px;color:var(--text-muted);">
-                    <i class="fas fa-exclamation-triangle" style="font-size:3em;color:var(--accent-red);display:block;margin-bottom:12px;"></i>
+                    <i class="fas fa-triangle-exclamation" style="font-size:3em;color:var(--accent-red);display:block;margin-bottom:12px;"></i>
                     <p>Erro ao carregar dados financeiros.</p>
                     <button onclick="carregarDados()" class="btn-action btn-verde" style="padding:8px 20px;font-size:0.85em;margin-top:12px;">
-                        <i class="fas fa-sync"></i> Tentar novamente
+                        <i class="fas fa-arrows-rotate"></i> Tentar novamente
                     </button>
                 </div>
             `;
@@ -367,7 +418,7 @@ function carregarDados() {
 // ==================== MARCAR PAGO ====================
 function marcarPago(id) {
     if (!confirm('Marcar esta mensalidade como PAGA?')) return;
-    
+
     fetch('/admin/api/jogador/' + id + '/pagar-mensalidade', {
         method: 'POST',
         headers: {
@@ -377,14 +428,14 @@ function marcarPago(id) {
     .then(response => response.json())
     .then(data => {
         if (data.sucesso) {
-            alert('✅ Mensalidade marcada como paga!');
+            alert('Mensalidade marcada como paga!');
             carregarDados();
         } else {
-            alert('❌ Erro: ' + data.mensagem);
+            alert('Erro: ' + data.mensagem);
         }
     })
     .catch(function(err) {
-        alert('❌ Erro ao processar!');
+        alert('Erro ao processar!');
         console.error(err);
     });
 }
