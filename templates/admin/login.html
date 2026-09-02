@@ -2,42 +2,49 @@
 {% block title %}Login - Painel Admin{% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <!-- Background animado -->
-    <div class="bg-animation">
+<div class="login-container" id="loginContainer">
+    <!-- Background animado com mesh gradient reativo ao mouse -->
+    <div class="bg-animation" id="bgAnimation">
         <div class="circle c1"></div>
         <div class="circle c2"></div>
         <div class="circle c3"></div>
         <div class="circle c4"></div>
+        <div class="grid-overlay"></div>
     </div>
-    
-    <div class="login-wrapper">
+
+    <div class="login-wrapper" id="loginWrapper">
         <!-- Card Esquerdo - Ilustração -->
         <div class="login-illustration">
             <div class="illustration-content">
                 <div class="soccer-ball">
                     <i class="fas fa-futbol"></i>
+                    <div class="ball-glow"></div>
                 </div>
                 <h2>FACILITA.AI</h2>
-                <p>Sistema de Gerenciamento de Eventos Esportivos</p>
+                <p class="rotating-text-wrapper">
+                    <span class="rotating-text" id="rotatingText">Sistema de Gerenciamento de Eventos Esportivos</span>
+                </p>
                 <div class="features">
-                    <div class="feature-item">
+                    <div class="feature-item" style="--delay: 0.1s">
                         <i class="fas fa-check-circle"></i>
                         <span>Inscrições em tempo real</span>
                     </div>
-                    <div class="feature-item">
+                    <div class="feature-item" style="--delay: 0.25s">
                         <i class="fas fa-check-circle"></i>
                         <span>Controle de presença</span>
                     </div>
-                    <div class="feature-item">
+                    <div class="feature-item" style="--delay: 0.4s">
                         <i class="fas fa-check-circle"></i>
                         <span>Relatórios profissionais</span>
                     </div>
                 </div>
             </div>
             <div class="illustration-pattern"></div>
+            <div class="orbit-dot d1"></div>
+            <div class="orbit-dot d2"></div>
+            <div class="orbit-dot d3"></div>
         </div>
-        
+
         <!-- Card Direito - Login -->
         <div class="login-card">
             <div class="login-header">
@@ -47,7 +54,7 @@
                 <h3>Acesso Administrativo</h3>
                 <p>Faça login para gerenciar seus eventos</p>
             </div>
-            
+
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -58,33 +65,35 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-            
-            <form method="POST" class="login-form">
-                <div class="input-group-modern">
+
+            <form method="POST" class="login-form" id="loginForm">
+                <div class="input-group-modern" style="--delay: 0.1s">
                     <label>
                         <i class="fas fa-user"></i>
                         Usuário
                     </label>
                     <div class="input-wrapper">
-                        <input type="text" 
-                               name="username" 
-                               placeholder="Digite seu usuário" 
-                               required 
+                        <input type="text"
+                               name="username"
+                               placeholder="Digite seu usuário"
+                               required
                                autofocus
-                               autocomplete="off">
+                               autocomplete="off"
+                               id="username-input">
+                        <span class="input-check"><i class="fas fa-check"></i></span>
                         <span class="input-border"></span>
                     </div>
                 </div>
-                
-                <div class="input-group-modern">
+
+                <div class="input-group-modern" style="--delay: 0.2s">
                     <label>
                         <i class="fas fa-lock"></i>
                         Senha
                     </label>
                     <div class="input-wrapper">
-                        <input type="password" 
-                               name="password" 
-                               placeholder="Digite sua senha" 
+                        <input type="password"
+                               name="password"
+                               placeholder="Digite sua senha"
                                required
                                id="password-input">
                         <button type="button" class="toggle-password" onclick="togglePassword()">
@@ -93,16 +102,15 @@
                         <span class="input-border"></span>
                     </div>
                 </div>
-                
-                <button type="submit" class="btn-login">
-                    <span>Entrar</span>
-                    <i class="fas fa-arrow-right"></i>
+
+                <button type="submit" class="btn-login" id="btnLogin" style="--delay: 0.3s">
+                    <span class="btn-text">Entrar</span>
+                    <i class="fas fa-arrow-right btn-arrow"></i>
+                    <span class="btn-spinner"></span>
                 </button>
             </form>
-            
+
             <div class="login-footer">
-                
-                </div>
             </div>
         </div>
     </div>
@@ -128,6 +136,17 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+    will-change: transform;
+}
+
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
 }
 
 .circle {
@@ -136,6 +155,7 @@
     filter: blur(80px);
     opacity: 0.3;
     animation: floatAnimation 20s infinite ease-in-out;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .c1 {
@@ -191,12 +211,20 @@
     -webkit-backdrop-filter: blur(20px);
     border-radius: 24px;
     overflow: hidden;
-    box-shadow: 
+    box-shadow:
         0 25px 60px rgba(0, 0, 0, 0.5),
         0 0 0 1px rgba(255, 255, 255, 0.05),
         inset 0 0 0 1px rgba(255, 255, 255, 0.03);
     z-index: 1;
     animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.login-wrapper:hover {
+    box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 @keyframes cardEntry {
@@ -230,10 +258,29 @@
 }
 
 .soccer-ball {
+    position: relative;
     font-size: 70px;
     color: #10b981;
     margin-bottom: 20px;
     animation: ballBounce 2s ease-in-out infinite;
+}
+
+.ball-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 90px;
+    height: 90px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(16,185,129,0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
 }
 
 @keyframes ballBounce {
@@ -249,13 +296,36 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    background-size: 200% auto;
+    animation: shineText 4s linear infinite;
 }
 
-.illustration-content p {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1em;
+@keyframes shineText {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+.rotating-text-wrapper {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 30px;
+}
+
+.rotating-text {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 1em;
     line-height: 1.5;
+    animation: fadeSwap 4s ease-in-out infinite;
+}
+
+@keyframes fadeSwap {
+    0%, 100% { opacity: 1; transform: translateY(0); }
+    45% { opacity: 1; transform: translateY(0); }
+    50% { opacity: 0; transform: translateY(6px); }
+    55% { opacity: 0; transform: translateY(-6px); }
+    60% { opacity: 1; transform: translateY(0); }
 }
 
 .features {
@@ -270,11 +340,24 @@
     margin-bottom: 15px;
     color: rgba(255, 255, 255, 0.8);
     font-size: 0.9em;
+    opacity: 0;
+    transform: translateX(-15px);
+    animation: featureSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--delay);
+}
+
+@keyframes featureSlideIn {
+    to { opacity: 1; transform: translateX(0); }
 }
 
 .feature-item i {
     color: #10b981;
     font-size: 1.2em;
+    transition: transform 0.3s ease;
+}
+
+.feature-item:hover i {
+    transform: scale(1.2) rotate(10deg);
 }
 
 .illustration-pattern {
@@ -283,11 +366,27 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
+    background-image:
         radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 1px, transparent 1px),
         radial-gradient(circle at 80% 70%, rgba(255,255,255,0.05) 1px, transparent 1px);
     background-size: 30px 30px;
     z-index: 1;
+}
+
+.orbit-dot {
+    position: absolute;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.6);
+}
+
+.d1 { width: 6px; height: 6px; top: 20%; left: 15%; animation: orbitFloat 6s ease-in-out infinite; }
+.d2 { width: 4px; height: 4px; bottom: 25%; right: 20%; background: #0ea5e9; box-shadow: 0 0 12px 2px rgba(14,165,233,0.6); animation: orbitFloat 8s ease-in-out infinite reverse; }
+.d3 { width: 5px; height: 5px; top: 60%; left: 75%; background: #f59e0b; box-shadow: 0 0 12px 2px rgba(245,158,11,0.6); animation: orbitFloat 7s ease-in-out infinite; }
+
+@keyframes orbitFloat {
+    0%, 100% { transform: translate(0, 0); opacity: 0.6; }
+    50% { transform: translate(20px, -25px); opacity: 1; }
 }
 
 /* ==================== LOGIN CARD ==================== */
@@ -316,6 +415,17 @@
     font-size: 1.8em;
     color: #fff;
     box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+    animation: logoPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards, logoFloat 3s ease-in-out 0.8s infinite;
+}
+
+@keyframes logoPop {
+    0% { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
 }
 
 .login-header h3 {
@@ -363,6 +473,15 @@
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
     color: #ef4444;
+    animation: slideDown 0.4s ease, shakeError 0.5s ease 0.4s;
+}
+
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
 }
 
 .alert-modern i {
@@ -373,6 +492,14 @@
 /* ==================== INPUT GROUPS ==================== */
 .input-group-modern {
     margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: inputSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--delay);
+}
+
+@keyframes inputSlideIn {
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .input-group-modern label {
@@ -385,10 +512,15 @@
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: color 0.3s ease;
 }
 
 .input-group-modern label i {
     font-size: 1em;
+    color: #10b981;
+}
+
+.input-group-modern:focus-within label {
     color: #10b981;
 }
 
@@ -414,8 +546,29 @@
     background: rgba(30, 40, 55, 0.8);
 }
 
+.input-wrapper input:focus,
+.input-wrapper input.filled {
+    padding-right: 42px;
+}
+
 .input-wrapper input::placeholder {
     color: #4a5568;
+}
+
+.input-check {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.5);
+    color: #10b981;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+.input-wrapper input.filled ~ .input-check {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
 }
 
 .input-border {
@@ -443,12 +596,13 @@
     color: #64748b;
     cursor: pointer;
     font-size: 1.1em;
-    transition: color 0.3s ease;
+    transition: color 0.3s ease, transform 0.2s ease;
     padding: 5px;
 }
 
 .toggle-password:hover {
     color: #10b981;
+    transform: translateY(-50%) scale(1.1);
 }
 
 /* ==================== LOGIN BUTTON ==================== */
@@ -456,6 +610,7 @@
     width: 100%;
     padding: 16px;
     background: linear-gradient(135deg, #10b981, #059669);
+    background-size: 200% auto;
     border: none;
     border-radius: 12px;
     color: #fff;
@@ -472,11 +627,16 @@
     margin-top: 10px;
     text-transform: uppercase;
     letter-spacing: 2px;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: inputSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--delay);
 }
 
 .btn-login:hover {
     transform: translateY(-2px);
     box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+    background-position: right center;
 }
 
 .btn-login:active {
@@ -487,7 +647,7 @@
     transition: transform 0.3s ease;
 }
 
-.btn-login:hover i {
+.btn-login:hover .btn-arrow {
     transform: translateX(5px);
 }
 
@@ -507,6 +667,34 @@
 .btn-login:active::after {
     width: 300px;
     height: 300px;
+}
+
+.btn-spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+}
+
+.btn-login.loading .btn-text,
+.btn-login.loading .btn-arrow {
+    display: none;
+}
+
+.btn-login.loading .btn-spinner {
+    display: inline-block;
+    animation: spin 0.7s linear infinite;
+}
+
+.btn-login.loading {
+    cursor: wait;
+    opacity: 0.85;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* ==================== FOOTER ==================== */
@@ -536,7 +724,6 @@
 }
 
 /* ==================== RESPONSIVE ==================== */
-/* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {
     .login-wrapper {
         flex-direction: column;
@@ -544,50 +731,50 @@
         width: 100%;
         border-radius: 20px;
     }
-    
+
     /* ESCONDE A ILUSTRAÇÃO NO MOBILE */
     .login-illustration {
         display: none !important;
     }
-    
+
     /* Card de login ocupa 100% */
     .login-card {
         width: 100% !important;
         padding: 32px 24px !important;
     }
-    
+
     .login-header {
         margin-bottom: 24px;
     }
-    
+
     .logo-icon {
         width: 50px;
         height: 50px;
         font-size: 1.5em;
         border-radius: 14px;
     }
-    
+
     .login-header h3 {
         font-size: 1.3em;
     }
-    
+
     .login-header p {
         font-size: 0.8em;
     }
-    
+
     .input-group-modern {
         margin-bottom: 18px;
     }
-    
+
     .input-group-modern label {
         font-size: 0.75em;
     }
-    
+
     .input-wrapper input {
         padding: 12px 14px;
         font-size: 0.95em;
     }
-    
+
     .btn-login {
         padding: 14px;
         font-size: 1em;
@@ -600,32 +787,37 @@
         max-width: 100%;
         border-radius: 16px;
     }
-    
+
     .login-card {
         padding: 24px 16px !important;
     }
-    
+
     .logo-icon {
         width: 44px;
         height: 44px;
         font-size: 1.3em;
     }
-    
+
     .login-header h3 {
         font-size: 1.15em;
     }
-    
+
     .input-wrapper input {
         padding: 10px 12px;
         font-size: 0.9em;
         border-radius: 10px;
     }
-    
+
     .btn-login {
         padding: 12px;
         font-size: 0.95em;
         border-radius: 10px;
     }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .circle, .soccer-ball, .ball-glow, .illustration-content h2, .rotating-text,
+    .feature-item, .orbit-dot, .logo-icon, .login-wrapper { animation: none !important; }
 }
 </style>
 
@@ -633,7 +825,7 @@
 function togglePassword() {
     const input = document.getElementById('password-input');
     const icon = document.getElementById('eye-icon');
-    
+
     if (input.type === 'password') {
         input.type = 'text';
         icon.classList.remove('fa-eye');
@@ -645,10 +837,10 @@ function togglePassword() {
     }
 }
 
-// Efeito de partículas no background
 document.addEventListener('DOMContentLoaded', function() {
+    // Efeito de partículas no background
     const container = document.querySelector('.bg-animation');
-    
+
     for (let i = 0; i < 30; i++) {
         const particle = document.createElement('div');
         particle.style.cssText = `
@@ -664,8 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         container.appendChild(particle);
     }
-    
-    // Adiciona estilo para as partículas
+
     const style = document.createElement('style');
     style.textContent = `
         @keyframes particleFloat {
@@ -675,6 +866,65 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(style);
+
+    // Blobs de fundo reagem sutilmente ao movimento do mouse (parallax)
+    const circles = document.querySelectorAll('.circle');
+    document.addEventListener('mousemove', function(e) {
+        const x = (e.clientX / window.innerWidth) - 0.5;
+        const y = (e.clientY / window.innerHeight) - 0.5;
+        circles.forEach(function(circle, i) {
+            const factor = (i + 1) * 15;
+            circle.style.transform = `translate(${x * factor}px, ${y * factor}px)`;
+        });
+    });
+
+    // A ilustração inteira faz um leve efeito 3D "tilt" seguindo o cursor
+    const wrapper = document.getElementById('loginWrapper');
+    wrapper.addEventListener('mousemove', function(e) {
+        const rect = wrapper.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        wrapper.style.transform = `rotateY(${x * 2}deg) rotateX(${-y * 2}deg)`;
+    });
+    wrapper.addEventListener('mouseleave', function() {
+        wrapper.style.transform = 'rotateY(0deg) rotateX(0deg)';
+    });
+
+    // Texto rotativo com frases sobre o sistema
+    const phrases = [
+        'Sistema de Gerenciamento de Eventos Esportivos',
+        'Organize inscrições sem complicação',
+        'Acompanhe presença em tempo real',
+        'Relatórios profissionais em segundos'
+    ];
+    let phraseIndex = 0;
+    const rotatingText = document.getElementById('rotatingText');
+    if (rotatingText) {
+        setInterval(function() {
+            phraseIndex = (phraseIndex + 1) % phrases.length;
+            setTimeout(function() {
+                rotatingText.textContent = phrases[phraseIndex];
+            }, 200);
+        }, 4000);
+    }
+
+    // Marca visualmente os campos preenchidos (mostra o check)
+    document.querySelectorAll('.input-wrapper input').forEach(function(input) {
+        function updateFilled() {
+            input.classList.toggle('filled', input.value.trim().length > 0);
+        }
+        input.addEventListener('input', updateFilled);
+        updateFilled();
+    });
+
+    // Estado de "carregando" no botão ao enviar o formulário
+    const form = document.getElementById('loginForm');
+    const btn = document.getElementById('btnLogin');
+    form.addEventListener('submit', function() {
+        if (form.checkValidity()) {
+            btn.classList.add('loading');
+        }
+    });
 });
 </script>
 {% endblock %}
