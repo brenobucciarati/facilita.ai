@@ -107,8 +107,9 @@
         .ball {
             position: absolute; bottom: 25%; left: -80px;
             font-size: 3.5em; transition: none;
-            filter: drop-shadow(0 0 20px rgba(16,185,129,0.5));
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
             z-index: 10;
+            color: #ffffff;
         }
         .ball .fa-futbol { display: block; animation: spinBall 0.5s linear infinite; }
         @keyframes spinBall { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
@@ -134,7 +135,6 @@
             70% { left: 60%; bottom: 20%; transform: rotate(360deg) scale(0.9); }
             100% { left: 110%; bottom: 70%; transform: rotate(540deg) scale(0.8); opacity: 0.5; }
         }
-        
         
         .celebration-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -169,24 +169,74 @@
             100% { opacity: 0; transform: translate(calc(var(--tx)*1.8), calc(var(--ty)*1.8)) scale(0.5); }
         }
         
+        /* ==================== MODAL DE CANCELAMENTO ==================== */
+        .modal-cancel-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 100;
+            display: none; align-items: center; justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-cancel-overlay.active { display: flex; }
+        .modal-cancel {
+            background: #1a2332; border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 24px; padding: 40px 32px; text-align: center;
+            max-width: 400px; width: 90%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+            animation: scaleIn 0.5s cubic-bezier(0.16,1,0.3,1);
+        }
+        .modal-cancel .cancel-icon {
+            font-size: 4em; margin-bottom: 16px;
+        }
+        .modal-cancel .cancel-title {
+            font-size: 1.5em; font-weight: 800; color: #ef4444;
+            margin-bottom: 8px;
+        }
+        .modal-cancel .cancel-text {
+            color: #94a3b8; margin-bottom: 24px; line-height: 1.5;
+        }
+        .modal-cancel .btn-group {
+            display: flex; gap: 12px;
+        }
+        .modal-cancel .btn-group button {
+            flex: 1; padding: 14px; border-radius: 12px;
+            font-weight: 700; cursor: pointer; transition: all 0.3s ease;
+            border: none; font-size: 0.95em;
+        }
+        .modal-cancel .btn-confirmar {
+            background: #ef4444; color: #fff;
+        }
+        .modal-cancel .btn-confirmar:hover {
+            background: #dc2626; transform: translateY(-2px);
+        }
+        .modal-cancel .btn-cancelar-modal {
+            background: #1e293b; color: #94a3b8;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .modal-cancel .btn-cancelar-modal:hover {
+            background: #2a3444;
+        }
+        
+        /* ==================== MENSAGEM DE CANCELAMENTO ==================== */
         .cancel-message {
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: #1a2332; border: 2px solid rgba(239,68,68,0.3);
-            padding: 20px 32px; border-radius: 16px; color: #e2e8f0;
+            padding: 40px 32px; border-radius: 24px; color: #e2e8f0;
             font-weight: 600; font-size: 1.1em; z-index: 10000;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            opacity: 0; transform: translateX(-50%) translateY(20px);
-            transition: all 0.4s ease; pointer-events: none;
-            text-align: center;
+            opacity: 0; transform: translate(-50%, -50%) scale(0.8);
+            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+            pointer-events: none; text-align: center;
+            max-width: 400px; width: 90%;
         }
         .cancel-message.show {
-            opacity: 1; transform: translateX(-50%) translateY(0);
+            opacity: 1; transform: translate(-50%, -50%) scale(1);
             pointer-events: auto;
         }
-        .cancel-message .cancel-emoji { font-size: 2em; display: block; margin-bottom: 8px; }
-        .cancel-message .cancel-title { color: #ef4444; font-size: 1.2em; }
-        .cancel-message .cancel-sub { color: #94a3b8; font-size: 0.85em; font-weight: 400; margin-top: 4px; }
+        .cancel-message .cancel-emoji { font-size: 4em; display: block; margin-bottom: 12px; }
+        .cancel-message .cancel-title { color: #ef4444; font-size: 1.3em; }
+        .cancel-message .cancel-sub { color: #94a3b8; font-size: 0.9em; font-weight: 400; margin-top: 4px; }
         
+        /* ==================== MODAL DE SUCESSO ==================== */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; display: none; }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         .modal-sucesso { background: #1a2332; border: 1px solid rgba(16,185,129,0.3); border-radius: 24px; padding: 48px 32px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 25px 60px rgba(0,0,0,0.6); animation: scaleIn 0.5s cubic-bezier(0.16,1,0.3,1); }
@@ -207,9 +257,8 @@
         .suggestions-container::-webkit-scrollbar { width: 4px; }
         .suggestions-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
         
-        @media (max-width: 480px) { .inscricao-card { padding: 24px 16px; } .input-inscricao { font-size: 1em; padding: 14px; } .vagas-numero { font-size: 2.2em; } .btn-inscrever { font-size: 1em; padding: 14px; } .ball { font-size: 2.5em; } .celebration-text { font-size: 2em; } .cancel-message { padding: 16px 20px; font-size: 0.95em; width: 90%; } }
+        @media (max-width: 480px) { .inscricao-card { padding: 24px 16px; } .input-inscricao { font-size: 1em; padding: 14px; } .vagas-numero { font-size: 2.2em; } .btn-inscrever { font-size: 1em; padding: 14px; } .ball { font-size: 2.5em; } .celebration-text { font-size: 2em; } .cancel-message { padding: 24px 20px; font-size: 0.95em; } }
         
-        /* ==================== ESTILO ESPECÍFICO PARA MATRÍCULA ==================== */
         .input-matricula {
             letter-spacing: 8px;
             font-family: 'Courier New', monospace;
@@ -244,6 +293,19 @@
         </div>
     </div>
 
+    <!-- ==================== MODAL DE CONFIRMAÇÃO DE CANCELAMENTO ==================== -->
+    <div class="modal-cancel-overlay" id="modalCancel">
+        <div class="modal-cancel">
+            <div class="cancel-icon">😢</div>
+            <div class="cancel-title">Cancelar Inscrição?</div>
+            <div class="cancel-text">Tem certeza que deseja cancelar sua inscrição neste evento? Esta ação não pode ser desfeita.</div>
+            <div class="btn-group">
+                <button class="btn-cancelar-modal" onclick="fecharModalCancel()">Voltar</button>
+                <button class="btn-confirmar" id="btnConfirmarCancel">Sim, cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== MENSAGEM DE CANCELAMENTO ==================== -->
     <div class="cancel-message" id="cancelMessage">
         <span class="cancel-emoji">😢</span>
@@ -266,7 +328,7 @@
                 <div class="vagas-numero" id="vagas-disponiveis">{{ vagas_disponiveis }}</div>
                 <div class="vagas-label">VAGAS DISPONÍVEIS</div>
                 <div class="vagas-barra">
-                    <div class="vagas-barra-fill" id="vagas-barra-fill"></div>
+                    <div class="vagas-barra-fill" id="vagas-barra-fill" style="width: {{ (vagas_disponiveis / evento.total_vagas * 100) if vagas_disponiveis > 0 else 0 }}%"></div>
                 </div>
                 <div class="vagas-mensagem" id="vagas-mensagem">
                     {% if vagas_disponiveis <= 10 %}
@@ -342,8 +404,10 @@
     var celebrationText = document.getElementById('celebrationText');
     var celebrationEmojis = document.getElementById('celebrationEmojis');
     var cancelMessage = document.getElementById('cancelMessage');
+    var modalCancel = document.getElementById('modalCancel');
     var cancelTimeout = null;
     var dadosValidacao = null;
+    var inscricaoIdParaCancelar = null;
 
     // ==================== ANIMAÇÃO DA BOLA ====================
     function animarBola(tipo, callback) {
@@ -399,6 +463,52 @@
         cancelTimeout = setTimeout(function() {
             cancelMessage.classList.remove('show');
         }, 4000);
+    }
+
+    // ==================== MODAL DE CANCELAMENTO ====================
+    function abrirModalCancel(inscricaoId) {
+        inscricaoIdParaCancelar = inscricaoId;
+        modalCancel.classList.add('active');
+    }
+
+    function fecharModalCancel() {
+        modalCancel.classList.remove('active');
+        inscricaoIdParaCancelar = null;
+    }
+
+    document.getElementById('btnConfirmarCancel').addEventListener('click', function() {
+        if (inscricaoIdParaCancelar) {
+            executarCancelamento(inscricaoIdParaCancelar);
+        }
+        fecharModalCancel();
+    });
+
+    // ==================== CANCELAR INSCRIÇÃO ====================
+    async function executarCancelamento(id) {
+        try {
+            var r = await fetch('/api/cancelar-inscricao', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({inscricao_id: id})
+            });
+            var d = await r.json();
+            if (d.sucesso) {
+                animarBola('cancelar', function() {
+                    mostrarMensagemCancelamento();
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                });
+            } else {
+                alert('Erro ao cancelar.');
+            }
+        } catch(e) {
+            alert('Erro ao cancelar.');
+        }
+    }
+
+    function cancelarInscricao(id) {
+        abrirModalCancel(id);
     }
 
     // ==================== CARREGAR JOGADORES ====================
@@ -897,32 +1007,6 @@
         }
     });
 
-    // ==================== CANCELAR INSCRIÇÃO ====================
-    async function cancelarInscricao(id) {
-        if (!confirm('Cancelar sua inscrição?')) return;
-        
-        try {
-            var r = await fetch('/api/cancelar-inscricao', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({inscricao_id: id})
-            });
-            var d = await r.json();
-            if (d.sucesso) {
-                animarBola('cancelar', function() {
-                    mostrarMensagemCancelamento();
-                    setTimeout(function() {
-                        location.reload();
-                    }, 1500);
-                });
-            } else {
-                alert('Erro ao cancelar.');
-            }
-        } catch(e) {
-            alert('Erro ao cancelar.');
-        }
-    }
-
     // ==================== FUNÇÕES COMUNS ====================
     function mostrarModalSucesso(msg, restantes) {
         document.getElementById('modal-titulo').textContent = '⚽ GOL! Inscrição Confirmada!';
@@ -960,7 +1044,6 @@
         carregarJogadores();
         
         var label = document.getElementById('label-busca');
-        var labelIcon = document.querySelector('#label-busca i');
         
         if (TIPO_INSCRICAO === 'nome') {
             buscaInput.placeholder = 'Digite seu nome completo...';
