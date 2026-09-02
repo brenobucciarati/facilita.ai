@@ -208,6 +208,20 @@
         .suggestions-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
         
         @media (max-width: 480px) { .inscricao-card { padding: 24px 16px; } .input-inscricao { font-size: 1em; padding: 14px; } .vagas-numero { font-size: 2.2em; } .btn-inscrever { font-size: 1em; padding: 14px; } .ball { font-size: 2.5em; } .celebration-text { font-size: 2em; } .cancel-message { padding: 16px 20px; font-size: 0.95em; width: 90%; } }
+        
+        /* ==================== ESTILO ESPECÍFICO PARA MATRÍCULA ==================== */
+        .input-matricula {
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 1.3em;
+            text-align: center;
+        }
+        .input-matricula::placeholder {
+            letter-spacing: 2px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
     </style>
 </head>
 <body>
@@ -295,7 +309,7 @@
             </div>
             
             <div class="inscricao-footer">
-                <span class="footer-text"><i class="fas fa-shield-alt"></i>⚽ FACILITA.AI</span>
+                <span class="footer-text"><i class="fas fa-shield-alt"></i>Desenvolvido por Breno Vinicius</span>
             </div>
         </div>
     </div>
@@ -329,6 +343,7 @@
     var celebrationEmojis = document.getElementById('celebrationEmojis');
     var cancelMessage = document.getElementById('cancelMessage');
     var cancelTimeout = null;
+    var dadosValidacao = null;
 
     // ==================== ANIMAÇÃO DA BOLA ====================
     function animarBola(tipo, callback) {
@@ -388,14 +403,12 @@
 
     // ==================== CARREGAR JOGADORES ====================
     async function carregarJogadores() {
-        // Se for 'nome', habilita o botão e não carrega jogadores
         if (TIPO_INSCRICAO === 'nome') {
             console.log('ℹ️ Tipo: NOME - Busca de jogadores desativada');
             btnInscrever.disabled = false;
             return;
         }
         
-        // Se for 'jogador', carrega jogadores
         if (TIPO_INSCRICAO === 'jogador') {
             try {
                 var r = await fetch('/api/jogadores/lista');
@@ -410,8 +423,11 @@
             return;
         }
         
-        // Outros tipos (matricula, etc)
-        btnInscrever.disabled = false;
+        if (TIPO_INSCRICAO === 'matricula') {
+            console.log('ℹ️ Tipo: MATRÍCULA - Validação automática ativada');
+            btnInscrever.disabled = true;
+            return;
+        }
     }
 
     // ==================== NORMALIZAÇÃO DE TEXTO ====================
@@ -452,43 +468,142 @@
         return resultados.slice(0, 8);
     }
 
-    // ==================== SUGESTÕES ====================
-    buscaInput.addEventListener('input', function() {
-        if (TIPO_INSCRICAO !== 'jogador') {
-            return;
-        }
-        
-        clearTimeout(timeoutBusca);
-        var valor = this.value.trim();
-        
-        if (valor.length < 2) {
-            suggestionsContainer.classList.remove('show');
-            limparSelecao();
-            return;
-        }
-        
-        timeoutBusca = setTimeout(function() {
-            var resultados = matchJogador(valor);
-            mostrarSugestoes(resultados);
-        }, 200);
-    });
-
-    buscaInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            var firstSuggestion = suggestionsContainer.querySelector('.suggestion-item');
-            if (firstSuggestion) {
-                firstSuggestion.click();
+    // ==================== VALIDAÇÃO DE MATRÍCULA AUTOMÁTICA ====================
+    if (TIPO_INSCRICAO === 'matricula') {
+        buscaInput.addEventListener('input', function() {
+            clearTimeout(timeoutBusca);
+            var digitado = this.value.replace(/\D/g, '');
+            if (digitado.length > 6) digitado = digitado.slice(0, 6);
+            this.value = digitado;
+            
+            if (digitado.length > 0 && digitado.length <= 6) {
+                inputStatus.className = 'input-status status-checking fas fa-spinner';
+                mensagemArea.innerHTML = '';
+                infoBox.classList.remove('show');
+                btnInscrever.disabled = true;
+                timeoutBusca = setTimeout(function() { 
+                    validarMatricula(digitado.padStart(6, '0')); 
+                }, 800);
+            } else {
+                inputStatus.className = 'input-status';
+                mensagemArea.innerHTML = '';
+                infoBox.classList.remove('show');
+                btnInscrever.disabled = true;
+                dadosValidacao = null;
             }
+        });
+
+        buscaInput.addEventListener('keypress', function(e) {
+            if (!/[0-9]/.test(e.key)) e.preventDefault();
+        });
+    }
+
+    // ==================== FUNÇÃO VALIDAR MATRÍCULA ====================
+    async function validarMatricula(matricula) {
+        try {
+            var r = await fetch('/api/validar-matricula', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({codigo_evento: CODIGO_EVENTO, matricula: matricula})
+            });
+            var data = await r.json();
+            
+            if (data.valido) {
+                dadosValidacao = data;
+                document.getElementById('info-nome').textContent = '👤 ' + data.nome;
+                document.getElementById('info-funcao').textContent = '💼 ' + (data.funcao || 'GERAL');
+                
+                var tipoEl = document.getElementById('info-tipo');
+                if (data.tipo === 'mensalista') {
+                    tipoEl.textContent = '📦 Mensalista';
+                    tipoEl.className = 'info-tipo info-tipo-mensalista';
+                } else if (data.tipo === 'diarista') {
+                    tipoEl.textContent = '📅 Diarista';
+                    tipoEl.className = 'info-tipo info-tipo-diarista';
+                } else {
+                    tipoEl.textContent = '👤 Visitante';
+                    tipoEl.className = 'info-tipo info-tipo-visitante';
+                }
+                
+                var mensalidadeEl = document.getElementById('info-mensalidade');
+                if (data.tipo === 'mensalista') {
+                    if (data.mensalidade_paga) {
+                        mensalidadeEl.textContent = '✅ Mensalidade Paga';
+                        mensalidadeEl.className = 'info-mensalidade info-mensalidade-paga';
+                    } else if (data.mensalidade_vencida) {
+                        mensalidadeEl.textContent = '❌ Mensalidade Vencida!';
+                        mensalidadeEl.className = 'info-mensalidade info-mensalidade-vencida';
+                    } else {
+                        mensalidadeEl.textContent = '⏳ Mensalidade Pendente';
+                        mensalidadeEl.className = 'info-mensalidade info-mensalidade-pendente';
+                    }
+                } else {
+                    mensalidadeEl.textContent = '';
+                    mensalidadeEl.className = '';
+                }
+                
+                infoBox.classList.add('show');
+                btnInscrever.disabled = false;
+                mensagemArea.innerHTML = '';
+                buscaInput.classList.remove('error');
+                inputStatus.className = 'input-status status-valid fas fa-check-circle';
+                
+                if (data.vagas_restantes !== undefined) {
+                    atualizarVagas(data.vagas_restantes);
+                }
+            } else {
+                dadosValidacao = null;
+                infoBox.classList.remove('show');
+                btnInscrever.disabled = true;
+                buscaInput.classList.add('error');
+                inputStatus.className = 'input-status status-invalid fas fa-times-circle';
+                
+                var html = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i>' + data.mensagem + '</div>';
+                if (data.pode_cancelar) {
+                    html += '<button class="btn-cancelar" onclick="cancelarInscricao(' + data.inscricao_id + ')"><i class="fas fa-times-circle"></i>CANCELAR MINHA INSCRIÇÃO</button>';
+                }
+                mensagemArea.innerHTML = html;
+                setTimeout(function(){ buscaInput.classList.remove('error'); }, 500);
+            }
+        } catch(e) {
+            inputStatus.className = 'input-status status-invalid fas fa-exclamation-circle';
+            console.error('Erro ao validar matrícula:', e);
         }
-        if (e.key === 'Escape') {
-            suggestionsContainer.classList.remove('show');
-        }
-    });
+    }
+
+    // ==================== SUGESTÕES (somente para jogador) ====================
+    if (TIPO_INSCRICAO === 'jogador') {
+        buscaInput.addEventListener('input', function() {
+            clearTimeout(timeoutBusca);
+            var valor = this.value.trim();
+            
+            if (valor.length < 2) {
+                suggestionsContainer.classList.remove('show');
+                limparSelecao();
+                return;
+            }
+            
+            timeoutBusca = setTimeout(function() {
+                var resultados = matchJogador(valor);
+                mostrarSugestoes(resultados);
+            }, 200);
+        });
+
+        buscaInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                var firstSuggestion = suggestionsContainer.querySelector('.suggestion-item');
+                if (firstSuggestion) {
+                    firstSuggestion.click();
+                }
+            }
+            if (e.key === 'Escape') {
+                suggestionsContainer.classList.remove('show');
+            }
+        });
+    }
 
     function mostrarSugestoes(resultados) {
-        if (TIPO_INSCRICAO !== 'jogador') {
-            return;
-        }
+        if (TIPO_INSCRICAO !== 'jogador') return;
         
         var container = suggestionsContainer;
         container.innerHTML = '';
@@ -536,9 +651,7 @@
     }
 
     function selecionarJogador(jogador) {
-        if (TIPO_INSCRICAO !== 'jogador') {
-            return;
-        }
+        if (TIPO_INSCRICAO !== 'jogador') return;
         
         jogadorSelecionado = jogador;
         suggestionsContainer.classList.remove('show');
@@ -719,9 +832,14 @@
         
         // ============ INSCRIÇÃO POR MATRÍCULA ============
         if (TIPO_INSCRICAO === 'matricula') {
-            var matricula = buscaInput.value.trim();
-            if (!matricula || matricula.length < 3) {
-                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Digite sua matrícula!</div>';
+            if (!dadosValidacao) {
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-alerta"><i class="fas fa-info-circle"></i> Aguarde a validação da matrícula.</div>';
+                return;
+            }
+            
+            var matricula = buscaInput.value.replace(/\D/g, '').padStart(6, '0');
+            if (!matricula || matricula.length < 6) {
+                mensagemArea.innerHTML = '<div class="mensagem mensagem-erro"><i class="fas fa-exclamation-circle"></i> Digite uma matrícula válida (6 dígitos)!</div>';
                 return;
             }
             
@@ -758,6 +876,10 @@
                             buscaInput.value = '';
                             buscaInput.focus();
                             mensagemArea.innerHTML = '';
+                            infoBox.classList.remove('show');
+                            inputStatus.className = 'input-status';
+                            btnInscrever.disabled = true;
+                            dadosValidacao = null;
                         }, 2500);
                     }
                 } else {
@@ -838,15 +960,23 @@
         carregarJogadores();
         
         var label = document.getElementById('label-busca');
+        var labelIcon = document.querySelector('#label-busca i');
+        
         if (TIPO_INSCRICAO === 'nome') {
             buscaInput.placeholder = 'Digite seu nome completo...';
             label.innerHTML = '<i class="fas fa-user"></i>Digite seu Nome Completo';
+            buscaInput.className = 'input-inscricao';
         } else if (TIPO_INSCRICAO === 'jogador') {
             buscaInput.placeholder = 'Digite seu nome ou apelido...';
             label.innerHTML = '<i class="fas fa-users"></i>Buscar Jogador';
+            buscaInput.className = 'input-inscricao';
         } else if (TIPO_INSCRICAO === 'matricula') {
-            buscaInput.placeholder = 'Digite sua matrícula...';
-            label.innerHTML = '<i class="fas fa-id-card"></i>Digite sua Matrícula';
+            buscaInput.placeholder = '000000';
+            label.innerHTML = '<i class="fas fa-id-card"></i>Digite sua Matrícula (6 dígitos)';
+            buscaInput.className = 'input-inscricao input-matricula';
+            buscaInput.inputMode = 'numeric';
+            buscaInput.pattern = '[0-9]*';
+            buscaInput.maxLength = 6;
         }
         
         var vagasIniciais = parseInt('{{ vagas_disponiveis }}');
