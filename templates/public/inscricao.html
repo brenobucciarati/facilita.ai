@@ -20,6 +20,8 @@
         @keyframes cardEntry { from{opacity:0;transform:translateY(20px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
         .inscricao-card { background: #1a2332; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 32px 24px; box-shadow: 0 25px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
         .inscricao-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #10b981, #34d399, #10b981); }
+        .inscricao-card.shake { animation: cardShake 0.4s ease; }
+        @keyframes cardShake { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-4px,2px); } 40% { transform: translate(4px,-2px); } 60% { transform: translate(-3px,1px); } 80% { transform: translate(3px,-1px); } }
         .inscricao-header { text-align: center; margin-bottom: 24px; }
         .evento-emoji { font-size: 2.5em; margin-bottom: 8px; animation: bounce 2s ease-in-out infinite; }
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
@@ -104,8 +106,39 @@
         .ball-container {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
         }
+
+        /* trave (adicionada para dar destino visual ao chute) */
+        .goal-net {
+            position: absolute; right: 0; bottom: 0; width: 120px; height: 180px;
+            background: rgba(255,255,255,0.03); border: 3px solid rgba(255,255,255,0.08);
+            border-right: none; border-bottom: none;
+            border-radius: 50% 0 0 0; z-index: 1;
+        }
+        .goal-net::before {
+            content: ''; position: absolute; inset: 0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.03) 8px, rgba(255,255,255,0.03) 9px);
+        }
+        .goal-net.flash { animation: netFlash 0.55s ease; }
+        @keyframes netFlash {
+            0%   { filter: brightness(1); border-color: rgba(255,255,255,0.08); }
+            30%  { filter: brightness(2.4); border-color: rgba(16,185,129,0.7); }
+            100% { filter: brightness(1); border-color: rgba(255,255,255,0.08); }
+        }
+        .goal-post-left { position: absolute; right: 120px; bottom: 0; width: 4px; height: 180px; background: rgba(255,255,255,0.15); }
+        .goal-post-top { position: absolute; right: 0; top: 0; width: 120px; height: 4px; background: rgba(255,255,255,0.15); }
+
+        /* flash de tela no gol */
+        .goal-flash { position: absolute; inset: 0; background: radial-gradient(circle at 80% 50%, rgba(16,185,129,0.32), transparent 60%); opacity: 0; pointer-events: none; z-index: 12; }
+        .goal-flash.show { animation: goalFlashAnim 0.6s ease; }
+        @keyframes goalFlashAnim { 0%{opacity:0;} 18%{opacity:1;} 100%{opacity:0;} }
+
+        /* poeira do chute */
+        .kick-dust { position: absolute; width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.55), transparent 70%); pointer-events: none; z-index: 5; opacity: 0; }
+        .kick-dust.show { animation: dustPuff 0.55s ease forwards; }
+        @keyframes dustPuff { 0% { opacity: 0.85; transform: scale(0.3); } 100% { opacity: 0; transform: scale(2.4); } }
+
         .ball {
-            position: absolute; bottom: 25%; left: -80px;
+            position: absolute; bottom: 22%; left: -80px;
             font-size: 3.5em; transition: none;
             filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
             z-index: 10;
@@ -115,25 +148,30 @@
         @keyframes spinBall { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         
         .ball.shooting {
-            animation: shootGoal 1.2s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+            animation: shootGoal 1.25s cubic-bezier(0.22, 0.75, 0.28, 1) forwards;
         }
         .ball.canceling {
-            animation: shootOut 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: shootOut 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         
         @keyframes shootGoal {
-            0% { left: -80px; bottom: 25%; transform: rotate(0deg) scale(1); }
-            30% { left: 20%; bottom: 45%; transform: rotate(200deg) scale(1.2); }
-            60% { left: 55%; bottom: 65%; transform: rotate(400deg) scale(1.1); }
-            80% { left: 75%; bottom: 55%; transform: rotate(500deg) scale(1.05); }
-            100% { left: 105%; bottom: 40%; transform: rotate(720deg) scale(1); }
+            0%   { left: -80px; bottom: 22%; transform: rotate(0deg) scale(1,1); }
+            18%  { left: 12%;   bottom: 30%; transform: rotate(140deg) scale(1.08,0.92); }
+            40%  { left: 38%;   bottom: 58%; transform: rotate(320deg) scale(1,1); }
+            62%  { left: 62%;   bottom: 68%; transform: rotate(480deg) scale(1.05,1.05); }
+            80%  { left: 82%;   bottom: 52%; transform: rotate(600deg) scale(1.3,0.7); }
+            88%  { left: 92%;   bottom: 46%; transform: rotate(650deg) scale(0.85,1.15); }
+            100% { left: 100%;  bottom: 48%; transform: rotate(680deg) scale(0.9,0.9); opacity: 0.95; }
         }
         
         @keyframes shootOut {
-            0% { left: -80px; bottom: 25%; transform: rotate(0deg) scale(1); }
-            40% { left: 20%; bottom: 35%; transform: rotate(180deg) scale(1.1); }
-            70% { left: 60%; bottom: 20%; transform: rotate(360deg) scale(0.9); }
-            100% { left: 110%; bottom: 70%; transform: rotate(540deg) scale(0.8); opacity: 0.5; }
+            0%   { left: -80px; bottom: 22%; transform: rotate(0deg) scale(1,1); filter: grayscale(0) brightness(1); }
+            20%  { left: 10%;   bottom: 26%; transform: rotate(120deg) scale(1,1); filter: grayscale(0.1) brightness(0.98); }
+            40%  { left: 28%;   bottom: 22%; transform: rotate(240deg) scale(1.05,0.95); filter: grayscale(0.3) brightness(0.95); }
+            55%  { left: 42%;   bottom: 25%; transform: rotate(300deg) scale(0.95,1.05); filter: grayscale(0.5) brightness(0.9); }
+            70%  { left: 50%;   bottom: 18%; transform: rotate(340deg) scale(1.1,0.85); filter: grayscale(0.7) brightness(0.85); }
+            85%  { left: 38%;   bottom: 30%; transform: rotate(280deg) scale(0.8,1.2); filter: grayscale(0.9) brightness(0.75); }
+            100% { left: 20%;   bottom: 8%;  transform: rotate(200deg) scale(0.55,0.55); opacity: 0; filter: grayscale(1) brightness(0.6); }
         }
         
         .celebration-text {
@@ -143,13 +181,15 @@
             opacity: 0; z-index: 20; text-align: center; pointer-events: none;
         }
         .celebration-text.show {
-            animation: celebrateText 2s ease forwards;
+            animation: celebrateText 2s cubic-bezier(0.22, 0.9, 0.3, 1.1) forwards;
         }
         @keyframes celebrateText {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            30% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
-            60% { transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(-8deg); }
+            35%  { opacity: 1; transform: translate(-50%, -50%) scale(1.35) rotate(4deg); }
+            50%  { transform: translate(-50%, -50%) scale(0.92) rotate(-2deg); }
+            65%  { transform: translate(-50%, -50%) scale(1.08) rotate(1deg); }
+            80%  { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
         }
         
         .celebration-emojis {
@@ -160,13 +200,13 @@
             position: absolute; font-size: 2em; opacity: 0;
         }
         .celebration-emojis .emoji.show {
-            animation: emojiExplode 2s ease forwards;
+            animation: emojiExplode 2s cubic-bezier(0.25, 0.6, 0.3, 1) forwards;
         }
         @keyframes emojiExplode {
-            0% { opacity: 0; transform: translate(0, 0) scale(0); }
-            20% { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1.2); }
-            80% { opacity: 1; }
-            100% { opacity: 0; transform: translate(calc(var(--tx)*1.8), calc(var(--ty)*1.8)) scale(0.5); }
+            0%   { opacity: 0; transform: translate(0, 0) scale(0) rotate(0deg); }
+            18%  { opacity: 1; transform: translate(calc(var(--tx)*0.5), calc(var(--ty)*0.5 - 30px)) scale(1.2) rotate(var(--rot)); }
+            60%  { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1) rotate(calc(var(--rot)*2)); }
+            100% { opacity: 0; transform: translate(calc(var(--tx)*1.3), calc(var(--ty)*1.3 + 120px)) scale(0.6) rotate(calc(var(--rot)*3)); }
         }
         
         /* ==================== MODAL DE CANCELAMENTO ==================== */
@@ -257,7 +297,7 @@
         .suggestions-container::-webkit-scrollbar { width: 4px; }
         .suggestions-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
         
-        @media (max-width: 480px) { .inscricao-card { padding: 24px 16px; } .input-inscricao { font-size: 1em; padding: 14px; } .vagas-numero { font-size: 2.2em; } .btn-inscrever { font-size: 1em; padding: 14px; } .ball { font-size: 2.5em; } .celebration-text { font-size: 2em; } .cancel-message { padding: 24px 20px; font-size: 0.95em; } }
+        @media (max-width: 480px) { .inscricao-card { padding: 24px 16px; } .input-inscricao { font-size: 1em; padding: 14px; } .vagas-numero { font-size: 2.2em; } .btn-inscrever { font-size: 1em; padding: 14px; } .ball { font-size: 2.5em; } .goal-net { width: 80px; height: 120px; } .goal-post-left { right: 80px; height: 120px; } .goal-post-top { width: 80px; } .celebration-text { font-size: 2em; } .cancel-message { padding: 24px 20px; font-size: 0.95em; } }
         
         .input-matricula {
             letter-spacing: 8px;
@@ -281,6 +321,11 @@
     <div class="ball-animation-overlay" id="ballAnimation">
         <div class="ball-field">
             <div class="ball-container">
+                <div class="goal-net">
+                    <div class="goal-post-left"></div>
+                    <div class="goal-post-top"></div>
+                </div>
+                <div class="goal-flash" id="goalFlash"></div>
                 <div class="ball" id="ball">
                     <i class="fas fa-futbol"></i>
                 </div>
@@ -410,36 +455,66 @@
     var inscricaoIdParaCancelar = null;
 
     // ==================== ANIMAÇÃO DA BOLA ====================
+    function criarPoeiraChute() {
+        var container = document.querySelector('.ball-container');
+        if (!container) return;
+        var dust = document.createElement('div');
+        dust.className = 'kick-dust show';
+        dust.style.left = '10px';
+        dust.style.bottom = '20%';
+        container.appendChild(dust);
+        setTimeout(function() { dust.remove(); }, 600);
+    }
+
     function animarBola(tipo, callback) {
         ballAnimation.classList.add('active');
         ball.className = 'ball';
         celebrationText.classList.remove('show');
         celebrationEmojis.innerHTML = '';
+
+        var goalNet = document.querySelector('.goal-net');
+        var card = document.querySelector('.inscricao-card');
+        var goalFlash = document.getElementById('goalFlash');
+        if (goalNet) goalNet.classList.remove('flash');
+        if (goalFlash) goalFlash.classList.remove('show');
         
         setTimeout(function() {
+            criarPoeiraChute();
+
             if (tipo === 'gol') {
                 ball.classList.add('shooting');
+
+                // Impacto na rede: flash, tremor de tela e brilho
+                setTimeout(function() {
+                    if (goalNet) goalNet.classList.add('flash');
+                    if (goalFlash) goalFlash.classList.add('show');
+                    if (card) {
+                        card.classList.add('shake');
+                        setTimeout(function() { card.classList.remove('shake'); }, 450);
+                    }
+                }, 950);
                 
                 var emojis = ['🎉', '⚽', '🎊', '🥳', '🔥', '💪', '🙌', '🏆'];
-                for (var i = 0; i < 15; i++) {
+                for (var i = 0; i < 16; i++) {
                     var emoji = document.createElement('span');
                     emoji.className = 'emoji';
                     emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-                    emoji.style.left = (10 + Math.random() * 80) + '%';
-                    emoji.style.top = (10 + Math.random() * 80) + '%';
-                    emoji.style.setProperty('--tx', (Math.random() * 400 - 200) + 'px');
-                    emoji.style.setProperty('--ty', (Math.random() * 400 - 200) + 'px');
-                    emoji.style.fontSize = (1.5 + Math.random() * 2) + 'em';
+                    emoji.style.left = (58 + Math.random() * 32) + '%';
+                    emoji.style.top = (22 + Math.random() * 38) + '%';
+                    emoji.style.setProperty('--tx', (Math.random() * 360 - 180) + 'px');
+                    emoji.style.setProperty('--ty', (Math.random() * 200 - 220) + 'px');
+                    emoji.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+                    emoji.style.fontSize = (1.4 + Math.random() * 1.8) + 'em';
                     celebrationEmojis.appendChild(emoji);
                     
-                    setTimeout(function(el) {
-                        el.classList.add('show');
-                    }, 200 + i * 50, emoji);
+                    (function(el, delay) {
+                        setTimeout(function() { el.classList.add('show'); }, delay);
+                    })(emoji, 950 + i * 45);
                 }
                 
                 setTimeout(function() {
                     celebrationText.classList.add('show');
-                }, 800);
+                }, 950);
                 
                 setTimeout(function() {
                     ballAnimation.classList.remove('active');
@@ -448,11 +523,18 @@
                 
             } else if (tipo === 'cancelar') {
                 ball.classList.add('canceling');
+
+                setTimeout(function() {
+                    if (card) {
+                        card.classList.add('shake');
+                        setTimeout(function() { card.classList.remove('shake'); }, 350);
+                    }
+                }, 650);
                 
                 setTimeout(function() {
                     ballAnimation.classList.remove('active');
                     if (callback) callback();
-                }, 1200);
+                }, 1400);
             }
         }, 100);
     }
